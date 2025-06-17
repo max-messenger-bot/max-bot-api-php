@@ -1,0 +1,6 @@
+/vendor/
+/.idea/
+/docs-scan/
+/test/
+/composer.lock
+/notes.txt

@@ -1,0 +1,180 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+/**
+ * Интерактивный скрипт для форматирования JSON-файлов в терминале
+ *
+ * @psalm-suppress ForbiddenCode
+ */
+class FormatJson
+{
+    /**
+     * Основной метод скрипта
+     */
+    public static function main(): void
+    {
+        $files = self::findJsonFiles();
+
+        if (empty($files)) {
+            echo "JSON-файлы в текущей директории не найдены\n";
+            exit(0);
+        }
+
+        $selectedIndex = 0;
+
+        // Сохраняем текущие настройки терминала
+        $oldStyle = @shell_exec('stty -g 2>/dev/null');
+        $hasStty = $oldStyle !== null && $oldStyle !== '';
+
+        if ($hasStty) {
+            /**
+             * @var non-falsy-string $oldStyle
+             * @psalm-suppress PossiblyFalseArgument
+             */
+            $oldStyle = trim($oldStyle);
+            // Устанавливаем режим для интерактивного ввода
+            @shell_exec('stty -icanon -echo 2>/dev/null');
+
+            // Регистрируем обработчик для восстановления настроек при завершении
+            register_shutdown_function(static function () use ($oldStyle): void {
+                @shell_exec('stty ' . escapeshellarg($oldStyle) . ' 2>/dev/null');
+                echo "\n";
+            });
+
+            // Обработка сигналов (Ctrl+C)
+            if (function_exists('pcntl_signal')) {
+                pcntl_signal(SIGINT, static function () use ($oldStyle): void {
+                    @shell_exec('stty ' . escapeshellarg($oldStyle) . ' 2>/dev/null');
+                    echo "\n";
+                    exit(0);
+                });
+            }
+            if (function_exists('pcntl_dispatch_signals')) {
+                pcntl_dispatch_signals();
+            }
+        }
+
+        self::render($files, $selectedIndex);
+
+        while (true) {
+            $char = fread(STDIN, 1);
+
+            if ($char === "\e") {
+                // Устанавливаем тайм-аут для определения Esc vs стрелки
+                stream_set_blocking(STDIN, false);
+                $next = fread(STDIN, 2);
+                stream_set_blocking(STDIN, true);
+
+                if ($next === '' || $next === false) {
+                    // Одиночный Esc
+                    if ($hasStty) {
+                        /** @var non-falsy-string $oldStyle */
+                        @shell_exec('stty ' . escapeshellarg($oldStyle) . ' 2>/dev/null');
+                    }
+                    echo "\n";
+                    exit(0);
+                }
+                $char .= $next;
+            }
+
+            switch ($char) {
+                case "\e[A": // Стрелка вверх
+                    if ($selectedIndex > 0) {
+                        $selectedIndex--;
+                        self::render($files, $selectedIndex);
+                    }
+                    break;
+
+                case "\e[B": // Стрелка вниз
+                    if ($selectedIndex < count($files) - 1) {
+                        $selectedIndex++;
+                        self::render($files, $selectedIndex);
+                    }
+                    break;
+
+                case "\n": // Enter
+                case "\r":
+                    if ($hasStty) {
+                        /** @var non-falsy-string $oldStyle */
+                        @shell_exec('stty ' . escapeshellarg($oldStyle) . ' 2>/dev/null');
+                    }
+                    echo "\n";
+
+                    $selectedFile = $files[$selectedIndex];
+                    $content = file_get_contents($selectedFile);
+
+                    if ($content === false) {
+                        echo "Ошибка чтения файла: $selectedFile\n";
+                        exit(1);
+                    }
+
+                    /** @psalm-suppress MixedAssignment */
+                    $data = json_decode($content);
+
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        echo 'Ошибка декодирования JSON: ' . json_last_error_msg() . "\n";
+                        exit(1);
+                    }
+
+                    $formattedContent = json_encode(
+                        $data,
+                        JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+                    );
+
+                    if ($formattedContent === false) {
+                        echo 'Ошибка кодирования JSON: ' . json_last_error_msg() . "\n";
+                        exit(1);
+                    }
+
+                    /** @var non-empty-string $outputFile */
+                    $outputFile = preg_replace('/\.json$/', '.formatted.json', $selectedFile);
+
+                    if (file_put_contents($outputFile, $formattedContent . "\n") === false) {
+                        echo "Ошибка записи файла: $outputFile\n";
+                        exit(1);
+                    }
+
+                    echo "Файл сохранён: $outputFile\n";
+                    exit(0);
+            }
+        }
+    }
+
+    /**
+     * Поиск JSON-файлов в текущей директории
+     *
+     * @return array<string>
+     */
+    private static function findJsonFiles(): array
+    {
+        /** @psalm-suppress RiskyTruthyFalsyComparison */
+        $files = glob('*.json') ?: [];
+        sort($files);
+        return $files;
+    }
+
+    /**
+     * Отрисовка интерфейса выбора
+     *
+     * @param array<string> $files
+     */
+    private static function render(array $files, int $selectedIndex): void
+    {
+        echo "\033[H\033[J";
+        echo "Выберите JSON-файл (↑/↓ - навигация, Enter - выбор, Esc - выход):\n\n";
+
+        foreach ($files as $index => $file) {
+            if ($index === $selectedIndex) {
+                echo "  \033[32m▶ \033[0m\033[1m$file\033[0m\n";
+            } else {
+                echo "    $file\n";
+            }
+        }
+    }
+}
+
+FormatJson::main();
