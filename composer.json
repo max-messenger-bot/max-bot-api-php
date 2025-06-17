@@ -1,0 +1,36 @@
+{
+    "name": "max-messenger-bot/max-bot-api-php",
+    "description": "Max messenger API",
+    "keywords": [
+        "max",
+        "messenger",
+        "bot",
+        "api",
+        "php"
+    ],
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "MaxMessenger\\Api\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Eugene",
+            "email": "mj4444@mail.ru"
+        }
+    ],
+    "support": {
+        "email": "mj4444@mail.ru",
+        "chat": "https://t.me/mj4444ru"
+    },
+    "require": {
+        "php": "^8.2",
+        "mj4444/simple-http-client": "^0.1.0"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
