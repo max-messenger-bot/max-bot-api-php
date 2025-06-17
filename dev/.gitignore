@@ -1,0 +1,5 @@
+*
+!/.gitignore
+!/format-json
+!/scripts
+!/scripts/*.php
