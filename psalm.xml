@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="1"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="true"
+    findUnusedIssueHandlerSuppression="true"
+    findUnusedPsalmSuppress="true"
+    findUnusedVariablesAndParams="true"
+    ensureOverrideAttribute="false"
+>
+    <projectFiles>
+        <directory name="src" />
+        <directory name="tests/Unit" />
+        <ignoreFiles>
+            <directory name="vendor" />
+        </ignoreFiles>
+    </projectFiles>
+    <issueHandlers>
+        <ClassMustBeFinal>
+            <errorLevel type="suppress">
+                <directory name="src/Models/Responses" />
+            </errorLevel>
+        </ClassMustBeFinal>
+        <PossiblyUnusedMethod>
+            <errorLevel type="suppress">
+                <directory name="src/MaxBot" />
+                <directory name="src/Models/Requests" />
+                <directory name="src/Models/Responses" />
+                <file name="src/MaxApiClient.php" />
+            </errorLevel>
+        </PossiblyUnusedMethod>
+        <UnusedClass>
+            <errorLevel type="suppress">
+                <directory name="tests/Unit" />
+                <file name="src/Models/Responses/PhotoTokens.php" />
+                <file name="src/Models/Responses/UploadedFile.php" />
+                <file name="src/MaxBot.php" />
+            </errorLevel>
+        </UnusedClass>
+        <PropertyNotSetInConstructor>
+            <errorLevel type="suppress">
+                <directory name="tests/Unit" />
+            </errorLevel>
+        </PropertyNotSetInConstructor>
+        <RedundantCondition>
+            <errorLevel type="suppress">
+                <directory name="tests/Unit" />
+            </errorLevel>
+        </RedundantCondition>
+    </issueHandlers>
+</psalm>

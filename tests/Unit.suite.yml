@@ -1,0 +1,7 @@
+namespace: MaxMessenger\Bot\Tests
+actor: UnitTester
+path: Unit
+modules:
+    enabled:
+        - Asserts
+step_decorators: ~
