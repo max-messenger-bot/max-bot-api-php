@@ -28,4 +28,9 @@ interface MaxApiConfigInterface
      * @return HttpClientInterface HTTP client for API requests.
      */
     public function getHttpClient(): HttpClientInterface;
+
+    /**
+     * @return MaxHttpClientInterface|null Max HTTP client for API requests.
+     */
+    public function getMaxHttpClient(): ?MaxHttpClientInterface;
 }

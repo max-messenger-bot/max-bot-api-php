@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\HttpClient;
 
 use MaxMessenger\Bot\Contracts\MaxApiConfigInterface;
+use MaxMessenger\Bot\Contracts\MaxHttpClientInterface;
 use MaxMessenger\Bot\Exceptions\AccessTokenException;
 use MaxMessenger\Bot\Exceptions\HttpClient\HttpResponse\UnexpectedFormatException;
 use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
@@ -16,7 +17,7 @@ use function is_array;
 /**
  * HTTP-клиент для API Max.
  */
-final readonly class MaxHttpClient
+final readonly class MaxHttpClient implements MaxHttpClientInterface
 {
     public function __construct(
         private MaxApiConfigInterface $config,
@@ -24,20 +25,11 @@ final readonly class MaxHttpClient
     ) {
     }
 
-    /**
-     * @param non-empty-string $path
-     * @param array<string|int>|null $query
-     */
     public function delete(string $path, ?array $query = null): array
     {
         return $this->doRequest($this->makeRequest($path, $query, HttpMethod::Delete));
     }
 
-    /**
-     * @param non-empty-string $path
-     * @param array<string|int>|null $query
-     * @param positive-int|null $timeout
-     */
     public function get(string $path, ?array $query = null, int $timeout = null): array
     {
         return $this->doRequest($this->makeRequest($path, $query, HttpMethod::Get, null, $timeout));
@@ -48,34 +40,22 @@ final readonly class MaxHttpClient
         return $this->config->getHttpClient();
     }
 
-    /**
-     * @param non-empty-string $path
-     * @param array<string|int>|null $query
-     */
     public function patch(string $path, object $body, ?array $query = null): array
     {
         return $this->doRequest($this->makeRequest($path, $query, HttpMethod::Patch, $body));
     }
 
-    /**
-     * @param non-empty-string $path
-     * @param array<string|int>|null $query
-     */
     public function post(string $path, ?object $body, ?array $query = null): array
     {
         return $this->doRequest($this->makeRequest($path, $query, HttpMethod::Post, $body));
     }
 
-    /**
-     * @param non-empty-string $path
-     * @param array<string|int>|null $query
-     */
     public function put(string $path, object $body, ?array $query = null): array
     {
         return $this->doRequest($this->makeRequest($path, $query, HttpMethod::Put, $body));
     }
 
-    public function withVersion(?string $version): self
+    public function withVersion(?string $version): static
     {
         return new self($this->config, $version);
     }

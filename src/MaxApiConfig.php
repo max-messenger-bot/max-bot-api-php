@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot;
 
 use MaxMessenger\Bot\Contracts\MaxApiConfigInterface;
+use MaxMessenger\Bot\Contracts\MaxHttpClientInterface;
 use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
 use Mj4444\SimpleHttpClient\CurlHttpClient;
 use SensitiveParameter;
@@ -52,6 +53,11 @@ final class MaxApiConfig implements MaxApiConfigInterface
             ->setConnectTimeout(5000)
             ->setTimeout(1000)
             ->setUserAgent('mj4444-MaxMessenger-Bot');
+    }
+
+    public function getMaxHttpClient(): ?MaxHttpClientInterface
+    {
+        return null;
     }
 
     /**

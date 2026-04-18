@@ -6,6 +6,7 @@ namespace MaxMessenger\Bot;
 
 use BackedEnum;
 use MaxMessenger\Bot\Contracts\MaxApiConfigInterface;
+use MaxMessenger\Bot\Contracts\MaxHttpClientInterface;
 use MaxMessenger\Bot\Exceptions\RequiredArgumentsException;
 use MaxMessenger\Bot\Exceptions\SimpleQueryError;
 use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\BadRequestException;
@@ -56,7 +57,7 @@ final class MaxApiClient
      * @var list<positive-int>
      */
     public array $retryAttempts = [1, 2, 4, 8, 15];
-    private readonly MaxHttpClient $httpClient;
+    private readonly MaxHttpClientInterface $httpClient;
 
     /**
      * @param non-empty-string|MaxApiConfigInterface $accessTokenOrConfig
@@ -69,7 +70,7 @@ final class MaxApiClient
             ? new MaxApiConfig($accessTokenOrConfig)
             : $accessTokenOrConfig;
 
-        $this->httpClient = new MaxHttpClient($config);
+        $this->httpClient = $config->getMaxHttpClient() ?? new MaxHttpClient($config);
     }
 
     /**
@@ -284,7 +285,7 @@ final class MaxApiClient
      *
      * Для использования необходимо знать формат запросов и ответов API.
      */
-    public function getHttpClient(): MaxHttpClient
+    public function getHttpClient(): MaxHttpClientInterface
     {
         return $this->httpClient;
     }
