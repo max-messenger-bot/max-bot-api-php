@@ -32,6 +32,18 @@ $apiConfig = new MaxApiConfig(
 $apiClient = new MaxApiClient($apiConfig);
 ```
 
+#### Добавление логгера исключений
+
+```php
+use MaxMessenger\Bot\MaxApiClient;
+use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
+
+$exceptionLogger = static function (string $method, HttpClientException $exception): void {
+    echo sprintf("%s [%s] %s\n", date('H:i:s'), $method, $exception->getMessage());
+};
+$apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
+```
+
 ### Создание бота
 
 #### Простая инициализация с токеном и секретом
@@ -54,6 +66,7 @@ $apiConfig = new MaxApiConfig(
     httpClient: new CurlHttpClient(),
     baseUrl: 'https://platform-api.max.ru'
 );
+$apiConfig->setRetryAttempts([1000, 2000, 4000, 8000, 15000]);
 $bot = new MaxBot($apiConfig, 'your-secret');
 ```
 

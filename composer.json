@@ -29,7 +29,7 @@
     "require": {
         "php": "^8.2",
         "ext-mbstring": "*",
-        "mj4444/simple-http-client": "^0.2.0"
+        "mj4444/simple-http-client": "~0.2.0"
     },
     "require-dev": {
         "codeception/codeception": "^5.3",

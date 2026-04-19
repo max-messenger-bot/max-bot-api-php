@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Models\Requests;
 
+use JsonException;
+use MaxMessenger\Bot\Exceptions\HttpClient\HttpRequest\JsonEncodeException;
 use MaxMessenger\Bot\Models\Enums\ButtonType;
 use MaxMessenger\Bot\Models\Enums\Intent;
 
 use function array_key_exists;
+use function is_array;
 
 /**
  * Callback-кнопка.
@@ -27,10 +30,10 @@ final class CallbackButton extends Button
 
     /**
      * @param non-empty-string|null $text Видимый текст кнопки (minLength: 1, maxLength: 128).
-     * @param non-empty-string|null $payload Токен кнопки (minLength: 1, maxLength: 1024).
+     * @param non-empty-string|array|null $payload Токен кнопки (minLength: 1, maxLength: 1024).
      * @param Intent|null $intent Намерение кнопки. Влияет на представление в клиентах.
      */
-    public function __construct(?string $text = null, ?string $payload = null, ?Intent $intent = null)
+    public function __construct(?string $text = null, string|array|null $payload = null, ?Intent $intent = null)
     {
         $this->required = ['payload'];
 
@@ -66,20 +69,20 @@ final class CallbackButton extends Button
 
     /**
      * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
-     * @param non-empty-string $payload Токен кнопки (minLength: 1, maxLength: 1024).
+     * @param non-empty-string|array $payload Токен кнопки (minLength: 1, maxLength: 1024).
      * @param Intent|null $intent Намерение кнопки. Влияет на представление в клиентах.
      */
-    public static function make(string $text, string $payload, ?Intent $intent = null): self
+    public static function make(string $text, string|array $payload, ?Intent $intent = null): self
     {
         return new self($text, $payload, $intent);
     }
 
     /**
      * @param non-empty-string|null $text Видимый текст кнопки (minLength: 1, maxLength: 128).
-     * @param non-empty-string|null $payload Токен кнопки (minLength: 1, maxLength: 1024).
+     * @param non-empty-string|array|null $payload Токен кнопки (minLength: 1, maxLength: 1024).
      * @param Intent|null $intent Намерение кнопки. Влияет на представление в клиентах.
      */
-    public static function new(?string $text = null, ?string $payload = null, ?Intent $intent = null): self
+    public static function new(?string $text = null, string|array|null $payload = null, ?Intent $intent = null): self
     {
         return new self($text, $payload, $intent);
     }
@@ -96,11 +99,20 @@ final class CallbackButton extends Button
     }
 
     /**
-     * @param non-empty-string $payload Токен кнопки (minLength: 1, maxLength: 1024).
+     * @param non-empty-string|array $payload Токен кнопки (minLength: 1, maxLength: 1024).
      * @return $this
      */
-    public function setPayload(string $payload): self
+    public function setPayload(string|array $payload): self
     {
+        if (is_array($payload)) {
+            try {
+                $payload = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+            } catch (JsonException $e) {
+                /** @psalm-var array $payload */
+                throw new JsonEncodeException($payload, $e);
+            }
+        }
+
         self::validateString('payload', $payload, minLength: 1, maxLength: 1024);
 
         $this->data['payload'] = $payload;

@@ -14,6 +14,10 @@ use SensitiveParameterValue;
 final class MaxApiConfig implements MaxApiConfigInterface
 {
     /**
+     * @var list<positive-int> Time before retry in milliseconds.
+     */
+    public array $retryAttempts = [1000, 2000, 4000, 8000, 15000];
+    /**
      * @var SensitiveParameterValue<non-empty-string>|null
      */
     private ?SensitiveParameterValue $accessToken = null;
@@ -31,17 +35,11 @@ final class MaxApiConfig implements MaxApiConfigInterface
         $this->setAccessToken($accessToken);
     }
 
-    /**
-     * @return SensitiveParameterValue<non-empty-string>|null
-     */
     public function getAccessToken(): ?SensitiveParameterValue
     {
         return $this->accessToken;
     }
 
-    /**
-     * @return non-empty-string
-     */
     public function getBaseUrl(): string
     {
         return $this->baseUrl;
@@ -60,11 +58,16 @@ final class MaxApiConfig implements MaxApiConfigInterface
         return null;
     }
 
+    public function getRetryAttempts(): array
+    {
+        return $this->retryAttempts;
+    }
+
     /**
-     * @param non-empty-string|null $accessToken
+     * @param non-empty-string|null $accessToken API Max access token.
      * @return $this
      */
-    public function setAccessToken(?string $accessToken): self
+    public function setAccessToken(#[SensitiveParameter] ?string $accessToken): self
     {
         $this->accessToken = $accessToken !== null ? new SensitiveParameterValue($accessToken) : null;
 
@@ -72,7 +75,7 @@ final class MaxApiConfig implements MaxApiConfigInterface
     }
 
     /**
-     * @param non-empty-string $baseUrl
+     * @param non-empty-string $baseUrl Base URL of API Max (example: `https://platform-api.max.ru`).
      * @return $this
      */
     public function setBaseUrl(string $baseUrl): self
@@ -83,11 +86,23 @@ final class MaxApiConfig implements MaxApiConfigInterface
     }
 
     /**
+     * @param HttpClientInterface|null $httpClient HTTP client for API requests.
      * @return $this
      */
     public function setHttpClient(?HttpClientInterface $httpClient): self
     {
         $this->httpClient = $httpClient;
+
+        return $this;
+    }
+
+    /**
+     * @param list<positive-int> $retryAttempts Time before retry in milliseconds.
+     * @return $this
+     */
+    public function setRetryAttempts(array $retryAttempts): self
+    {
+        $this->retryAttempts = $retryAttempts;
 
         return $this;
     }

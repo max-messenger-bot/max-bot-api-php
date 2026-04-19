@@ -15,13 +15,13 @@ use MaxMessenger\Bot\Exceptions\MaxApiException;
 final class JsonEncodeException extends MaxApiException
 {
     public function __construct(
-        public readonly object $data,
+        public readonly array|object $data,
         JsonException $previous
     ) {
         parent::__construct($previous->getMessage(), $previous->getCode(), $previous);
     }
 
-    public function getData(): object
+    public function getData(): array|object
     {
         return $this->data;
     }

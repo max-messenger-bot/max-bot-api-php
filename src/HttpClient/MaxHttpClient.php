@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\HttpClient;
 
+use Closure;
 use MaxMessenger\Bot\Contracts\MaxApiConfigInterface;
 use MaxMessenger\Bot\Contracts\MaxHttpClientInterface;
 use MaxMessenger\Bot\Exceptions\AccessTokenException;
 use MaxMessenger\Bot\Exceptions\HttpClient\HttpResponse\UnexpectedFormatException;
+use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\InternalHttpException;
+use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\TooManyRequestsException;
 use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
 use Mj4444\SimpleHttpClient\Contracts\HttpResponseInterface;
+use Mj4444\SimpleHttpClient\Exceptions\HttpClientErrorException;
+use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\InternalServerErrorException;
+use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\TooManyRequestsException as TooManyRequestsException2;
 use Mj4444\SimpleHttpClient\HttpRequest\HttpMethod;
 
 use function is_array;
@@ -19,9 +25,13 @@ use function is_array;
  */
 final readonly class MaxHttpClient implements MaxHttpClientInterface
 {
+    /**
+     * @param Closure(non-empty-string $method, HttpClientErrorException $exception): void|null $exceptionLogger
+     */
     public function __construct(
         private MaxApiConfigInterface $config,
         public ?string $version = null,
+        private ?Closure $exceptionLogger = null
     ) {
     }
 
@@ -57,23 +67,36 @@ final readonly class MaxHttpClient implements MaxHttpClientInterface
 
     public function withVersion(?string $version): static
     {
-        return new self($this->config, $version);
+        return new self($this->config, $version, $this->exceptionLogger);
     }
 
     private function doRequest(JsonRequest $request): array
     {
-        $response = $this->getHttpClient()->request($request);
+        $retryAttempts = $this->config->getRetryAttempts();
+        do {
+            try {
+                $response = $this->getHttpClient()->request($request);
 
-        $response->checkHttpCode();
+                $response->checkHttpCode();
 
-        $responseData = $response->getData();
+                $responseData = $response->getData();
 
-        if (!is_array($responseData) || empty($responseData)) {
-            /** @psalm-var HttpResponseInterface $response Psalm bug */
-            throw new UnexpectedFormatException($response);
-        }
+                if (!is_array($responseData) || empty($responseData)) {
+                    /** @psalm-var HttpResponseInterface $response Psalm bug */
+                    throw new UnexpectedFormatException($response);
+                }
 
-        return $responseData;
+                return $responseData;
+            } catch (HttpClientErrorException|TooManyRequestsException|TooManyRequestsException2|InternalHttpException|InternalServerErrorException $e) { // phpcs:ignore
+                if (!$retryAttempts) {
+                    throw $e;
+                }
+                if ($this->exceptionLogger !== null) {
+                    ($this->exceptionLogger)(__METHOD__, $e);
+                }
+                usleep(array_shift($retryAttempts) * 1000);
+            }
+        } while (true);
     }
 
     /**

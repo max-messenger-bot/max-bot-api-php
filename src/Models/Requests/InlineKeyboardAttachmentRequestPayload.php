@@ -75,10 +75,10 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
      * Добавить Callback-кнопку.
      *
      * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
-     * @param non-empty-string $payload Токен кнопки (minLength: 1, maxLength: 1024).
+     * @param non-empty-string|array $payload Токен кнопки (minLength: 1, maxLength: 1024).
      * @param Intent|null $intent Намерение кнопки. Влияет на представление в клиентах.
      */
-    public function addCallbackButton(string $text, string $payload, ?Intent $intent = null): self
+    public function addCallbackButton(string $text, string|array $payload, ?Intent $intent = null): self
     {
         $this->addButton(CallbackButton::make($text, $payload, $intent));
 

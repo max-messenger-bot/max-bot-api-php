@@ -121,6 +121,8 @@ $client->sendMessageToUser($userId, $message);
 Или через fluent-интерфейс:
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->setText('Привет!')
     ->setNotify(false); // Без уведомления
@@ -149,6 +151,9 @@ $client->sendMessageToUser($userId, $message);
 Многострочный моноширинный блок:
 
 ```php
+use MaxMessenger\Bot\Models\Enums\TextFormat;
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::make(
     "```\nМногострочный\nкод\n```",
     format: TextFormat::Markdown
@@ -159,6 +164,9 @@ $client->sendMessageToUser($userId, $message);
 Ссылки в markdown:
 
 ```php
+use MaxMessenger\Bot\Models\Enums\TextFormat;
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->setText("[Документация](https://dev.max.ru/docs-api)\n[Пользователь](max://user/12345678)")
     ->setFormat(TextFormat::Markdown);
@@ -189,6 +197,8 @@ $client->sendMessageToUser($userId, $message);
 Можно передать объект `Message` или `MessageBody`:
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->setText('Это ответ')
     ->setReplyLink($origMessage); // объект Message или MessageBody
@@ -199,6 +209,8 @@ $message = NewMessageBody::new()
 Для пересылки используйте `setForwardLink()`:
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->setText('Пересланное сообщение')
     ->setForwardLink($messageId);
@@ -218,6 +230,8 @@ $client->sendMessageToChat($chatId, $message);
 **Из внешнего URL:**
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->setText('Смотри!')
     ->addUrlImageAttachment('https://example.com/image.jpg');
@@ -226,13 +240,17 @@ $message = NewMessageBody::new()
 **Из ранее загруженного вложения (по токену):**
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
-    ->addImageAttachment($token);
+    ->addImageAttachment($imageToken);
 ```
 
 ### Видео
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->addVideoAttachment($videoToken);
 ```
@@ -242,6 +260,8 @@ $message = NewMessageBody::new()
 Аудио должно быть единственным вложением:
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->addAudioAttachment($audioToken);
 ```
@@ -251,6 +271,8 @@ $message = NewMessageBody::new()
 Файл должен быть единственным вложением:
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->addFileAttachment($fileToken);
 ```
@@ -260,6 +282,8 @@ $message = NewMessageBody::new()
 Стикер должен быть единственным вложением:
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->addStickerAttachment($stickerCode);
 ```
@@ -267,6 +291,8 @@ $message = NewMessageBody::new()
 ### Геолокация
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->addLocationAttachment(55.7558, 37.6173); // широта, долгота
 ```
@@ -274,6 +300,8 @@ $message = NewMessageBody::new()
 ### Контакт
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 // По ID контакта
 $message = NewMessageBody::new()
     ->addContactAttachment(contactId: 12345);
@@ -286,6 +314,8 @@ $message = NewMessageBody::new()
 ### Предпросмотр ссылки
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->addShareAttachment('https://example.com');
 ```
@@ -366,6 +396,9 @@ $client->sendMessageToUser($userId, $message);
 **Персональная клавиатура** (отображается только для указанного пользователя в чате):
 
 ```php
+use MaxMessenger\Bot\Models\Requests\ReplyKeyboardAttachmentRequest;
+use MaxMessenger\Bot\Models\Requests\SendMessageButton;
+
 $replyKeyboard = ReplyKeyboardAttachmentRequest::new(
     buttons: [[SendMessageButton::make('Ответить', 'reply')]],
     direct: true,
@@ -417,6 +450,8 @@ $keyboard->addOpenAppButton(
 События `MessageCreatedEvent` и `MessageEditedEvent` имеют метод `reply()`:
 
 ```php
+use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+
 $bot->onMessageCreated(function (MessageCreatedEvent $event) {
     // Простой ответ
     $event->reply('Сообщение получено');
@@ -429,6 +464,8 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event) {
 Для событий с callback (`MessageCallbackEvent`) доступен метод `answer()`:
 
 ```php
+use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
+
 $bot->onMessageCallback(function (MessageCallbackEvent $event) {
     // Ответ с обновлённым сообщением и/или уведомлением
     $event->answer('Текст ответа');
@@ -472,6 +509,8 @@ $event->forwardToUser($targetUserId);
 По умолчанию сообщение отправляет уведомление участникам. Для отправки без уведомления:
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
 $message = NewMessageBody::new()
     ->setText('Тихое сообщение')
     ->setNotify(false);
@@ -494,6 +533,8 @@ $client->sendAction($chatId, SenderAction::SendingFile);
 **Пометка сообщений как прочитанных:**
 
 ```php
+use MaxMessenger\Bot\Models\Enums\SenderAction;
+
 $client->sendAction($chatId, SenderAction::MarkSeen);
 ```
 
@@ -501,10 +542,12 @@ $client->sendAction($chatId, SenderAction::MarkSeen);
 что бот прочитал его сообщение:
 
 ```php
+use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\Models\Enums\SenderAction;
+
 $bot->onMessageCreated(function (MessageCreatedEvent $event) {
     // Помечаем сообщение как прочитанное
-    $chatId = $event->getMessage()->getRecipient()->getChatId();
-    $event->apiClient->sendAction($chatId, SenderAction::MarkSeen);
+    $event->sendAction(SenderAction::MarkSeen);
     
     // Затем отвечаем
     $event->reply('Сообщение прочитано');
@@ -514,6 +557,7 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event) {
 Или через объект:
 
 ```php
+use MaxMessenger\Bot\Models\Enums\SenderAction;
 use MaxMessenger\Bot\Models\Requests\ActionRequestBody;
 
 $client->sendAction($chatId, new ActionRequestBody(SenderAction::TypingOn));
@@ -525,8 +569,8 @@ $client->sendAction($chatId, new ActionRequestBody(SenderAction::MarkSeen));
 Метод `sendMessage()` автоматически повторяет запрос при ошибке неготовности вложения (`attachment.not.ready`):
 
 ```php
-// Настройка повторных попыток (задержки в секундах)
-$client->retryAttempts = [1, 2, 4, 8, 15];
+// Настройка повторных попыток (задержки в миллисекундах)
+$client->retryAttempts = [1000, 2000, 4000, 8000, 15000];
 ```
 
 Для отключения повторных попыток:
@@ -534,6 +578,8 @@ $client->retryAttempts = [1, 2, 4, 8, 15];
 ```php
 $client->retryAttempts = [];
 ```
+
+Значение по умолчанию берётся из объекта конфигурации (`MaxApiConfigInterface::getRetryAttempts()`).
 
 При других ошибках выбрасываются исключения:
 

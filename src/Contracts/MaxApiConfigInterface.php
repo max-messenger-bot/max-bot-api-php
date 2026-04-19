@@ -33,4 +33,9 @@ interface MaxApiConfigInterface
      * @return MaxHttpClientInterface|null Max HTTP client for API requests.
      */
     public function getMaxHttpClient(): ?MaxHttpClientInterface;
+
+    /**
+     * @return list<positive-int> Time before retry in milliseconds.
+     */
+    public function getRetryAttempts(): array;
 }

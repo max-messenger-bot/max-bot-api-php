@@ -83,7 +83,7 @@ final class MaxBot
         #[SensitiveParameter]
         string|MaxApiConfigInterface|MaxApiClient $accessTokenOrConfig,
         #[SensitiveParameter]
-        ?string $secret = null,
+        ?string $secret = null
     ) {
         $this->apiClient = $accessTokenOrConfig instanceof MaxApiClient
             ? $accessTokenOrConfig

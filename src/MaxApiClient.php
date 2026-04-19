@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot;
 
 use BackedEnum;
+use Closure;
 use MaxMessenger\Bot\Contracts\MaxApiConfigInterface;
 use MaxMessenger\Bot\Contracts\MaxHttpClientInterface;
 use MaxMessenger\Bot\Exceptions\RequiredArgumentsException;
@@ -41,6 +42,7 @@ use MaxMessenger\Bot\Models\Responses\SimpleQueryResult;
 use MaxMessenger\Bot\Models\Responses\UpdateList;
 use MaxMessenger\Bot\Models\Responses\UploadEndpoint;
 use MaxMessenger\Bot\Models\Responses\VideoAttachmentDetails;
+use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
 use SensitiveParameter;
 
 use function is_array;
@@ -54,23 +56,28 @@ final class MaxApiClient
     use ValidateTrait;
 
     /**
-     * @var list<positive-int>
+     * @var list<positive-int> Time before retry in milliseconds.
      */
     public array $retryAttempts = [1, 2, 4, 8, 15];
     private readonly MaxHttpClientInterface $httpClient;
 
     /**
      * @param non-empty-string|MaxApiConfigInterface $accessTokenOrConfig
+     * @param Closure(non-empty-string $method, HttpClientException $exception): void|null $exceptionLogger
      */
     public function __construct(
         #[SensitiveParameter]
-        string|MaxApiConfigInterface $accessTokenOrConfig
+        string|MaxApiConfigInterface $accessTokenOrConfig,
+        private readonly ?Closure $exceptionLogger = null
     ) {
         $config = is_string($accessTokenOrConfig)
             ? new MaxApiConfig($accessTokenOrConfig)
             : $accessTokenOrConfig;
 
-        $this->httpClient = $config->getMaxHttpClient() ?? new MaxHttpClient($config);
+        $this->retryAttempts = $config->getRetryAttempts();
+
+        $this->httpClient = $config->getMaxHttpClient()
+            ?? new MaxHttpClient($config, null, $this->exceptionLogger);
     }
 
     /**
@@ -700,7 +707,10 @@ final class MaxApiClient
                 if (!$retryAttempts || !$e->isAttachmentNotReady()) {
                     throw $e;
                 }
-                sleep(array_shift($retryAttempts));
+                if ($this->exceptionLogger !== null) {
+                    ($this->exceptionLogger)(__METHOD__, $e);
+                }
+                usleep(array_shift($retryAttempts) * 1000);
             }
         } while (true);
     }

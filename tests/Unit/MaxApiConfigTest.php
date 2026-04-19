@@ -14,6 +14,7 @@ final class MaxApiConfigTest extends Unit
 {
     private const TEST_ACCESS_TOKEN = 'test-token-12345';
     private const TEST_BASE_URL = 'https://custom-api.example.com';
+    private const TEST_RETRY_ATTEMPTS = [333, 444, 555];
 
     public function testConstructWithAccessToken(): void
     {
@@ -69,6 +70,15 @@ final class MaxApiConfigTest extends Unit
         self::assertSame($httpClient, $config->getHttpClient());
     }
 
+    public function testGetRetryAttempts(): void
+    {
+        $config = new MaxApiConfig();
+
+        $config->retryAttempts = self::TEST_RETRY_ATTEMPTS;
+
+        self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->getRetryAttempts());
+    }
+
     public function testSetAccessToken(): void
     {
         $config = new MaxApiConfig();
@@ -122,5 +132,16 @@ final class MaxApiConfigTest extends Unit
         $config->setHttpClient(null);
 
         self::assertNull($config->httpClient);
+    }
+
+    public function testSetRetryAttempts(): void
+    {
+        $config = new MaxApiConfig();
+
+        $result = $config->setRetryAttempts(self::TEST_RETRY_ATTEMPTS);
+
+        self::assertSame($config, $result);
+        self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->retryAttempts);
+        self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->getRetryAttempts());
     }
 }

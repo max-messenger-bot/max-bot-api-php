@@ -10,6 +10,7 @@ use DateTimeImmutable;
 use MaxMessenger\Bot\Exceptions\MaxBot\Events\EventException;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\HandlerListType;
+use MaxMessenger\Bot\Models\Enums\SenderAction;
 use MaxMessenger\Bot\Models\Responses\BotAddedToChatUpdate;
 use MaxMessenger\Bot\Models\Responses\BotRemovedFromChatUpdate;
 use MaxMessenger\Bot\Models\Responses\BotStartedUpdate;
@@ -82,6 +83,11 @@ abstract class BaseEvent
     public function exit(): never
     {
         throw new EventException();
+    }
+
+    public function getChatId(): ?int
+    {
+        return null;
     }
 
     /**
@@ -173,6 +179,19 @@ abstract class BaseEvent
         $className = $classMap[$update::class] ?? UnknownEvent::class;
 
         return new $className($update, $maxApiClient, $exceptionHandlers, $userData);
+    }
+
+    public function sendAction(SenderAction $action): bool
+    {
+        $chatId = $this->getChatId();
+
+        if ($chatId === null) {
+            return false;
+        }
+
+        $this->apiClient->sendAction($chatId, $action);
+
+        return true;
     }
 
     /**

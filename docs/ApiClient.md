@@ -22,6 +22,7 @@
 ```php
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxApiConfig;
+use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
 
 // Простая инициализация с токеном
 $client = new MaxApiClient('your-access-token');
@@ -32,6 +33,12 @@ $config = new MaxApiConfig(
     baseUrl: 'https://platform-api.max.ru'
 );
 $client = new MaxApiClient($config);
+
+// Добавление логгера исключений
+$exceptionLogger = static function (string $method, HttpClientException $exception): void {
+    echo sprintf("%s [%s] %s\n", date('H:i:s'), $method, $exception->getMessage());
+};
+$apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 ```
 
 ### Особенности использования
@@ -41,6 +48,7 @@ $client = new MaxApiClient($config);
 - Модели ответов возвращаются из `MaxMessenger\Bot\Models\Responses\`
 - HTTP-клиент доступен через `$client->getHttpClient()` для выполнения произвольных запросов
 - Метод `sendMessage()` автоматически обрабатывает ошибки готовности вложений с повторными попытками
+- Все методы автоматически делают повторные попытки при сетевых ошибках
 
 ## Методы API
 

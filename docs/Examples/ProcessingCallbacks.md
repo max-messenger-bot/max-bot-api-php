@@ -119,6 +119,14 @@ $callbackHandler->onAction('profile', function (MessageCallbackEvent $event): bo
 Использование CallbackJsonHandler для сложных данных:
 
 ```php
+use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+
+$message = new NewMessageBody('Карточка товара');
+$message->addInlineKeyboard()
+    ->addCallbackButton('Добавить в корзину', {'action' => 'buy', 'productId' => 123, 'quantity' => 2});
+```
+
+```php
 use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
 
 $callbackHandler = $bot->addCallbackJsonHandler(actionKey: 'action');
@@ -260,10 +268,10 @@ $bot = new MaxBot('your-access-token', 'your-secret');
 $bot->onBotStarted(function (BotStartedEvent $event): bool {
     $message = new NewMessageBody('Привет! Я бот с интерактивными кнопками.\n\nВыберите действие:');
     $message->addInlineKeyboard()
-        ->addCallbackButton('📊 Статистика', 'action:stats')
-        ->addCallbackButton('⚙️ Настройки', 'action:settings')
+        ->addCallbackButton('📊 Статистика', 'stats')
+        ->addCallbackButton('⚙️ Настройки', 'settings')
         ->newRow()
-        ->addCallbackButton('❓ Помощь', 'action:help');
+        ->addCallbackButton('❓ Помощь', 'help');
     
     $event->sendToUser($message);
 
@@ -283,8 +291,8 @@ $callbackHandler->onAction('stats', function (MessageCallbackEvent $event): bool
         format: TextFormat::Markdown
     );
     $statsMessage->addInlineKeyboard()
-        ->addCallbackButton('🔄 Обновить', 'action:stats')
-        ->addCallbackButton('🏠 Назад', 'action:home');
+        ->addCallbackButton('🔄 Обновить', 'stats')
+        ->addCallbackButton('🏠 Назад', 'home');
     
     $event->answer($statsMessage);
 
@@ -301,8 +309,8 @@ $callbackHandler->onAction('settings', function (MessageCallbackEvent $event): b
         format: TextFormat::Markdown
     );
     $settingsMessage->addInlineKeyboard()
-        ->addCallbackButton('🔔 Уведомления', 'action:toggle_notifications')
-        ->addCallbackButton('🏠 Назад', 'action:home');
+        ->addCallbackButton('🔔 Уведомления', 'toggle_notifications')
+        ->addCallbackButton('🏠 Назад', 'home');
     
     $event->answer($settingsMessage);
 
@@ -329,10 +337,10 @@ $callbackHandler->onAction('help', function (MessageCallbackEvent $event): bool 
 $callbackHandler->onAction('home', function (MessageCallbackEvent $event): bool {
     $homeMessage = new NewMessageBody('🏠 **Главное меню:**\n\nВыберите действие:', format: TextFormat::Markdown);
     $homeMessage->addInlineKeyboard()
-        ->addCallbackButton('📊 Статистика', 'action:stats')
-        ->addCallbackButton('⚙️ Настройки', 'action:settings')
+        ->addCallbackButton('📊 Статистика', 'stats')
+        ->addCallbackButton('⚙️ Настройки', 'settings')
         ->newRow()
-        ->addCallbackButton('❓ Помощь', 'action:help');
+        ->addCallbackButton('❓ Помощь', 'help');
     
     $event->answer($homeMessage);
 
