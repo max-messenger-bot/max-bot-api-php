@@ -9,7 +9,7 @@
         "php"
     ],
     "type": "library",
-    "license": "BSD-3-Clause",
+    "license": "MIT",
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
@@ -18,7 +18,7 @@
     },
     "authors": [
         {
-            "name": "Eugene",
+            "name": "Eugene Makhaev",
             "email": "mj4444@mail.ru"
         }
     ],

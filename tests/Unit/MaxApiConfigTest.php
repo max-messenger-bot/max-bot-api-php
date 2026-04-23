@@ -15,6 +15,7 @@ final class MaxApiConfigTest extends Unit
     private const TEST_ACCESS_TOKEN = 'test-token-12345';
     private const TEST_BASE_URL = 'https://custom-api.example.com';
     private const TEST_RETRY_ATTEMPTS = [333, 444, 555];
+    private const TEST_TIMEOUT = 1234;
 
     public function testConstructWithAccessToken(): void
     {
@@ -52,6 +53,15 @@ final class MaxApiConfigTest extends Unit
         self::assertSame(self::TEST_BASE_URL, $config->getBaseUrl());
     }
 
+    public function testGetConnectTimeout(): void
+    {
+        $config = new MaxApiConfig();
+
+        $config->connectTimeout = self::TEST_TIMEOUT;
+
+        self::assertSame(self::TEST_TIMEOUT, $config->getConnectTimeout());
+    }
+
     public function testGetHttpClientReturnsDefaultWhenNotSet(): void
     {
         $config = new MaxApiConfig();
@@ -77,6 +87,15 @@ final class MaxApiConfigTest extends Unit
         $config->retryAttempts = self::TEST_RETRY_ATTEMPTS;
 
         self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->getRetryAttempts());
+    }
+
+    public function testGetTimeout(): void
+    {
+        $config = new MaxApiConfig();
+
+        $config->timeout = self::TEST_TIMEOUT;
+
+        self::assertSame(self::TEST_TIMEOUT, $config->getTimeout());
     }
 
     public function testSetAccessToken(): void
@@ -112,6 +131,17 @@ final class MaxApiConfigTest extends Unit
         self::assertSame(self::TEST_BASE_URL, $config->getBaseUrl());
     }
 
+    public function testSetConnectTimeout(): void
+    {
+        $config = new MaxApiConfig();
+
+        $result = $config->setConnectTimeout(self::TEST_TIMEOUT);
+
+        self::assertSame($config, $result);
+        self::assertSame(self::TEST_TIMEOUT, $config->connectTimeout);
+        self::assertSame(self::TEST_TIMEOUT, $config->getConnectTimeout());
+    }
+
     public function testSetHttpClient(): void
     {
         $config = new MaxApiConfig();
@@ -143,5 +173,16 @@ final class MaxApiConfigTest extends Unit
         self::assertSame($config, $result);
         self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->retryAttempts);
         self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->getRetryAttempts());
+    }
+
+    public function testSetTimeout(): void
+    {
+        $config = new MaxApiConfig();
+
+        $result = $config->setTimeout(self::TEST_TIMEOUT);
+
+        self::assertSame($config, $result);
+        self::assertSame(self::TEST_TIMEOUT, $config->timeout);
+        self::assertSame(self::TEST_TIMEOUT, $config->getTimeout());
     }
 }

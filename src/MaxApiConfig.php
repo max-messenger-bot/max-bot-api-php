@@ -14,9 +14,19 @@ use SensitiveParameterValue;
 final class MaxApiConfig implements MaxApiConfigInterface
 {
     /**
+     * @var non-negative-int The number of **milliseconds** to wait while trying to connect.
+     *     Use `0` to wait indefinitely.
+     */
+    public int $connectTimeout = 5000;
+    /**
      * @var list<positive-int> Time before retry in milliseconds.
      */
     public array $retryAttempts = [1000, 2000, 4000, 8000, 15000];
+    /**
+     * @var non-negative-int The maximum number of **milliseconds** that a request can run.
+     *     Use `0` to wait indefinitely.
+     */
+    public int $timeout = 1000;
     /**
      * @var SensitiveParameterValue<non-empty-string>|null
      */
@@ -45,11 +55,20 @@ final class MaxApiConfig implements MaxApiConfigInterface
         return $this->baseUrl;
     }
 
+    /**
+     * @return non-negative-int The number of **milliseconds** to wait while trying to connect.
+     *     Use `0` to wait indefinitely.
+     */
+    public function getConnectTimeout(): int
+    {
+        return $this->connectTimeout;
+    }
+
     public function getHttpClient(): HttpClientInterface
     {
         return $this->httpClient ??= (new CurlHttpClient())
-            ->setConnectTimeout(5000)
-            ->setTimeout(1000)
+            ->setConnectTimeout($this->connectTimeout)
+            ->setTimeout($this->timeout)
             ->setUserAgent('mj4444-MaxMessenger-Bot');
     }
 
@@ -61,6 +80,15 @@ final class MaxApiConfig implements MaxApiConfigInterface
     public function getRetryAttempts(): array
     {
         return $this->retryAttempts;
+    }
+
+    /**
+     * @return non-negative-int The maximum number of **milliseconds** that a request can run.
+     *     Use `0` to wait indefinitely.
+     */
+    public function getTimeout(): int
+    {
+        return $this->timeout;
     }
 
     /**
@@ -86,6 +114,20 @@ final class MaxApiConfig implements MaxApiConfigInterface
     }
 
     /**
+     * Sets the connection timeout.
+     *
+     * @param non-negative-int $connectTimeout The number of **milliseconds** to wait while trying to connect.
+     *     Use `0` to wait indefinitely.
+     * @return $this
+     */
+    public function setConnectTimeout(int $connectTimeout): self
+    {
+        $this->connectTimeout = $connectTimeout;
+
+        return $this;
+    }
+
+    /**
      * @param HttpClientInterface|null $httpClient HTTP client for API requests.
      * @return $this
      */
@@ -103,6 +145,20 @@ final class MaxApiConfig implements MaxApiConfigInterface
     public function setRetryAttempts(array $retryAttempts): self
     {
         $this->retryAttempts = $retryAttempts;
+
+        return $this;
+    }
+
+    /**
+     * Sets the request timeout.
+     *
+     * @param non-negative-int $timeout The maximum number of **milliseconds** that a request can run.
+     *     Use `0` to wait indefinitely.
+     * @return $this
+     */
+    public function setTimeout(int $timeout): self
+    {
+        $this->timeout = $timeout;
 
         return $this;
     }

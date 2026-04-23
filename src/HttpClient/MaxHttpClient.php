@@ -14,6 +14,7 @@ use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\TooManyRequestsExce
 use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
 use Mj4444\SimpleHttpClient\Contracts\HttpResponseInterface;
 use Mj4444\SimpleHttpClient\Exceptions\HttpClientErrorException;
+use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
 use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\InternalServerErrorException;
 use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\TooManyRequestsException as TooManyRequestsException2;
 use Mj4444\SimpleHttpClient\HttpRequest\HttpMethod;
@@ -26,7 +27,7 @@ use function is_array;
 final readonly class MaxHttpClient implements MaxHttpClientInterface
 {
     /**
-     * @param Closure(non-empty-string $method, HttpClientErrorException $exception): void|null $exceptionLogger
+     * @param Closure(non-empty-string $method, HttpClientException $exception): void|null $exceptionLogger
      */
     public function __construct(
         private MaxApiConfigInterface $config,
