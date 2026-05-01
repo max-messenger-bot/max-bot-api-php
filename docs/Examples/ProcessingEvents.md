@@ -333,6 +333,65 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 });
 ```
 
+### Пересылка сообщения пользователю
+
+```php
+use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+
+$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+    $text = $event->getMessage()->getText();
+
+    // Если сообщение содержит важный контент, пересылаем его автору в диалог
+    if (str_contains($text, '!важно')) {
+        $event->forwardToUser($event->getUserId());
+    }
+
+    return true;
+});
+```
+
+### Ответ пользователю в диалоге
+
+```php
+use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+
+$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+    $text = $event->getMessage()->getText();
+
+    // Отвечаем пользователю лично в диалоге
+    $event->replyToUser('Вы написали в чате: ' . $text);
+
+    // Можно также переслать оригинальное сообщение
+    $event->replyToUser('Дублирую ваше сообщение:', forwardOrigMessage: true);
+
+    return true;
+});
+```
+
+### Проверка типа чата
+
+```php
+use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+
+$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+    $text = $event->getMessage()->getText();
+
+    // Разная логика для разных типов чатов
+    if ($event->isDialog()) {
+        // Обработка личных сообщений
+        $event->reply('Личное сообщение: ' . $text);
+    } elseif ($event->isChat()) {
+        // Обработка сообщений из группы
+        $event->reply('Сообщение в группе: ' . $text);
+    } elseif ($event->isChannel()) {
+        // Обработка сообщений из канала
+        error_log('Новое сообщение в канале: ' . $text);
+    }
+
+    return true;
+});
+```
+
 ### Отправка сообщения пользователю в диалог
 
 ```php
@@ -343,6 +402,21 @@ $bot->onUserAddedToChat(function (UserAddedToChatEvent $event): bool {
     
     // Отправляем приветственное сообщение пользователю в диалог
     $event->sendToUser('Добро пожаловать в чат, ' . $user->getFirstName() . '!');
+
+    return true;
+});
+```
+
+### Отправка сообщения в чат события
+
+```php
+use MaxMessenger\Bot\MaxBot\Events\ChatTitleChangedEvent;
+
+$bot->onChatTitleChanged(function (ChatTitleChangedEvent $event): bool {
+    $title = $event->getTitle();
+
+    // Отправляем сообщение в чат, где произошло событие
+    $event->sendToChat('Заголовок чата изменён на: ' . $title);
 
     return true;
 });
@@ -362,6 +436,32 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
     }
 
     return true;
+});
+```
+
+### Обработка контакта пользователя
+
+```php
+use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\Models\Responses\ContactAttachment;
+
+$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+    if ($event->isSelfContact()) {
+        // Пользователь поделился своим реальным номером
+        /** @var ContactAttachment $contact */
+        $contact = $event->getMessage()->getBody()->getAttachments()[0];
+        $phones = $contact->getPayload()->getPhones();
+        if (count($phones) === 1) {
+            // Обрабатываем номер телефона
+            $phone = reset($phones);
+        } else {
+            // Номеров нет, либо их несколько = ошибка в логике?
+        }
+
+        return true;
+    }
+
+    return false;
 });
 ```
 

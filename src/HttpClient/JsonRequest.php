@@ -95,7 +95,7 @@ final readonly class JsonRequest implements HttpRequestInterface
         return $url;
     }
 
-    public function isFollowLocation(): ?bool
+    public function isFollowLocation(): false
     {
         return false;
     }
@@ -105,7 +105,7 @@ final readonly class JsonRequest implements HttpRequestInterface
         return $this->isPost;
     }
 
-    public function isResponseHeadersRequired(): ?bool
+    public function isResponseHeadersRequired(): false
     {
         return false;
     }

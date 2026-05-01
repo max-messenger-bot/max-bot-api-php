@@ -62,7 +62,7 @@
 - ❌ [**HighlightedMarkup**](../../src/Models/Responses/HighlightedMarkup.php) — Представляет выделенную часть текста.
 - ❌ [**Image**](../../src/Models/Responses/Image.php) — Общая схема, описывающая объект изображения.
 - ❌ [**InlineKeyboardAttachment**](../../src/Models/Responses/InlineKeyboardAttachment.php) — Кнопки в сообщении.
-- ❌ [**Keyboard**](../../src/Models/Responses/Keyboard.php) — Клавиатура - это двумерный массив кнопок.
+- ❌ [**Keyboard**](../../src/Models/Responses/Keyboard.php) — Клавиатура — это двумерный массив кнопок.
 - ❌ [**LinkButton**](../../src/Models/Responses/LinkButton.php) — Кнопка-ссылка.
 - ❌ [**LinkedMessage**](../../src/Models/Responses/LinkedMessage.php) — Информация о связанном сообщении.
 - ❌ [**LinkMarkup**](../../src/Models/Responses/LinkMarkup.php) — Представляет ссылку в тексте.

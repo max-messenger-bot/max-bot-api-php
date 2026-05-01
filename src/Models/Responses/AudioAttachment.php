@@ -16,9 +16,6 @@ class AudioAttachment extends Attachment
     protected readonly array $data;
     private MediaAttachmentPayload|false $payload = false;
 
-    /**
-     * @return MediaAttachmentPayload
-     */
     public function getPayload(): MediaAttachmentPayload
     {
         return $this->payload === false

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\MaxBot\Events;
 
+use MaxMessenger\Bot\Models\Responses\ContactAttachment;
 use MaxMessenger\Bot\Models\Responses\Message;
 use MaxMessenger\Bot\Models\Responses\MessageCreatedUpdate;
+
+use function count;
 
 /**
  * @property-read MessageCreatedUpdate $update
@@ -28,5 +31,34 @@ final class MessageCreatedEvent extends BaseEvent
     public function getUserLocale(): ?string
     {
         return $this->update->getUserLocale();
+    }
+
+    /**
+     * Проверяет, содержит ли сообщение реальные контактные данные отправителя.
+     *
+     * Позволяет проверить, что пользователь поделился номером телефона, привязанным к его аккаунту в МАКС.
+     *
+     * Если проверка прошла успешно, Вы можете получить номер телефона следующим способом:
+     * ```
+     * /** @var ContactAttachment $contact *\/
+     * $contact = $event->getMessage()->getBody()->getAttachments()[0];
+     * $phones = $contact->getPayload()->getPhones();
+     * ```
+     */
+    public function isSelfContact(): bool
+    {
+        $attachments = $this->getMessage()->getBody()->getAttachments();
+
+        if ($attachments !== null && count($attachments) === 1) {
+            $attachment = $attachments[0];
+
+            if ($attachment instanceof ContactAttachment) {
+                $payload = $attachment->getPayload();
+
+                return $this->apiClient->validateContactAttachmentHash($payload);
+            }
+        }
+
+        return false;
     }
 }

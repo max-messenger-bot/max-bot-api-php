@@ -38,9 +38,6 @@ class VideoAttachment extends Attachment
         return $this->data['height'] ?? null;
     }
 
-    /**
-     * @return MediaAttachmentPayload
-     */
     public function getPayload(): MediaAttachmentPayload
     {
         return $this->payload === false

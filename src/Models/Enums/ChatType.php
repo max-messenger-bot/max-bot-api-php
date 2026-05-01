@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Enums;
 
 /**
- * Тип чата: диалог, чат, канал.
+ * Тип чата.
+ *
+ * Возможные значения:
+ * - `chat` — Групповой чат.
+ * - `channel` — Канал.
+ * - `dialog` — Диалог.
  */
 enum ChatType: string
 {

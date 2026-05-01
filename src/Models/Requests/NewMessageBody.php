@@ -263,9 +263,6 @@ final class NewMessageBody extends BaseRequestModel
         return $this->data['link'] ?? null;
     }
 
-    /**
-     * @return bool
-     */
     public function getNotify(): bool
     {
         return $this->data['notify'] ?? true;

@@ -13,12 +13,12 @@ class LinkedMessage extends BaseResponseModel
      *     type: string,
      *     sender?: array,
      *     chat_id?: int,
-     *     message: array
+     *     message?: array
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
-    private MessageBody|false $message = false;
+    private MessageBody|false|null $message = false;
     private User|false|null $sender = false;
 
     /**
@@ -30,12 +30,12 @@ class LinkedMessage extends BaseResponseModel
     }
 
     /**
-     * @return MessageBody
+     * @return MessageBody|null
      */
-    public function getMessage(): MessageBody
+    public function getMessage(): ?MessageBody
     {
         return $this->message === false
-            ? $this->message = MessageBody::newFromData($this->data['message'])
+            ? $this->message = MessageBody::newFromNullableData($this->data['message'] ?? null)
             : $this->message;
     }
 

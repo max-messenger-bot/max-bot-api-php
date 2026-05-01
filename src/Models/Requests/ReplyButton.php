@@ -57,9 +57,6 @@ abstract class ReplyButton extends BaseRequestModel
         return $this->data['text'];
     }
 
-    /**
-     * @return ReplyButtonType
-     */
     public function getType(): ReplyButtonType
     {
         return $this->data['type'];

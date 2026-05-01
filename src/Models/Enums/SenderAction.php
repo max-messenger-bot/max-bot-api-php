@@ -8,12 +8,12 @@ namespace MaxMessenger\Bot\Models\Enums;
  * Действие, отправляемое участникам чата.
  *
  * Возможные значения:
- * - `typing_on` — Бот набирает сообщение
- * - `sending_photo` — Бот отправляет фото
- * - `sending_video` — Бот отправляет видео
- * - `sending_audio` — Бот отправляет аудиофайл
- * - `sending_file` — Бот отправляет файл
- * - `mark_seen` — Бот помечает сообщения как прочитанные
+ * - `typing_on` — Бот набирает сообщение.
+ * - `sending_photo` — Бот отправляет фото.
+ * - `sending_video` — Бот отправляет видео.
+ * - `sending_audio` — Бот отправляет аудиофайл.
+ * - `sending_file` — Бот отправляет файл.
+ * - `mark_seen` — Бот помечает сообщения как прочитанные.
  */
 enum SenderAction: string
 {

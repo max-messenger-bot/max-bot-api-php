@@ -34,9 +34,6 @@ class ShareAttachment extends Attachment
         return $this->data['image_url'] ?? null;
     }
 
-    /**
-     * @return ShareAttachmentPayload
-     */
     public function getPayload(): ShareAttachmentPayload
     {
         return $this->payload === false

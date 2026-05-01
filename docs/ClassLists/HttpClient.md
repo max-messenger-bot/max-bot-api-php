@@ -8,19 +8,26 @@
 - [**JsonRequest**](../../src/HttpClient/JsonRequest.php) — JSON HTTP-запрос.
 - [**JsonResponse**](../../src/HttpClient/JsonResponse.php) — JSON HTTP-ответ.
 - [**MaxHttpClient**](../../src/HttpClient/MaxHttpClient.php) — HTTP-клиент для API Max.
-- [**MaxUploadHttpClient**](../../src/HttpClient/MaxUploadHttpClient.php) — HTTP-клиент для загрузки файлов.
 
-### Загрузка файлов
+## Интерфейсы
 
-- [**ResumableInfoRequest**](../../src/HttpClient/Upload/ResumableInfoRequest.php) — HTTP-запрос для получения информации о загружаемом файле.
-- [**ResumableUploadRequest**](../../src/HttpClient/Upload/ResumableUploadRequest.php) — HTTP-запрос для возобновляемой загрузки файла.
-- [**SimpleUploadRequest**](../../src/HttpClient/Upload/SimpleUploadRequest.php) — HTTP-запрос для простой загрузки файла.
+- [**MaxHttpClientInterface**](../../src/Contracts/MaxHttpClientInterface.php) — Интерфейс HTTP-клиента для API Max.
 
 ### Исключения
 
-- [**AccessTokenException**](../../src/HttpClient/Exceptions/AccessTokenException.php) — Access token not set.
-- [**UnexpectedFormatException**](../../src/HttpClient/Exceptions/UnexpectedFormatException.php) — Unexpected response format.
-- [**UploadException**](../../src/HttpClient/Exceptions/HttpResponse/UploadException.php) — Upload error.
+- [**AccessTokenException**](../../src/Exceptions/AccessTokenException.php) — Access token not set.
+
+### Исключения HTTP запросов
+
+- [**JsonEncodeException**](../../src/Exceptions/HttpClient/HttpRequest/JsonEncodeException.php) — JSON encoding error.
+
+### Исключения HTTP ответов
+
+- [**HttpResponseException**](../../src/Exceptions/HttpClient/HttpResponse/HttpResponseException.php) (abstract) — Base class for HTTP response exceptions.
+- [**ParseDataException**](../../src/Exceptions/HttpClient/HttpResponse/ParseDataException.php) (abstract) — Base class for data parsing exceptions.
+- [**JsonDecodeException**](../../src/Exceptions/HttpClient/HttpResponse/JsonDecodeException.php) — JSON decode error.
+- [**UnexpectedFormatException**](../../src/Exceptions/HttpClient/HttpResponse/UnexpectedFormatException.php) — Unexpected response format.
+- [**UnexpectedContentTypeException**](../../src/Exceptions/HttpClient/HttpResponse/UnexpectedContentTypeException.php) — Unexpected Content-Type.
 
 ### HTTP-исключения
 

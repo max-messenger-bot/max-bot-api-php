@@ -12,6 +12,7 @@ use MaxMessenger\Bot\Exceptions\RequiredArgumentsException;
 use MaxMessenger\Bot\Exceptions\SimpleQueryError;
 use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\BadRequestException;
 use MaxMessenger\Bot\HttpClient\MaxHttpClient;
+use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
 use MaxMessenger\Bot\Models\Enums\SenderAction;
 use MaxMessenger\Bot\Models\Enums\UpdateType;
 use MaxMessenger\Bot\Models\Enums\UploadType;
@@ -32,6 +33,7 @@ use MaxMessenger\Bot\Models\Responses\Chat;
 use MaxMessenger\Bot\Models\Responses\ChatList;
 use MaxMessenger\Bot\Models\Responses\ChatMember;
 use MaxMessenger\Bot\Models\Responses\ChatMembersList;
+use MaxMessenger\Bot\Models\Responses\ContactAttachmentPayload;
 use MaxMessenger\Bot\Models\Responses\GetPinnedMessageResult;
 use MaxMessenger\Bot\Models\Responses\GetSubscriptionsResult;
 use MaxMessenger\Bot\Models\Responses\Message;
@@ -56,9 +58,10 @@ final class MaxApiClient
     use ValidateTrait;
 
     /**
-     * @var list<positive-int> Time before retry in milliseconds.
+     * @var list<positive-int>|null Time before retry in milliseconds. `null` to use the value from the configuration.
      */
-    public array $retryAttempts = [1, 2, 4, 8, 15];
+    public ?array $retryAttempts = null;
+    private readonly MaxApiConfigInterface $config;
     private readonly MaxHttpClientInterface $httpClient;
 
     /**
@@ -70,14 +73,12 @@ final class MaxApiClient
         string|MaxApiConfigInterface $accessTokenOrConfig,
         private readonly ?Closure $exceptionLogger = null
     ) {
-        $config = is_string($accessTokenOrConfig)
+        $this->config = is_string($accessTokenOrConfig)
             ? new MaxApiConfig($accessTokenOrConfig)
             : $accessTokenOrConfig;
 
-        $this->retryAttempts = $config->getRetryAttempts();
-
-        $this->httpClient = $config->getMaxHttpClient()
-            ?? new MaxHttpClient($config, null, $this->exceptionLogger);
+        $this->httpClient = $this->config->getMaxHttpClient()
+            ?? new MaxHttpClient($this->config, null, $this->exceptionLogger);
     }
 
     /**
@@ -697,7 +698,7 @@ final class MaxApiClient
             $message = new NewMessageBody($message);
         }
 
-        $retryAttempts = $this->retryAttempts;
+        $retryAttempts = $this->retryAttempts ?? $this->config->getRetryAttempts();
         do {
             try {
                 $data = $this->httpClient->post('/messages', $message->jsonSerialize(), $params);
@@ -820,6 +821,34 @@ final class MaxApiClient
         $data = $this->httpClient->delete('/subscriptions', ['url' => $url]);
 
         $this->checkSimpleQueryResult($data);
+    }
+
+    /**
+     * Проверяет соответствие хеша и значения vcfInfo.
+     *
+     * Позволяет проверить, что пользователь поделился номером телефона, привязанным к его аккаунту в МАКС.
+     *
+     * Если проверка прошла успешно, Вы можете получить номер телефона следующим способом:
+     * ```
+     * $phones = $payload->getPhones();
+     * ```
+     *
+     * @see MessageCreatedEvent::isSelfContact
+     */
+    public function validateContactAttachmentHash(ContactAttachmentPayload $payload): bool
+    {
+        $hash = $payload->getHash();
+        $vcfInfo = $payload->getVcfInfo();
+        $accessToken = $this->config->getAccessToken()?->getValue();
+
+        /** @psalm-suppress RiskyTruthyFalsyComparison */
+        if (!$hash || !$vcfInfo || !$accessToken) {
+            return false;
+        }
+
+        $validHash = hash_hmac('sha256', $vcfInfo, $accessToken);
+
+        return hash_equals($hash, $validHash);
     }
 
     private function checkSimpleQueryResult(array $data): void

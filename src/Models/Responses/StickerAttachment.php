@@ -25,9 +25,6 @@ class StickerAttachment extends Attachment
         return $this->data['height'];
     }
 
-    /**
-     * @return StickerAttachmentPayload
-     */
     public function getPayload(): StickerAttachmentPayload
     {
         return $this->payload === false

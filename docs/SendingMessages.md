@@ -368,44 +368,6 @@ $message = NewMessageBody::new()
 $client->sendMessageToUser($userId, $message);
 ```
 
-### Reply-клавиатура
-
-Reply-клавиатура отображается внизу экрана пользователя (заменяет поле ввода):
-
-```php
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
-use MaxMessenger\Bot\Models\Requests\ReplyKeyboardAttachmentRequest;
-use MaxMessenger\Bot\Models\Requests\SendMessageButton;
-
-$replyKeyboard = ReplyKeyboardAttachmentRequest::new(
-    buttons: [
-        [
-            SendMessageButton::make('Кнопка 1', 'payload_1'),
-            SendMessageButton::make('Кнопка 2', 'payload_2'),
-        ],
-    ]
-);
-
-$message = NewMessageBody::new()
-    ->setText('Выберите:')
-    ->addAttachment($replyKeyboard);
-
-$client->sendMessageToUser($userId, $message);
-```
-
-**Персональная клавиатура** (отображается только для указанного пользователя в чате):
-
-```php
-use MaxMessenger\Bot\Models\Requests\ReplyKeyboardAttachmentRequest;
-use MaxMessenger\Bot\Models\Requests\SendMessageButton;
-
-$replyKeyboard = ReplyKeyboardAttachmentRequest::new(
-    buttons: [[SendMessageButton::make('Ответить', 'reply')]],
-    direct: true,
-    directUserId: $userId
-);
-```
-
 ### Типы кнопок
 
 | Класс                      | Где использовать | Описание                                            |

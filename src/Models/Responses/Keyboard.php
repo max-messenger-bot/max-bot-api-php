@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Клавиатура - это двумерный массив кнопок.
+ * Клавиатура — это двумерный массив кнопок.
  */
 class Keyboard extends BaseResponseModel
 {

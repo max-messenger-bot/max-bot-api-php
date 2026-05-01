@@ -4,6 +4,8 @@
 
 - ✅ [**MaxApiConfigInterface**](../../src/Contracts/MaxApiConfigInterface.php) — An interface implementing
   the configuration storage.
+- ✅ [**MaxHttpClientInterface**](../../src/Contracts/MaxHttpClientInterface.php) — An interface that implements
+  requests to the MAX API.
 - ✅ [**ModelInterface**](../../src/Contracts/ModelInterface.php) — Interface for models with Raw data.
 
 ### Соглашения
