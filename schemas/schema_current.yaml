@@ -1741,7 +1741,6 @@ components:
           inline_keyboard: '#/components/schemas/InlineKeyboardAttachment'
           share: '#/components/schemas/ShareAttachment'
           location: '#/components/schemas/LocationAttachment'
-          reply_keyboard: '#/components/schemas/ReplyKeyboardAttachment'
       properties:
         type:
           description: Тип вложения
@@ -2061,34 +2060,6 @@ components:
                 - $ref: '#/components/schemas/Keyboard'
           required:
             - payload
-    ReplyKeyboardAttachment:
-      description: Custom reply keyboard in message
-      allOf:
-        - $ref: '#/components/schemas/Attachment'
-        - properties:
-            buttons:
-              type: array
-              minItems: 1
-              items:
-                type: array
-                minItems: 1
-                items:
-                  $ref: '#/components/schemas/ReplyButton'
-          required:
-            - buttons
-    DataAttachment:
-      description: >-
-        Вложение содержит полезную нагрузку, отправленную
-        через `SendMessageButton`
-      allOf:
-        - $ref: '#/components/schemas/Attachment'
-        - properties:
-            data:
-              description: Полезная нагрузка вложения
-              type: string
-              minLength: 1
-          required:
-            - data
     Keyboard:
       description: Клавиатура — это двумерный массив кнопок
       properties:
@@ -2299,67 +2270,6 @@ components:
         - positive
         - negative
         - default
-    ReplyButton:
-      description: >-
-        Кнопка ответа.
-
-
-        После нажатия на такую кнопку, клиент отправляет сообщение от имени
-        пользователя с заданным payload
-      properties:
-        text:
-          description: Видимый текст кнопки
-          type: string
-          minLength: 1
-          maxLength: 128
-        payload:
-          description: Токен кнопки
-          type: string
-          minLength: 1
-          maxLength: 1024
-      discriminator:
-        propertyName: type
-        mapping:
-          message: '#/components/schemas/SendMessageButton'
-          user_geo_location: '#/components/schemas/SendGeoLocationButton'
-          user_contact: '#/components/schemas/SendContactButton'
-      required:
-        - type
-        - text
-    SendMessageButton:
-      description: >-
-        Кнопка отправки сообщения.
-
-
-        После нажатия на такую кнопку, клиент отправляет сообщение
-        с заданным payload
-      allOf:
-        - $ref: '#/components/schemas/ReplyButton'
-    SendGeoLocationButton:
-      description: >-
-        Кнопка отправки геолокации.
-
-
-        После нажатия на такую кнопку, клиент отправляет новое сообщение с
-        вложением текущего географического положения пользователя
-      allOf:
-        - $ref: '#/components/schemas/ReplyButton'
-        - properties:
-            quick:
-              description: >-
-                Если `true`, отправляет местоположение без запроса подтверждения
-                пользователя
-              type: boolean
-              default: false
-    SendContactButton:
-      description: >-
-        Кнопка отправки контакта.
-
-
-        После нажатия на такую кнопку, клиент отправляет новое сообщение с
-        вложением текущего контакта пользователя
-      allOf:
-        - $ref: '#/components/schemas/ReplyButton'
     MessageLinkType:
       description: Тип связанного сообщения
       type: string
@@ -2380,7 +2290,6 @@ components:
           inline_keyboard: '#/components/schemas/InlineKeyboardAttachmentRequest'
           location: '#/components/schemas/LocationAttachmentRequest'
           share: '#/components/schemas/ShareAttachmentRequest'
-          reply_keyboard: '#/components/schemas/ReplyKeyboardAttachmentRequest'
       properties:
         type:
           type: string
@@ -2565,34 +2474,6 @@ components:
               $ref: '#/components/schemas/Button'
       required:
         - buttons
-    ReplyKeyboardAttachmentRequest:
-      description: Запрос на прикрепление клавиатуры к сообщению
-      allOf:
-        - $ref: '#/components/schemas/AttachmentRequest'
-        - properties:
-            direct:
-              description: >-
-                Если `true`, клавиатура отображается только для пользователя,
-                которому бот упомянул или ответил (применимо только для чатов)
-              type: boolean
-              default: false
-            direct_user_id:
-              description: >-
-                Если установлено, клавиатура будет отображаться только для
-                этого участника в чате
-              type: integer
-              format: int64
-            buttons:
-              description: Двумерный массив кнопок
-              type: array
-              minItems: 1
-              items:
-                type: array
-                minItems: 1
-                items:
-                  $ref: '#/components/schemas/ReplyButton'
-          required:
-            - buttons
     LocationAttachmentRequest:
       description: Запрос на прикрепление клавиатуры к сообщению
       allOf:
@@ -3233,10 +3114,6 @@ components:
               description: Текущий язык пользователя в формате IETF BCP 47
               type: string
               minLength: 1
-            user_id:
-              description: Идентификатор пользователя, который нажал кнопку 'Start'
-              type: integer
-              format: int64
           required:
             - chat_id
             - user

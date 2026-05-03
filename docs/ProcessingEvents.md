@@ -280,8 +280,8 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 
 ## Реакция на события
 
-Каждый класс события предоставляет вспомогательные методы для упрощения работы. Ниже описаны методы для каждого типа
-события.
+Каждый класс события предоставляет вспомогательные методы для упрощения работы.
+Ниже описаны методы для каждого типа события.
 
 ### BaseEvent (базовый класс)
 
@@ -298,18 +298,19 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 
 **Свойства:**
 
-| Свойство                  | Тип                     | Описание                                  |
-|---------------------------|-------------------------|-------------------------------------------|
-| `$update`                 | `Update`                | Объект обновления                         |
-| `$apiClient`              | `MaxApiClient`          | API-клиент                                |
-| `$userData`               | `ArrayObject`           | Массив для хранения произвольных данных   |
-| `$isHandled`              | `bool\|null`            | Статус обработки в рамках текущего списка |
-| `$handledIn`              | `HandlerListType\|null` | Список, в котором событие было обработано |
-| `$currentHandlerListType` | `HandlerListType\|null` | Текущий обрабатываемый список             |
+| Свойство                  | Тип                     | Описание                                       |
+|---------------------------|-------------------------|------------------------------------------------|
+| `$update`                 | `Update`                | Объект обновления                              |
+| `$apiClient`              | `MaxApiClient`          | API-клиент                                     |
+| `$userData`               | `ArrayObject`           | Массив для хранения произвольных данных        |
+| `$isHandled`              | `bool\|null`            | Статус обработки в рамках текущего обработчика |
+| `$handledIn`              | `HandlerListType\|null` | Список, в котором событие было обработано      |
+| `$currentHandlerListType` | `HandlerListType\|null` | Текущий обрабатываемый список                  |
 
 ### UserEventTrait (трейд пользователя)
 
-Этот трейд используют события, связанные с действиями пользователей. Предоставляет методы:
+Этот трейд используют события, связанные с действиями пользователей.
+Предоставляет методы:
 
 | Метод                  | Возвращает          | Описание                                     |
 |------------------------|---------------------|----------------------------------------------|
@@ -320,12 +321,13 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 | `sendToUser($message)` | `SendMessageResult` | Отправить сообщение в диалог с пользователем |
 
 **Используют:** `BotAddedToChatEvent`, `BotRemovedFromChatEvent`, `BotStartedEvent`, `ChatTitleChangedEvent`,
-`DialogClearedEvent`, `DialogMutedEvent`, `DialogUnmutedEvent`, `UserAddedToChatEvent`,
+`DialogClearedEvent`, `DialogMutedEvent`, `DialogUnmutedEvent`, `MessageRemovedEvent`, `UserAddedToChatEvent`,
 `UserRemovedFromChatEvent`.
 
 ### MessageEventTrait (трейд сообщения)
 
-Этот трейд используют события, связанные с сообщениями. Предоставляет методы:
+Этот трейд используют события, связанные с сообщениями.
+Предоставляет методы:
 
 | Метод                                                | Возвращает          | Описание                                     |
 |------------------------------------------------------|---------------------|----------------------------------------------|
@@ -333,7 +335,7 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 | `getUser()`                                          | `User\|null`        | Отправитель сообщения (может быть `null`)    |
 | `getUserId()`                                        | `int\|null`         | ID отправителя сообщения (может быть `null`) |
 | `getChatId()`                                        | `int`               | ID чата, где было отправлено сообщение       |
-| `deleteMessage($mid = null)`                         | `void`              | Удалить сообщение                            |
+| `deleteMessage()`                                    | `void`              | Удалить сообщение                            |
 | `forwardToChat($chatId)`                             | `SendMessageResult` | Переслать сообщение в указанный чат          |
 | `forwardToUser($userId)`                             | `SendMessageResult` | Переслать сообщение в диалог с пользователем |
 | `reply($message, $asReply = false)`                  | `SendMessageResult` | Ответить в чате сообщения                    |
@@ -342,7 +344,7 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 | `isChat()`                                           | `bool`              | `true`, если сообщение из группы             |
 | `isDialog()`                                         | `bool`              | `true`, если сообщение из диалога            |
 
-**Используют:** `MessageCreatedEvent`, `MessageEditedEvent`, `MessageCallbackEvent`.
+**Используют:** `MessageCallbackEvent`, `MessageCreatedEvent`, `MessageEditedEvent`.
 
 ### MessageCreatedEvent
 
@@ -371,6 +373,8 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 | `getUserId()`           | `int`               | ID пользователя, удалившего сообщение                  |
 | `sendMessage($message)` | `SendMessageResult` | Отправить сообщение пользователю, удалившему сообщение |
 
+**Трейды:** `UserEventTrait`
+
 ### MessageCallbackEvent
 
 | Метод                                                | Возвращает          | Описание                                     |
@@ -383,7 +387,7 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 | `getUserLocale()`                                    | `string\|null`      | Язык пользователя (IETF BCP 47)              |
 | `answer($message, $notification = null)`             | `void`              | Ответить на callback с обновлением сообщения |
 | `answerNotification($notification)`                  | `void`              | Отправить только уведомление                 |
-| `deleteMessage($mid = null)`                         | `void`              | Удалить сообщение                            |
+| `deleteMessage()`                                    | `void`              | Удалить сообщение                            |
 | `forwardToChat($chatId)`                             | `SendMessageResult` | Переслать сообщение в указанный чат          |
 | `forwardToUser($userId)`                             | `SendMessageResult` | Переслать сообщение в диалог с пользователем |
 | `reply($message, $asReply = false)`                  | `SendMessageResult` | Ответить в чате сообщения                    |
@@ -399,7 +403,7 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 | Метод             | Возвращает               | Описание                              |
 |-------------------|--------------------------|---------------------------------------|
 | `getChatId()`     | `int`                    | ID диалога                            |
-| `getUser()`       | `User`                   | Пользователь, нажавший `/start`       |
+| `getUser()`       | `User`                   | Пользователь, запустивший бота        |
 | `getUserId()`     | `int`                    | ID пользователя                       |
 | `getPayload()`    | `non-empty-string\|null` | Данные из дип-линка (до 128 символов) |
 | `getUserLocale()` | `string\|null`           | Язык пользователя (IETF BCP 47)       |

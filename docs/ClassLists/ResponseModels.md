@@ -37,8 +37,6 @@
 - ❌ [**ContactAttachment**](../../src/Models/Responses/ContactAttachment.php) — Контактное вложение.
 - ❌ [**ContactAttachmentPayload**](../../src/Models/Responses/ContactAttachmentPayload.php) — Полезная нагрузка
   контактного вложения.
-- ❌ [**DataAttachment**](../../src/Models/Responses/DataAttachment.php) — Вложение содержит полезную нагрузку,
-  отправленную через `SendMessageButton`.
 - ❌ [**DialogClearedUpdate**](../../src/Models/Responses/DialogClearedUpdate.php) — Бот получает этот тип обновления
   сразу после очистки истории диалога.
 - ❌ [**DialogMutedUpdate**](../../src/Models/Responses/DialogMutedUpdate.php) — Вы получите этот update, когда
@@ -93,14 +91,8 @@
 - ❌ [**PhotoToken**](../../src/Models/Responses/PhotoToken.php) — Закодированная информация загруженного изображения.
 - ❌ [**PhotoTokens**](../../src/Models/Responses/PhotoTokens.php) — Информация о загруженных изображениях.
 - ❌ [**Recipient**](../../src/Models/Responses/Recipient.php) — Новый получатель сообщения.
-- ❌ [**ReplyButton**](../../src/Models/Responses/ReplyButton.php) — Кнопка ответа.
-- ❌ [**ReplyKeyboardAttachment**](../../src/Models/Responses/ReplyKeyboardAttachment.php) — Custom reply keyboard in
-  message.
 - ❌ [**RequestContactButton**](../../src/Models/Responses/RequestContactButton.php) — Кнопка запроса контакта.
 - ❌ [**RequestGeoLocationButton**](../../src/Models/Responses/RequestGeoLocationButton.php) — Кнопка запроса геолокации.
-- ❌ [**SendContactButton**](../../src/Models/Responses/SendContactButton.php) — Кнопка отправки контакта.
-- ❌ [**SendGeoLocationButton**](../../src/Models/Responses/SendGeoLocationButton.php) — Кнопка отправки геолокации.
-- ❌ [**SendMessageButton**](../../src/Models/Responses/SendMessageButton.php) — Кнопка отправки сообщения.
 - ❌ [**SendMessageResult**](../../src/Models/Responses/SendMessageResult.php) — Информация о созданном сообщении.
 - ❌ [**ShareAttachment**](../../src/Models/Responses/ShareAttachment.php) — Вложение Share.
 - ❌ [**ShareAttachmentPayload**](../../src/Models/Responses/ShareAttachmentPayload.php) — Полезная нагрузка запроса

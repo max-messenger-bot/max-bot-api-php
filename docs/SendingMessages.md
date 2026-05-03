@@ -380,9 +380,6 @@ $client->sendMessageToUser($userId, $message);
 | `OpenAppButton`            | Inline           | Запускает мини-приложение                           |
 | `RequestContactButton`     | Inline           | Запрашивает контакт пользователя                    |
 | `RequestGeoLocationButton` | Inline           | Запрашивает геолокацию                              |
-| `SendMessageButton`        | Reply            | Отправляет сообщение с заданным payload             |
-| `SendContactButton`        | Reply            | Отправляет контакт                                  |
-| `SendGeoLocationButton`    | Reply            | Отправляет геолокацию                               |
 
 Пример создания чата через кнопку:
 

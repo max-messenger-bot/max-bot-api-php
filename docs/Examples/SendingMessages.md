@@ -104,19 +104,20 @@ $event->apiClient->sendMessageToChat($chatId, 'Привет');
     - **ChatTitleChangedEvent**
     - **DialogClearedEvent**
     - **DialogMutedEvent**
-    - **DialogUnmutedUpdate**
-    - **MessageCallbackEvent**
+    - **DialogUnmutedEvent**
     - **MessageRemovedEvent**
     - **UserAddedToChatEvent**
     - **UserRemovedFromChatEvent**
 - `$event->forwardToChat($chatId)`, `$event->forwardToUser($userId)`,
   `$event->reply($message, $asReply = false, $disableLinkPreview = false)`,
   `$event->replyToUser($message, $forwardOrigMessage = false, $disableLinkPreview = false)`
+    - **MessageCallbackEvent**
     - **MessageCreatedEvent**
     - **MessageEditedEvent**
-- `$event->answer($message, $notification = null)`, `$event->answerNotification($notification)`
+- `$event->answer($message, $notification = null)`,
+  `$event->answerNotification($notification)`
     - **MessageCallbackEvent**
-- `$event->deleteMessage($mid = null);`
+- `$event->deleteMessage();`
     - **MessageCallbackEvent**
     - **MessageCreatedEvent**
     - **MessageEditedEvent**

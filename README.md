@@ -25,13 +25,13 @@ use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
 $bot = new MaxBot('your-access-token', 'your-secret');
 
 $bot->onBotStarted(function (BotStartedEvent $event): void {
-    $event->sendToChat(sprintf('Здравствуйте, %s!', $event->getUser()->getFirstName());
+    $event->sendToChat(sprintf('Здравствуйте, %s!', $event->getUser()->getFirstName()));
 });
 
 $bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $message = $event->getMessage()->getText();
     // Обработка сообщения
-    $event->reply('Ваше сообщение получено.', true)
+    $event->reply('Ваше сообщение получено.', true);
 });
 
 $bot->handleFromGlobal();
@@ -92,7 +92,7 @@ composer require max-messenger-bot/max-bot-api-php
 
 ### Зависимости
 
-- `mj4444/simple-http-client` ^0.2.0 — HTTP-клиент для выполнения запросов
+- `mj4444/simple-http-client` ^0.2 — HTTP-клиент для выполнения запросов
 
 ## Примеры
 
@@ -123,11 +123,11 @@ $bot->onBotStarted(function (BotStartedEvent $event): bool {
 // Добавление обработчика сообщений
 $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
     // Обработка нового сообщения
-    $event->reply('Ваше сообщение получено', true)
+    $event->reply('Ваше сообщение получено', true);
     return true;
 });
 
-$apiClient->handleFromGlobal();
+$bot->handleFromGlobal();
 ```
 
 ### Обработка обновлений через Long Polling

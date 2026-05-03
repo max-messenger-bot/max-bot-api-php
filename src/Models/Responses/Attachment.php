@@ -49,12 +49,10 @@ class Attachment extends BaseResponseModel
         $classList = [
             'audio' => AudioAttachment::class,
             'contact' => ContactAttachment::class,
-            'data' => DataAttachment::class,
             'file' => FileAttachment::class,
             'image' => PhotoAttachment::class,
             'inline_keyboard' => InlineKeyboardAttachment::class,
             'location' => LocationAttachment::class,
-            'reply_keyboard' => ReplyKeyboardAttachment::class,
             'share' => ShareAttachment::class,
             'sticker' => StickerAttachment::class,
             'video' => VideoAttachment::class,

@@ -15,7 +15,6 @@
 - ❌ [**Intent**](../../src/Models/Enums/Intent.php) — Намерение кнопки.
 - ❌ [**MarkupElementType**](../../src/Models/Enums/MarkupElementType.php) — Тип элемента разметки.
 - ❌ [**MessageLinkType**](../../src/Models/Enums/MessageLinkType.php) — Тип связанного сообщения.
-- ❌ [**ReplyButtonType**](../../src/Models/Enums/ReplyButtonType.php) — Тип кнопки ответа.
 - ❌ [**SenderAction**](../../src/Models/Enums/SenderAction.php) — Действие, отправляемое участникам чата.
 - ❌ [**TextFormat**](../../src/Models/Enums/TextFormat.php) — Формат текста сообщения.
 - ❌ [**UpdateType**](../../src/Models/Enums/UpdateType.php) — Тип обновления.

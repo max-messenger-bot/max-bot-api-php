@@ -123,7 +123,7 @@ use MaxMessenger\Bot\Models\Requests\NewMessageBody;
 
 $message = new NewMessageBody('Карточка товара');
 $message->addInlineKeyboard()
-    ->addCallbackButton('Добавить в корзину', {'action' => 'buy', 'productId' => 123, 'quantity' => 2});
+    ->addCallbackButton('Добавить в корзину', ['action' => 'buy', 'productId' => 123, 'quantity' => 2]);
 ```
 
 ```php

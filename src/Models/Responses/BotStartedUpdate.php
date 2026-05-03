@@ -14,7 +14,6 @@ class BotStartedUpdate extends Update
      *     chat_id: int,
      *     user: array,
      *     payload?: non-empty-string,
-     *     user_id: int,
      *     user_locale?: non-empty-string
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
@@ -47,14 +46,6 @@ class BotStartedUpdate extends Update
         return $this->user === false
             ? $this->user = User::newFromData($this->data['user'])
             : $this->user;
-    }
-
-    /**
-     * @return int Идентификатор пользователя, который нажал кнопку 'Start'.
-     */
-    public function getUserId(): int
-    {
-        return $this->data['user_id'];
     }
 
     /**

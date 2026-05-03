@@ -26,8 +26,8 @@ $response = $apiClient->getHttpClient()->patch('/me', (object)$body);
 ```php
 $body = [
     'url' => 'https://your-domain.com/webhook',
-    'update_types': ['message_created', 'bot_started'],
-    'secret': 'your_secret',
+    'update_types' => ['message_created', 'bot_started'],
+    'secret' => 'your_secret',
 ];
 
 $response = $apiClient->getHttpClient()->post('/subscriptions', (object)$body);

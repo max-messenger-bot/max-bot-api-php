@@ -45,14 +45,8 @@
 - ❌ [**PinMessageBody**](../../src/Models/Requests/PinMessageBody.php) — Запрос на закрепление сообщения в чате или
   канале.
 - ❌ [**RawModel**](../../src/Models/Requests/RawModel.php) — Raw data query model.
-- ❌ [**ReplyButton**](../../src/Models/Requests/ReplyButton.php) — Базовый класс кнопки ответа.
-- ❌ [**ReplyKeyboardAttachmentRequest**](../../src/Models/Requests/ReplyKeyboardAttachmentRequest.php) — Запрос на
-  прикрепление клавиатуры к сообщению.
 - ❌ [**RequestContactButton**](../../src/Models/Requests/RequestContactButton.php) — Кнопка запроса контакта.
 - ❌ [**RequestGeoLocationButton**](../../src/Models/Requests/RequestGeoLocationButton.php) — Кнопка запроса геолокации.
-- ❌ [**SendContactButton**](../../src/Models/Requests/SendContactButton.php) — Кнопка отправки контакта.
-- ❌ [**SendGeoLocationButton**](../../src/Models/Requests/SendGeoLocationButton.php) — Кнопка отправки геолокации.
-- ❌ [**SendMessageButton**](../../src/Models/Requests/SendMessageButton.php) — Кнопка отправки сообщения.
 - ❌ [**ShareAttachmentPayload**](../../src/Models/Requests/ShareAttachmentPayload.php) — Полезная нагрузка запроса
   ShareAttachmentRequest.
 - ❌ [**ShareAttachmentRequest**](../../src/Models/Requests/ShareAttachmentRequest.php) — Запрос на прикрепление

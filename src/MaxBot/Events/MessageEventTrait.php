@@ -27,14 +27,15 @@ trait MessageEventTrait
     /**
      * Удалить сообщение.
      *
+     * > С помощью метода можно удалять сообщения, которые отправлены менее 24 часов назад.
+     *
      * - Вы получите ошибку {@see ForbiddenException}, если попытаетесь удалить чужое сообщения
      *   без прав на удаление сообщений.
-     *
-     * @param non-empty-string|null $mid
+     * - Нельзя удалять сообщения пользователя отправленные в диалог.
      */
-    public function deleteMessage(string $mid = null): void
+    public function deleteMessage(): void
     {
-        $this->apiClient->deleteMessage($mid ?? $this->getMessage()->getBody()->getMid());
+        $this->apiClient->deleteMessage($this->getMessage()->getBody()->getMid());
     }
 
     /**
@@ -77,6 +78,7 @@ trait MessageEventTrait
     }
 
     abstract public function getMessage(): Message;
+
 
     /**
      * @return User|null Пользователь, отправивший сообщение.

@@ -15,7 +15,6 @@ enum AttachmentRequestType: string
     case Image = 'image';
     case InlineKeyboard = 'inline_keyboard';
     case Location = 'location';
-    case ReplyKeyboard = 'reply_keyboard';
     case Share = 'share';
     case Sticker = 'sticker';
     case Video = 'video';
