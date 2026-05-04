@@ -22,11 +22,13 @@ class LinkedMessage extends BaseResponseModel
     private User|false|null $sender = false;
 
     /**
-     * @return int|null Чат, в котором сообщение было изначально опубликовано. Только для пересланных сообщений.
+     * @return int|null Чат, в котором сообщение было изначально опубликовано.
+     *     `null`, если сообщение из другого диалога.
      */
     public function getChatId(): ?int
     {
-        return $this->data['chat_id'] ?? null;
+        /** @psalm-suppress RiskyTruthyFalsyComparison */
+        return $this->data['chat_id'] ?? null ?: null;
     }
 
     /**
