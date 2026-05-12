@@ -77,7 +77,6 @@ repo/
 │   └── utils.php                 # Утилиты для скриптов
 ├── dev/                          # Утилиты для разработки
 ├── docs/                         # Документация
-│   ├── ClassLists/               # Списки классов
 │   ├── Examples/                 # Примеры кода
 │   ├── images/                   # Изображения
 │   ├── Internal/                 # Внутренняя документация
@@ -266,17 +265,6 @@ while (true) {
 - [Обработка команд](docs/ProcessingCommands.md)
 - [Обработка событий](docs/ProcessingEvents.md)
 - [API-клиент](docs/ApiClient.md)
-
-### Списки классов
-
-- [Интерфейсы](docs/ClassLists/Contracts.md)
-- [Перечисления](docs/ClassLists/Enums.md)
-- [Исключения](docs/ClassLists/Exceptions.md)
-- [HTTP-клиент](docs/ClassLists/HttpClient.md)
-- [События MaxBot](docs/ClassLists/MaxBotEvents.md)
-- [Другие классы](docs/ClassLists/OtherClasses.md)
-- [Модели запросов](docs/ClassLists/RequestModels.md)
-- [Модели ответов](docs/ClassLists/ResponseModels.md)
 
 ### Примеры
 

@@ -24,13 +24,3 @@
 - [Примеры пользовательского запроса](Examples/CustomeRquest.md)
 - [Примеры использования RawModel](Examples/RawModel.md)
 
-## Списки классов
-
-- [Интерфейсы](ClassLists/Contracts.md)
-- [Перечисления](ClassLists/Enums.md)
-- [Классы исключений](ClassLists/Exceptions.md)
-- [HttpClient](ClassLists/HttpClient.md)
-- [События MaxBot](ClassLists/MaxBotEvents.md)
-- [Другие классы](ClassLists/OtherClasses.md)
-- [Модели запросов](ClassLists/RequestModels.md)
-- [Модели ответов](ClassLists/ResponseModels.md)
