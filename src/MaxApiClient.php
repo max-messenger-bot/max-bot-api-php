@@ -87,7 +87,8 @@ final class MaxApiClient
      * Для этого могут потребоваться дополнительные права.
      *
      * @param int $chatId ID чата.
-     * @param UserIdsList|RawModel|int[] $userIds Список ID пользователей для добавления в чат.
+     * @param UserIdsList|RawModel|non-empty-array<int> $userIds Список ID пользователей для добавления в чат.
+     *     При использованнии массива, смотрите ограничения в {@see UserIdsList}.
      * @return ModifyMembersResult Результат запроса на изменение списка участников чата.
      * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members
      */
@@ -108,10 +109,10 @@ final class MaxApiClient
      * Этот метод используется для отправки ответа после того, как пользователь нажал на кнопку.
      * Ответом может быть обновленное сообщение и/или одноразовое уведомление для пользователя.
      *
-     * @param non-empty-string $callbackId Идентификатор кнопки, по которой пользователь кликнул
+     * @param non-empty-string $callbackId Идентификатор кнопки, на которую нажал пользователь
      *                                     (minLength: 1, pattern: '^\s+$').
      *                                     Бот получает идентификатор как часть `Update` с типом `message_callback`.
-     *                                     Можно получить из `$update->getCallback()->getCallbackId()`.
+     *                                     Пример получения идентификатора: `$update->getCallback()->getCallbackId()`.
      * @param CallbackAnswer|RawModel|NewMessageBody $answer Ответ на callback: обновленное сообщение и/или уведомление.
      * @link https://dev.max.ru/docs-api/methods/POST/answers
      */
@@ -304,7 +305,7 @@ final class MaxApiClient
      * Возвращает список участников группового чата.
      *
      * @param int $chatId ID чата.
-     * @param int[]|null $userIds Список ID пользователей для получения их членства (minItems: 1, uniqueItems: true).
+     * @param int[]|null $userIds Список ID пользователей, чьё членство нужно получить (minItems: 1, uniqueItems: true).
      *                            Когда этот аргумент передан, аргументы `count` и `marker` игнорируются.
      * @param int|null $marker Указатель на следующую страницу данных.
      * @param int<1, 100> $count Максимальное количество участников в ответе (minimum: 1, maximum: 100).
@@ -492,9 +493,9 @@ final class MaxApiClient
     }
 
     /**
-     * Получает подписки.
+     * Получает Webhook подписки.
      *
-     * Возвращает список всех подписок данного бота.
+     * Возвращает список всех Webhook подписок данного бота.
      *
      * @return GetSubscriptionsResult Список подписок.
      * @link https://dev.max.ru/docs-api/methods/GET/subscriptions
@@ -507,23 +508,23 @@ final class MaxApiClient
     }
 
     /**
-     * Получает обновления.
+     * Получает новые события.
      *
-     * Выполняет долгий запрос (long polling). Каждое обновление имеет свой номер последовательности.
-     * Свойство `marker` в ответе указывает на следующее ожидаемое обновление.
+     * Выполняет долгий запрос (Long Polling). Каждое событие имеет свой номер последовательности.
+     * Свойство `marker` в ответе указывает на следующее ожидаемое событие.
      *
-     * Если параметр `marker` **не передан**, бот получит все ранее не полученные обновления.
+     * Если параметр `marker` **не передан**, бот получит все ранее не полученные событие.
      *
-     * > Этот метод можно использовать для получения обновлений при разработке и тестировании,
-     * если ваш бот не подписан на Webhook. Для production-окружения рекомендуем использовать Webhook.
+     * > Этот метод можно использовать для получения событий бота при разработке и тестировании,
+     * > если ваш бот не подписан на доставку событий через Webhook.
+     * > Для production-окружения рекомендуем использовать доставку событий через Webhook.
      *
-     * @param int<1, 1000> $limit Максимальное количество обновлений для получения (minimum: 1, maximum: 1000).
+     * @param int<1, 1000> $limit Максимальное количество событий для получения (minimum: 1, maximum: 1000).
      * @param int<0, 90> $timeout Тайм-аут в секундах для долгого опроса (minimum: 0, maximum: 90).
-     * @param int|null $marker Маркер для получения обновлений с конкретной позиции.
-     *                         Для получения всех ранее непрочитанных обновлений, передайте `null`.
-     * @param array<UpdateType|string>|null $types Список типов обновлений, которые бот хочет получить
-     *                                             (uniqueItems: true).
-     * @return UpdateList Список обновлений.
+     * @param int|null $marker Маркер для получения событий с конкретной позиции.
+     *                         Для получения всех ранее непрочитанных событий, передайте `null`.
+     * @param array<UpdateType|string>|null $types Список типов событий, которые вы хотите получить (uniqueItems: true).
+     * @return UpdateList Список событий.
      * @link https://dev.max.ru/docs-api/methods/GET/updates
      */
     public function getUpdates(
@@ -615,6 +616,26 @@ final class MaxApiClient
         }
 
         $data = $this->httpClient->put("/chats/$chatId/pin", $pinMessage->jsonSerialize());
+
+        $this->checkSimpleQueryResult($data);
+    }
+
+    /**
+     * Назначает администраторов группового чата.
+     *
+     * Максимум 50 администраторов в чате.
+     *
+     * @param int $chatId ID чата.
+     * @param ChatAdminsList|RawModel|ChatAdmin[] $admins Список администраторов.
+     * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members/admins
+     */
+    public function postAdmins(int $chatId, ChatAdminsList|RawModel|array $admins): void
+    {
+        if (is_array($admins)) {
+            $admins = new ChatAdminsList($admins);
+        }
+
+        $data = $this->httpClient->post("/chats/$chatId/members/admins", $admins->jsonSerialize());
 
         $this->checkSimpleQueryResult($data);
     }
@@ -755,33 +776,27 @@ final class MaxApiClient
     /**
      * Назначает администраторов группового чата.
      *
-     * Возвращает значение `true`, если в групповой чат добавлены все администраторы.
+     * Максимум 50 администраторов в чате.
      *
      * @param int $chatId ID чата.
      * @param ChatAdminsList|RawModel|ChatAdmin[] $admins Список администраторов.
-     * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members/admins
+     * @deprecated
      */
     public function setAdmins(int $chatId, ChatAdminsList|RawModel|array $admins): void
     {
-        if (is_array($admins)) {
-            $admins = new ChatAdminsList($admins);
-        }
-
-        $data = $this->httpClient->post("/chats/$chatId/members/admins", $admins->jsonSerialize());
-
-        $this->checkSimpleQueryResult($data);
+        $this->postAdmins($chatId, $admins);
     }
 
     /**
-     * Подписывает на обновления.
+     * Подписывает на доставку событий бота через Webhook.
      *
      * Настраивает доставку событий бота через Webhook — основной механизм получения событий в продуктовых интеграциях.
      * При активной подписке Long Polling не работает.
      *
-     * После вызова метода события отправляются на указанный Webhook-endpoint
-     * в виде HTTPS POST-запросов с объектом `Update`.
+     * После вызова этого метода, события отправляются на указанный Webhook-endpoint
+     * в виде HTTPS POST-запросов с объектом {@see Update}.
      *
-     * > Webhook-endpoint должен возвращать **HTTP 200** в течение 30 секунд.\
+     * > Webhook-endpoint должен возвращать **HTTP 200** в течение 30 секунд.
      * > Любой другой код ответа или превышение тайм-аута — ошибка доставки.
      *
      * @param SubscriptionRequestBody|RawModel $subscription Параметры подписки.
@@ -808,10 +823,12 @@ final class MaxApiClient
     }
 
     /**
-     * Отписывает от обновлений.
+     * Отписывает от доставки событий бота через Webhook.
      *
-     * Отписывает бота от получения обновлений через Webhook. После вызова этого метода бот перестаёт получать
-     * уведомления о новых событиях, и становится доступна доставка уведомлений через API с длительным опросом.
+     * Отписывает бота от получения новых событий через Webhook.
+     *
+     * После вызова этого метода бот перестаёт получать новые события через Webhook и становится доступна
+     * доставка уведомлений через Long Polling (метод с длительным опросом).
      *
      * @param non-empty-string $url URL, который нужно удалить из подписок на WebHook.
      * @link https://dev.max.ru/docs-api/methods/DELETE/subscriptions

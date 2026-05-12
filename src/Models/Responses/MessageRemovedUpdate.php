@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Вы получите этот `update`, как только сообщение будет удалено.
+ * Вы получите это событие, как только сообщение будет удалено.
  */
 class MessageRemovedUpdate extends Update
 {
@@ -28,7 +28,7 @@ class MessageRemovedUpdate extends Update
     }
 
     /**
-     * @return non-empty-string ID удаленного сообщения (minLength: 1).
+     * @return non-empty-string ID удалённого сообщения (minLength: 1).
      */
     public function getMessageId(): string
     {

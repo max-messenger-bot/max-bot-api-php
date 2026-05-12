@@ -13,6 +13,7 @@
     ensureOverrideAttribute="false"
 >
     <projectFiles>
+        <directory name="bin" />
         <directory name="src" />
         <directory name="tests/Unit" />
         <ignoreFiles>
@@ -31,6 +32,7 @@
                 <directory name="src/Models/Requests" />
                 <directory name="src/Models/Responses" />
                 <file name="src/MaxApiClient.php" />
+                <file name="src/MaxBot.php" />
             </errorLevel>
         </PossiblyUnusedMethod>
         <UnusedClass>

@@ -191,7 +191,7 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
     return true; // Отмечаем событие как обработанное
 });
 
-// Запуск обработки обновлений
+// Запуск обработки событий
 $marker = null;
 while (true) {
     try {

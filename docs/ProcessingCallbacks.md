@@ -5,7 +5,7 @@
 **Callback-события** возникают при нажатии пользователями интерактивных кнопок в сообщениях бота. Эти кнопки могут быть
 добавлены к сообщениям с использованием различных типов кнопок (callback, keyboard и др.).
 
-Для упрощения обработки Callback-событий (нажатий кнопок) написаны отдельные вспомогательные
+Для упрощения обработки **Callback-событий** (нажатий кнопок) написаны отдельные вспомогательные
 классы [CallbackHandler](../src/MaxBot/CallbackHandler.php)
 и [CallbackJsonHandler](../src/MaxBot/CallbackJsonHandler.php), а также реализованы методы
 `MaxBot::addCallbackHandler()` и `MaxBot::addCallbackJsonHandler()`.
@@ -13,8 +13,8 @@
 **Связанная документация:**
 
 - [Примеры обработки нажатий кнопок](Examples/ProcessingCallbacks.md)
-- [Примеры обработки событий](Examples/ProcessingEvents.md)
-- [Обработка событий](ProcessingEvents.md)
+- [Примеры обработки событий бота](Examples/ProcessingEvents.md)
+- [Обработка событий бота](ProcessingEvents.md)
 
 ## CallbackHandler
 

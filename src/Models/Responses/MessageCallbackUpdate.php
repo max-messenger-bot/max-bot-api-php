@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Вы получите этот `update` как только пользователь нажмёт кнопку.
+ * Вы получите это событие, как только пользователь нажмёт в сообщении на
+ * кнопку с типом `chat` и будет создан новый чат с ботом, связанный с этим
+ * сообщением с кнопкой.
  */
 class MessageCallbackUpdate extends Update
 {

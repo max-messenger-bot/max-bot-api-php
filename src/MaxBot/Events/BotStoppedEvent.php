@@ -21,7 +21,7 @@ final class BotStoppedEvent extends BaseEvent
     }
 
     /**
-     * @return User Пользователь, который остановил чат.
+     * @return User Пользователь, который остановил бота.
      */
     public function getUser(): User
     {
@@ -29,7 +29,7 @@ final class BotStoppedEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, который остановил чат.
+     * @return int ID пользователя, который остановил бота.
      */
     public function getUserId(): int
     {

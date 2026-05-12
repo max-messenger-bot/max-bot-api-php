@@ -1,8 +1,8 @@
 /vendor/
 /.idea/
-/.qwen/
 /schemas/*
-!/schemas/schema_current.yaml
+!/schemas/schema.yaml
 /test/
+/dev/
 /composer.lock
 /notes.txt

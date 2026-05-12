@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Представляет \~зачекрнутый\~ текст.
+ * Представляет \~зачёркнутый\~ текст.
  */
 class StrikethroughMarkup extends MarkupElement
 {

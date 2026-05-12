@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Список всех обновлений в чатах, в которых ваш бот участвовал.
+ * Список событий в чатах и каналах, в которые добавлен бот.
+ *
+ * Обратите внимание, чтобы получать события из групповых чатов и каналов,
+ * бот должен быть администратором
  */
 class UpdateList extends BaseResponseModel
 {
@@ -31,7 +34,7 @@ class UpdateList extends BaseResponseModel
     }
 
     /**
-     * @return list<Update> Страница обновлений.
+     * @return list<Update> Страница событий.
      */
     public function getUpdates(): array
     {

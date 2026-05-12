@@ -7,9 +7,9 @@
 **Связанная документация:**
 
 - [Обработка команд](../ProcessingCommands.md)
-- [Обработка событий](../ProcessingEvents.md)
+- [Обработка событий бота](../ProcessingEvents.md)
 - [Обработка нажатий кнопок](../ProcessingCallbacks.md)
-- [Примеры обработки событий](ProcessingEvents.md)
+- [Примеры обработки событий бота](ProcessingEvents.md)
 - [Примеры обработки нажатий кнопок](ProcessingCallbacks.md)
 
 ## Базовые примеры

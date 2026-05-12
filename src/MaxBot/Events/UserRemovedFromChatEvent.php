@@ -48,7 +48,7 @@ final class UserRemovedFromChatEvent extends BaseEvent
     }
 
     /**
-     * @return bool Указывает, был ли пользователь удалён из канала или нет.
+     * @return bool Указывает, что пользователь удалён из канала, а не из чата.
      */
     public function isChannel(): bool
     {

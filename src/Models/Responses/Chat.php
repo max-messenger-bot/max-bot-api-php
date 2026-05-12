@@ -30,9 +30,9 @@ class Chat extends BaseResponseModel
      *     link?: string,
      *     description?: non-empty-string,
      *     dialog_with_user?: array,
+     *     messages_count?: int,
      *     chat_message_id?: string,
-     *     pinned_message?: array,
-     *     messages_count?: int
+     *     pinned_message?: array
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
@@ -50,7 +50,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return string|null ID сообщения, содержащего кнопку, через которую был инициирован чат.
+     * @return string|null Идентификатор сообщения с кнопкой, через которую был инициирован чат.
      */
     public function getChatMessageId(): ?string
     {
@@ -110,7 +110,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return int|null Количество сообщений в чате. Только для групповых чатов и каналов. Недоступно для диалогов.
+     * @return int|null Количество сообщений в групповых чатах и каналах. Недоступно для диалогов.
      */
     public function getMessagesCount(): ?int
     {

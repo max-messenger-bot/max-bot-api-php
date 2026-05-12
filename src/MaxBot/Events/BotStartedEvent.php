@@ -23,7 +23,7 @@ final class BotStartedEvent extends BaseEvent
     }
 
     /**
-     * @return non-empty-string|null Дополнительные данные из дип-линков, переданные при запуске бота
+     * @return non-empty-string|null Дополнительные данные из диплинков, переданные при запуске бота
      *     (minLength: 1, maxLength: 128).
      */
     public function getPayload(): ?string
@@ -32,7 +32,7 @@ final class BotStartedEvent extends BaseEvent
     }
 
     /**
-     * @return User Пользователь, который нажал кнопку 'Start'.
+     * @return User Пользователь, который нажал кнопку 'Начать'.
      */
     public function getUser(): User
     {
@@ -40,7 +40,7 @@ final class BotStartedEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, который нажал кнопку 'Start'.
+     * @return int ID пользователя, который нажал кнопку 'Начать'.
      */
     public function getUserId(): int
     {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Вы получите этот update, как только бот будет добавлен в чат.
+ * Вы получите это событие, как только бот будет добавлен в чат или канал.
  */
 class BotAddedToChatUpdate extends Update
 {
@@ -39,7 +39,7 @@ class BotAddedToChatUpdate extends Update
     }
 
     /**
-     * @return bool Указывает, был ли бот добавлен в канал или нет.
+     * @return bool Указывает, что бот добавлен в канал, а не в чат.
      */
     public function isChannel(): bool
     {

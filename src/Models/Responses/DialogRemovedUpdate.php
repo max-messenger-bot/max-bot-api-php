@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Вы получите этот update, когда пользователь удаляет чат.
+ * Вы получите это событие, как только пользователь удалит чат.
  */
 class DialogRemovedUpdate extends Update
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Enums;
 
 /**
- * Тип обновления.
+ * Тип события.
  *
  * Объект `Update` представляет различные типы событий, произошедших в чате.
  *

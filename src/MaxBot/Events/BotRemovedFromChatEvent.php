@@ -39,7 +39,7 @@ final class BotRemovedFromChatEvent extends BaseEvent
     }
 
     /**
-     * @return bool Указывает, был ли бот удалён из канала или нет.
+     * @return bool Указывает, что бот удалён из канала, а не из чата.
      */
     public function isChannel(): bool
     {

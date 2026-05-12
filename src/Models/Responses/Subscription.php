@@ -40,7 +40,7 @@ class Subscription extends BaseResponseModel
     }
 
     /**
-     * @return list<UpdateType>|null Типы обновлений, на которые подписан бот.
+     * @return list<UpdateType>|null Типы событий, на которые подписан бот.
      */
     public function getUpdateTypes(): ?array
     {
@@ -48,7 +48,7 @@ class Subscription extends BaseResponseModel
     }
 
     /**
-     * @return list<non-empty-string>|null Типы обновлений, на которые подписан бот.
+     * @return list<non-empty-string>|null Типы событий, на которые подписан бот.
      */
     public function getUpdateTypesRaw(): ?array
     {
@@ -56,7 +56,7 @@ class Subscription extends BaseResponseModel
     }
 
     /**
-     * @return string URL вебхука (minLength: 12).
+     * @return non-empty-string URL вебхука (minLength: 12).
      */
     public function getUrl(): string
     {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Вы получите этот update, как только бот будет удалён из чата.
+ * Вы получите это событие, как только бот будет удалён из чата.
  */
 class BotRemovedFromChatUpdate extends Update
 {
@@ -39,7 +39,7 @@ class BotRemovedFromChatUpdate extends Update
     }
 
     /**
-     * @return bool Указывает, был ли бот удалён из канала или нет.
+     * @return bool Указывает, что бот удалён из канала, а не из чата.
      */
     public function isChannel(): bool
     {

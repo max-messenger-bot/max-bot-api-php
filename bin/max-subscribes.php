@@ -17,19 +17,14 @@ use MaxMessenger\Bot\MaxApiClient;
  *
  * Выводит список всех подписок в виде двухуровневого списка
  */
-class MaxSubscribes
+final class MaxSubscribes
 {
     /**
      * Основная функция
      */
     public static function main(): void
     {
-        echo "\n";
-        echo sprintf("%s\n", str_repeat('█', 50));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("█%s█\n", mb_str_pad('Просмотр Webhook подписок Max Bot API', 48, ' ', STR_PAD_BOTH));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("%s\n", str_repeat('█', 50));
+        Utils::printHeader('Просмотр Webhook подписок Max Bot API');
 
         // Шаг 1: API Key
         $apiKey = Utils::requestApiKey();

@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: 0.0.1
+  version: 0.0.30
   title: Max Bot API
   license:
     name: Apache 2.0
@@ -382,10 +382,8 @@ paths:
     post:
       tags:
         - chats
-      operationId: setAdmins
-      description: >-
-        Возвращает значение `true`, если в групповой чат добавлены все
-        администраторы
+      operationId: postAdmins
+      description: Максимум 50 администраторов в чате.
       summary: Назначает администраторов группового чата
       parameters:
         - name: chatId
@@ -456,7 +454,7 @@ paths:
             format: int64
         - name: user_ids
           description: >-
-            Список ID пользователей, чье членство нужно получить. Когда этот
+            Список ID пользователей, чьё членство нужно получить. Когда этот
             аргумент передан, аргументы `count` и `marker` игнорируются
           required: false
           in: query
@@ -580,8 +578,8 @@ paths:
       tags:
         - subscriptions
       operationId: getSubscriptions
-      description: Возвращает список всех подписок данного бота
-      summary: Получает подписки
+      description: Возвращает список всех Webhook подписок данного бота
+      summary: Получает Webhook подписки
       responses:
         '200':
           description: Ожидаемый результат
@@ -605,7 +603,7 @@ paths:
 
         После вызова метода события отправляются на указанный Webhook-endpoint в
         виде HTTPS POST-запросов с объектом `Update`
-      summary: Подписывает на обновления
+      summary: Подписывает на доставку событий бота через Webhook
       requestBody:
         required: true
         content:
@@ -624,10 +622,13 @@ paths:
         - subscriptions
       operationId: unsubscribe
       description: >-
-        Отписывает бота от получения обновлений через Webhook. После вызова
-        этого метода бот перестаёт получать уведомления о новых событиях, и
-        становится доступна доставка уведомлений через API с длительным опросом
-      summary: Отписывает от обновлений
+        Отписывает бота от получения новых событий через Webhook.
+
+
+        После вызова этого метода бот перестаёт получать новые события через
+        Webhook и становится доступна доставка уведомлений через Long Polling
+        (метод с длительным опросом)
+      summary: Отписывает от доставки событий бота через Webhook
       parameters:
         - name: url
           in: query
@@ -942,9 +943,8 @@ paths:
       parameters:
         - name: callback_id
           description: >-
-            Идентификатор кнопки, по которой пользователь кликнул. Бот получает
-            идентификатор как часть [Update](/docs-api/objects/Update) с
-            типом `message_callback`
+            Идентификатор кнопки, на которую нажал пользователь. Бот получает
+            идентификатор как часть `Update` с типом `message_callback`
           required: true
           in: query
           schema:
@@ -972,22 +972,23 @@ paths:
       tags:
         - subscriptions
       description: >-
-        Выполняет долгий запрос (long polling). Каждое обновление имеет свой
+        Выполняет долгий запрос (Long Polling). Каждое событие имеет свой
         номер последовательности. Свойство `marker` в ответе указывает на
-        следующее ожидаемое обновление.
+        следующее ожидаемое событие.
 
 
         Если параметр `marker` **не передан**, бот получит все ранее
-        не полученные обновления.
+        не полученные событие.
 
 
-        > Этот метод можно использовать для получения обновлений при разработке
-        и тестировании, если ваш бот не подписан на Webhook.
-        Для production-окружения рекомендуем использовать Webhook
-      summary: Получает обновления
+        > Этот метод можно использовать для получения событий бота при
+        разработке и тестировании, если ваш бот не подписан на доставку событий
+        через Webhook. Для production-окружения рекомендуем использовать
+        доставку событий через Webhook
+      summary: Получает новые события
       parameters:
         - name: limit
-          description: Максимальное количество обновлений для получения
+          description: Максимальное количество событий для получения
           in: query
           schema:
             type: integer
@@ -1004,15 +1005,15 @@ paths:
             default: 30
         - name: marker
           description: >-
-            Маркер для получения обновлений с конкретной позиции.
-            Для получения всех ранее непрочитанных обновлений, передайте `null`
+            Маркер для получения событий с конкретной позиции.
+            Для получения всех ранее непрочитанных событий, передайте `null`
           in: query
           schema:
             type: integer
             format: int64
         - name: types
           description: >-
-            Список типов обновлений, которые бот хочет получить
+            Список типов событий, которые вы хотите получить
           in: query
           example: types=message_created,message_callback
           schema:
@@ -1023,7 +1024,7 @@ paths:
           style: simple
       responses:
         '200':
-          description: Список обновлений
+          description: Список событий
           content:
             application/json:
               schema:
@@ -1277,9 +1278,15 @@ components:
             Данные о пользователе в диалоге (только для чатов типа `dialog`)
           allOf:
             - $ref: '#/components/schemas/UserWithPhoto'
+        messages_count:
+          description: >-
+            Количество сообщений в групповых чатах и каналах.
+            Недоступно для диалогов
+          type: integer
+          format: int32
         chat_message_id:
           description: >-
-            ID сообщения, содержащего кнопку, через которую был инициирован чат
+            Идентификатор сообщения с кнопкой, через которую был инициирован чат
           type: string
         pinned_message:
           description: >-
@@ -1287,9 +1294,6 @@ components:
             конкретного чата)
           allOf:
             - $ref: '#/components/schemas/Message'
-        messages_count:
-          type: integer
-          format: int32
       required:
         - chat_id
         - type
@@ -1378,15 +1382,7 @@ components:
               format: int64
               description: Дата присоединения к чату в формате Unix time
             permissions:
-              description: |
-                Перечень прав пользователя. Возможные значения:
-                - `read_all_messages` — Читать все сообщения.
-                - `add_remove_members` — Добавлять/удалять участников.
-                - `add_admins` — Добавлять администраторов.
-                - `change_chat_info` — Изменять информацию о чате.
-                - `pin_message` — Закреплять сообщения.
-                - `write` — Писать сообщения.
-                - `edit_link` — Изменять ссылку на чат.
+              description: Перечень прав пользователя
               type: array
               uniqueItems: true
               items:
@@ -1441,8 +1437,8 @@ components:
         Возможные значения:
 
         - `read_all_messages` — Читать все сообщения. Это право важно при
-        назначении ботов: без него бот не будет получать апдейты (вебхуки) в
-        групповом чате
+        назначении ботов: без него бот не будет получать события группового чата
+        или канала
 
         - `add_remove_members` — Добавлять/удалять участников
 
@@ -1523,7 +1519,7 @@ components:
           type: integer
           format: int64
         update_types:
-          description: Типы обновлений, на которые подписан бот
+          description: Типы событий, на которые подписан бот
           example: '["message_created", "bot_started"]'
           type: array
           uniqueItems: true
@@ -1578,8 +1574,7 @@ components:
           allOf:
             - $ref: '#/components/schemas/LinkedMessage'
         body:
-          description: >-
-            Содержимое сообщения. Текст + вложения
+          description: Содержимое сообщения. Текст + вложения
           allOf:
             - $ref: '#/components/schemas/MessageBody'
         stat:
@@ -1632,8 +1627,7 @@ components:
           items:
             $ref: '#/components/schemas/Attachment'
         markup:
-          description: >-
-            Разметка текста сообщения
+          description: Разметка текста сообщения
           type: array
           items:
             $ref: '#/components/schemas/MarkupElement'
@@ -1711,8 +1705,8 @@ components:
             - $ref: '#/components/schemas/User'
         chat_id:
           description: >-
-            Чат, в котором сообщение было изначально опубликовано. Только для
-            пересланных сообщений
+            Чат, в котором сообщение было изначально опубликовано.
+            `0`, если сообщение из другого диалога
           type: integer
           format: int64
         message:
@@ -2232,6 +2226,22 @@ components:
                 [initData](/docs/webapps/bridge#WebAppData) мини-приложения
               type: string
               minLength: 1
+    ClipboardButton:
+      description: >-
+        Кнопка буфера обмена.
+
+
+        При нажатии на кнопку с типом `clipboard` текст, указанный в свойстве
+        `payload`, копируется в буфер обмена
+      allOf:
+        - $ref: '#/components/schemas/Button'
+        - properties:
+            payload:
+              description: Текст, который будет скопирован
+              type: string
+              maxLength: 1024
+          required:
+            - payload
     MessageButton:
       description: >-
         Кнопка сообщения.
@@ -2247,22 +2257,6 @@ components:
               description: >-
                 Текст кнопки, который будет отправлен в чат от лица пользователя
               type: string
-    ClipboardButton:
-      description: >-
-        Кнопка буфера обмена
-
-
-        После нажатия на кнопку указанный текст копируется в буфер обмена
-      allOf:
-        - $ref: '#/components/schemas/Button'
-        - properties:
-            payload:
-              description: Текст, который копируется в буфер обмена после нажатия на кнопку
-              type: string
-              minLength: 1
-              maxLength: 1024
-          required:
-            - payload
     Intent:
       description: Намерение кнопки
       type: string
@@ -2507,9 +2501,9 @@ components:
         Тип элемента разметки.
 
 
-        Может быть \*\*жирный\*\*, \*курсив\*, \~зачеркнутый\~,
-        \<ins>подчеркнутый\</ins>, \`моноширинный\`,
-        ссылка или упоминание пользователя
+        Может быть \*\*жирный\*\*, \*курсив\*, \~зачёркнутый\~,
+        \<ins>подчёркнутый\</ins>, \`моноширинный\`, выделенный, цитата,
+        заголовок, ссылка или упоминание пользователя
       properties:
         type:
           type: string
@@ -2532,6 +2526,9 @@ components:
           strikethrough: '#/components/schemas/StrikethroughMarkup'
           underline: '#/components/schemas/UnderlineMarkup'
           user_mention: '#/components/schemas/UserMentionMarkup'
+          heading: '#/components/schemas/HeadingMarkup'
+          highlighted: '#/components/schemas/HighlightedMarkup'
+          quote: '#/components/schemas/QuoteMarkup'
       required:
         - type
         - from
@@ -2566,11 +2563,15 @@ components:
       allOf:
         - $ref: '#/components/schemas/MarkupElement'
     UnderlineMarkup:
-      description: Представляет \<ins>подчеркнутый\</ins> текст
+      description: Представляет \<ins>подчёркнутый\</ins> текст
       allOf:
         - $ref: '#/components/schemas/MarkupElement'
     HeadingMarkup:
-      description: Представляет заголовок текста
+      description: Представляет заголовок
+      allOf:
+        - $ref: '#/components/schemas/MarkupElement'
+    QuoteMarkup:
+      description: Представляет цитату
       allOf:
         - $ref: '#/components/schemas/MarkupElement'
     UserMentionMarkup:
@@ -2588,7 +2589,7 @@ components:
               type: integer
               format: int64
     HighlightedMarkup:
-      description: Представляет выделенную часть текста
+      description: Представляет выделенный текст
       allOf:
         - $ref: '#/components/schemas/MarkupElement'
     SubscriptionRequestBody:
@@ -2600,9 +2601,7 @@ components:
           type: string
           minLength: 12
         update_types:
-          description: >-
-            Список типов обновлений, которые хочет получать ваш бот. Для полного
-            списка типов см. объект [Update](/docs-api/objects/Update)
+          description: Список типов событий, которые хочет получать ваш бот.
           example: '["message_created", "bot_started"]'
           type: array
           uniqueItems: true
@@ -2751,6 +2750,8 @@ components:
           items:
             type: integer
             format: int64
+            minItems: 1
+            maxItems: 100
       required:
         - user_ids
     ActionRequestBody:
@@ -2778,10 +2779,13 @@ components:
         - sending_file
         - mark_seen
     UpdateList:
-      description: Список всех обновлений в чатах, в которых ваш бот участвовал
+      description: >-
+        Список событий в чатах и каналах, в которые добавлен бот.
+        Обратите внимание, чтобы получать события из групповых чатов и каналов,
+        бот должен быть администратором
       properties:
         updates:
-          description: Страница обновлений
+          description: Страница событий
           type: array
           items:
             $ref: '#/components/schemas/Update'
@@ -2793,10 +2797,7 @@ components:
         - updates
     Update:
       description: >-
-        Тип обновления.
-
-
-        Объект `Update` представляет различные типы событий, произошедших в чате.
+        Объект `Update` представляет различные события в чате или канале.
 
 
         > Чтобы получать события из группового чата или канала, назначьте бота
@@ -2831,7 +2832,7 @@ components:
         - timestamp
     MessageCallbackUpdate:
       description: >-
-        Вы получите этот `update` как только пользователь нажмёт кнопку
+        Вы получите это событие как только пользователь нажмёт кнопку
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -2851,7 +2852,7 @@ components:
             - callback
             - message
     MessageCreatedUpdate:
-      description: Вы получите этот `update`, как только сообщение будет создано
+      description: Вы получите это событие, как только сообщение будет создано
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -2868,12 +2869,12 @@ components:
           required:
             - message
     MessageRemovedUpdate:
-      description: Вы получите этот `update`, как только сообщение будет удалено
+      description: Вы получите это событие, как только сообщение будет удалено
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
             message_id:
-              description: ID удаленного сообщения
+              description: ID удалённого сообщения
               type: string
               minLength: 1
             chat_id:
@@ -2890,7 +2891,7 @@ components:
             - user_id
     MessageEditedUpdate:
       description: >-
-        Вы получите этот `update`, как только сообщение будет отредактировано
+        Вы получите это событие, как только пользователь отредактирует сообщение
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -2902,7 +2903,7 @@ components:
             - message
     BotAddedToChatUpdate:
       description: >-
-        Вы получите этот `update`, как только бот будет добавлен в чат
+        Вы получите это событие, как только бот будет добавлен в чат или канал
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -2915,7 +2916,7 @@ components:
               allOf:
                 - $ref: '#/components/schemas/User'
             is_channel:
-              description: Указывает, был ли бот добавлен в канал или нет
+              description: Указывает, что бот добавлен в канал, а не в чат
               type: boolean
           required:
             - chat_id
@@ -2923,7 +2924,7 @@ components:
             - is_channel
     BotRemovedFromChatUpdate:
       description: >-
-        Вы получите этот `update`, как только бот будет удалён из чата
+        Вы получите это событие, как только бот будет удалён из чата
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -2936,7 +2937,7 @@ components:
               allOf:
                 - $ref: '#/components/schemas/User'
             is_channel:
-              description: Указывает, был ли бот удалён из канала или нет
+              description: Указывает, что бот удалён из канала, а не из чата
               type: boolean
           required:
             - chat_id
@@ -2944,7 +2945,8 @@ components:
             - is_channel
     DialogMutedUpdate:
       description: >-
-        Вы получите этот `update`, когда пользователь заглушит диалог с ботом
+        Вы получите это событие, как только пользователь отключит уведомления о
+        новых сообщениях в диалоге с ботом
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -2970,8 +2972,8 @@ components:
             - muted_until
     DialogUnmutedUpdate:
       description: >-
-        Вы получите этот `update`, когда пользователь включит уведомления в
-        диалоге с ботом
+        Вы получите это событие, как только пользователь включит уведомления о
+        новых сообщениях в диалоге с ботом
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -2992,7 +2994,8 @@ components:
             - user
     DialogClearedUpdate:
       description: >-
-        Бот получает этот тип обновления сразу после очистки истории диалога
+        Вы получите это событие, как только пользователь очистит историю
+        сообщений
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -3001,7 +3004,7 @@ components:
               type: integer
               format: int64
             user:
-              description: Пользователь, который включил уведомления
+              description: Пользователь, который очистил историю сообщений
               allOf:
                 - $ref: '#/components/schemas/User'
             user_locale:
@@ -3012,7 +3015,7 @@ components:
             - chat_id
             - user
     DialogRemovedUpdate:
-      description: Вы получите этот `update`, когда пользователь удаляет чат
+      description: Вы получите это событие, как только пользователь удалит чат
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -3033,8 +3036,7 @@ components:
             - user
     UserAddedToChatUpdate:
       description: >-
-        Вы получите это обновление, когда пользователь будет добавлен в чат, где
-        бот является администратором
+        Вы получите это событие, как только пользователь будет добавлен в чат, где бот является администратором
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -3048,13 +3050,13 @@ components:
                 - $ref: '#/components/schemas/User'
             inviter_id:
               description: >-
-                Пользователь, который добавил пользователя в чат. Может
-                отсутствовать, если пользователь присоединился к чату по ссылке
+                Пользователь, который добавил нового пользователя в чат.
+                Может отсутствовать, если пользователь присоединился к чату по ссылке
               type: integer
               format: int64
             is_channel:
               description: >-
-                Указывает, был ли пользователь добавлен в канал или нет
+                Указывает, что пользователь добавлен в канал, а не в чат
               type: boolean
           required:
             - chat_id
@@ -3062,8 +3064,7 @@ components:
             - is_channel
     UserRemovedFromChatUpdate:
       description: >-
-        Вы получите это обновление, когда пользователь будет удалён из чата, где
-        бот является администратором
+        Вы получите это событие, как только пользователь будет удалён из чата, где бот является администратором
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -3082,8 +3083,7 @@ components:
               type: integer
               format: int64
             is_channel:
-              description: >-
-                Указывает, был ли пользователь удалён из канала или нет
+              description: Указывает, что пользователь удалён из канала, а не из чата
               type: boolean
           required:
             - chat_id
@@ -3091,8 +3091,8 @@ components:
             - is_channel
     BotStartedUpdate:
       description: >-
-        Бот получает этот тип обновления, как только пользователь нажал кнопку
-        `Start`
+        Вы получите это событие, как только пользователь начнёт или возобновит
+        общение с ботом (нажмёт кнопку "Начать")
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -3101,12 +3101,12 @@ components:
               type: integer
               format: int64
             user:
-              description: Пользователь, который нажал кнопку 'Start'
+              description: Пользователь, который нажал кнопку 'Начать'
               allOf:
                 - $ref: '#/components/schemas/User'
             payload:
               description: >-
-                Дополнительные данные из дип-линков, переданные при запуске бота
+                Дополнительные данные из диплинков, переданные при запуске бота
               type: string
               minLength: 1
               maxLength: 128
@@ -3120,8 +3120,8 @@ components:
             - user_id
     BotStoppedUpdate:
       description: >-
-        Бот получает этот тип обновления, как только пользователь останавливает
-        бота
+        Вы получите это событие, как только пользователь остановит бота в его
+        настройках в МАКС
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -3130,7 +3130,7 @@ components:
               type: integer
               format: int64
             user:
-              description: Пользователь, который остановил чат
+              description: Пользователь, который остановил бота
               allOf:
                 - $ref: '#/components/schemas/User'
             user_locale:
@@ -3142,7 +3142,7 @@ components:
             - user
     ChatTitleChangedUpdate:
       description: >-
-        Бот получит это обновление, когда будет изменено название чата
+        Вы получите это событие, как только будет изменено название чата
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
@@ -3164,8 +3164,9 @@ components:
             - title
     MessageChatCreatedUpdate:
       description: >-
-        Бот получит это обновление, когда чат будет создан, как только первый
-        пользователь нажмёт кнопку чата
+        Вы получите это событие, как только пользователь нажмёт в сообщении на
+        кнопку с типом `chat` и будет создан новый чат с ботом, связанный с этим
+        сообщением с кнопкой
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:

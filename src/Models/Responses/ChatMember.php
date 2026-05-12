@@ -76,14 +76,7 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return list<ChatAdminPermission>|null Перечень прав пользователя. Возможные значения:
-     *   - read_all_messages — Читать все сообщения.
-     *   - add_remove_members — Добавлять/удалять участников.
-     *   - add_admins — Добавлять администраторов.
-     *   - change_chat_info — Изменять информацию о чате.
-     *   - pin_message — Закреплять сообщения.
-     *   - write — Писать сообщения.
-     *   - edit_link — Изменять ссылку на чат.
+     * @return list<ChatAdminPermission>|null Перечень прав пользователя.
      */
     public function getPermissions(): ?array
     {
@@ -91,14 +84,7 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return list<string>|null Перечень прав пользователя. Возможные значения:
-     *   - read_all_messages — Читать все сообщения.
-     *   - add_remove_members — Добавлять/удалять участников.
-     *   - add_admins — Добавлять администраторов.
-     *   - change_chat_info — Изменять информацию о чате.
-     *   - pin_message — Закреплять сообщения.
-     *   - write — Писать сообщения.
-     *   - edit_link — Изменять ссылку на чат.
+     * @return list<string>|null Перечень прав пользователя.
      */
     public function getPermissionsRaw(): ?array
     {

@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Models\Requests;
 
+use MaxMessenger\Bot\Exceptions\Validation\MaxItemsException;
+
 use function array_key_exists;
+use function count;
 use function in_array;
 
 /**
  * Список идентификаторов пользователей.
+ *
+ * Не более 100 элементов.
  */
 final class UserIdsList extends BaseRequestModel
 {
+    use ValidateTrait;
     use ValidateRequiredTrait;
 
     /**
@@ -23,7 +29,8 @@ final class UserIdsList extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param int[]|null $userIds Массив ID пользователей для добавления в чат.
+     * @param non-empty-array<int>|null $userIds Массив ID пользователей для добавления в чат
+     * (minItems: 1, maxItems: 100).
      */
     public function __construct(?array $userIds = null)
     {
@@ -41,6 +48,10 @@ final class UserIdsList extends BaseRequestModel
     public function addUserId(int $userId): self
     {
         if (!in_array($userId, $this->data['user_ids'], true)) {
+            if (count($this->data['user_ids']) >= 100) {
+                throw new MaxItemsException('user_ids', 101, 100);
+            }
+
             $this->data['user_ids'][] = $userId;
         }
 
@@ -61,7 +72,7 @@ final class UserIdsList extends BaseRequestModel
     }
 
     /**
-     * @param int[] $userIds Массив ID пользователей для добавления в чат.
+     * @param non-empty-array<int> $userIds Массив ID пользователей для добавления в чат (minItems: 1, maxItems: 100).
      */
     public static function make(array $userIds): self
     {
@@ -69,7 +80,7 @@ final class UserIdsList extends BaseRequestModel
     }
 
     /**
-     * @param int[]|null $userIds Массив ID пользователей для добавления в чат.
+     * @param non-empty-array<int>|null $userIds Массив ID пользователей для добавления в чат (maxItems: 100).
      */
     public static function new(?array $userIds = null): self
     {
@@ -88,7 +99,7 @@ final class UserIdsList extends BaseRequestModel
     }
 
     /**
-     * @param int[] $userIds Массив ID пользователей для добавления в чат.
+     * @param non-empty-array<int> $userIds Массив ID пользователей для добавления в чат (minItems: 1, maxItems: 100).
      * @return $this
      */
     public function setUserIds(array $userIds): self
@@ -99,11 +110,15 @@ final class UserIdsList extends BaseRequestModel
     }
 
     /**
-     * @param int[] $userIds Массив ID пользователей для добавления в чат.
-     * @return list<int>
+     * @param non-empty-array<int> $userIds Массив ID пользователей для добавления в чат (minItems: 1, maxItems: 100).
+     * @return non-empty-list<int>
      */
     protected static function prepareUserIds(array $userIds): array
     {
-        return array_values(array_unique(array_map('\intval', $userIds)));
+        $userIds = array_values(array_unique(array_map('\intval', $userIds)));
+
+        self::validateArray('user_ids', $userIds, minItems: 1, maxItems: 100);
+
+        return $userIds;
     }
 }

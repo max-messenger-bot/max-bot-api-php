@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Бот получает этот тип обновления, как только пользователь останавливает бота.
+ * Вы получите это событие, как только пользователь остановит бота в его настройках в МАКС.
  */
 class BotStoppedUpdate extends Update
 {
@@ -29,7 +29,7 @@ class BotStoppedUpdate extends Update
     }
 
     /**
-     * @return User Пользователь, который остановил чат.
+     * @return User Пользователь, который остановил бота.
      */
     public function getUser(): User
     {

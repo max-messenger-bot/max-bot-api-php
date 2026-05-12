@@ -18,19 +18,14 @@ use MaxMessenger\Bot\Models\Responses\BotInfo;
  *
  * Выводит список чатов бота с поддержкой пагинации
  */
-class MaxChats
+final class MaxChats
 {
     /**
      * Основная функция
      */
     public static function main(): void
     {
-        echo "\n";
-        echo sprintf("%s\n", str_repeat('█', 50));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("█%s█\n", mb_str_pad('Просмотр списка чатов Max Bot API', 48, ' ', STR_PAD_BOTH));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("%s\n", str_repeat('█', 50));
+        Utils::printHeader('Просмотр списка чатов Max Bot API');
 
         // Шаг 1: API Key
         $apiKey = Utils::requestApiKey();

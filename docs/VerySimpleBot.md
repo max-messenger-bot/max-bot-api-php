@@ -26,7 +26,7 @@ $body = $bot->readRequestContentFromGlobal();
 // Декодируем JSON-запрос
 $update = json_decode($body, true, 16, JSON_THROW_ON_ERROR);
 
-// Проверяем тип обновления
+// Проверяем тип события
 if ($update['update_type'] === 'message_created') {
     // Пишем ответ
     $chatId = $update['message']['recipient']['chat_id'];
@@ -42,7 +42,7 @@ if ($update['update_type'] === 'message_created') {
 }
 ```
 
-**Та же функциональность с использованием обновления бота:**
+**Та же функциональность с использованием объекта Update:**
 
 ```php
 use MaxMessenger\Bot\MaxBot;
@@ -57,7 +57,7 @@ $body = $bot->readRequestContentFromGlobal();
 // Декодируем JSON-запрос и получаем из него Update
 $update = MaxBot::makeUpdateFromString($body);
 
-// Проверяем тип обновления
+// Проверяем тип события
 if ($update instanceof MessageCreatedUpdate) {
     // Пишем ответ
     $chatId = $update->getMessage()->getRecipient()->getChatId();

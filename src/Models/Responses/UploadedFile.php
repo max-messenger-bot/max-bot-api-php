@@ -7,7 +7,7 @@ namespace MaxMessenger\Bot\Models\Responses;
 use function is_int;
 use function is_string;
 
-final class UploadedFile extends BaseResponseModel
+class UploadedFile extends BaseResponseModel
 {
     /**
      * @var array{

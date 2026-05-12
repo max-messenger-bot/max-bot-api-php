@@ -19,19 +19,14 @@ use MaxMessenger\Bot\Models\Responses\Chat;
  *
  * Выводит список чатов бота с поддержкой пагинации
  */
-class MaxDeleteChats
+final class MaxDeleteChats
 {
     /**
      * Основная функция
      */
     public static function main(): void
     {
-        echo "\n";
-        echo sprintf("%s\n", str_repeat('█', 50));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("█%s█\n", mb_str_pad('Просмотр списка чатов Max Bot API', 48, ' ', STR_PAD_BOTH));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("%s\n", str_repeat('█', 50));
+        Utils::printHeader('Просмотр списка чатов Max Bot API');
 
         // Шаг 1: API Key
         $apiKey = Utils::requestApiKey();
@@ -60,7 +55,7 @@ class MaxDeleteChats
         echo "\n";
         echo sprintf("⚠️  Вы уверены, что хотите безвозвратно удалить чат \"%s\"?\n", $chatTitle);
         echo "   Введите 'yes' для подтверждения: ";
-        $confirm = trim(fgets(STDIN));
+        $confirm = trim((string)fgets(STDIN));
 
         if ($confirm !== 'yes') {
             echo "❌ Удаление отменено\n";
@@ -154,7 +149,7 @@ class MaxDeleteChats
             echo "\n";
             echo 'Введите номер чата для удаления'
                 . ' (555 для удаления всех частов на странице или Enter для следующей страницы): ';
-            $input = trim(fgets(STDIN));
+            $input = trim((string)fgets(STDIN));
 
             if ($input === '') {
                 // Пользователь нажал Enter - выход для перехода к следующей странице

@@ -11,10 +11,28 @@ use MaxMessenger\Bot\Models\Enums\UpdateType;
 use function array_key_exists;
 
 /**
- * Объект `Update` представляет различные типы событий, произошедших в чате.
+ * Объект `Update` представляет различные события в чате или канале.
  *
  * > Чтобы получать события из группового чата или канала, назначьте бота администратором
  * > и дайте права на чтение всех сообщений.
+ *
+ * Типы событий:
+ * - bot_added — Бот добавлен в чат или канал.
+ * - bot_started — Пользователь впервые начал общение с ботом или возобновил после остановки — нажал соответствующую
+ *   кнопку в настройках бота в МАКС.
+ * - bot_stopped — Пользователь остановил бота – выбрал соответствующее действие в настройках бота в МАКС
+ * - bot_removed — Бот удалён из чата или канала.
+ * - chat_title_changed — Пользователь изменил название чата или канала.
+ * - dialog_cleared — Пользователь очистил историю диалога с ботом.
+ * - dialog_muted — Пользователь отключил уведомления в диалоге с ботом.
+ * - dialog_unmuted — Пользователь включил уведомления в диалоге с ботом.
+ * - dialog_removed — Пользователь удалил диалог с ботом.
+ * - message_callback — Пользователь нажал на кнопку в чате или канале.
+ * - message_created — Пользователь отправил новое сообщение или опубликовал пост.
+ * - message_edited — Пользователь отредактировал сообщение в чате или канале.
+ * - message_removed — Пользователь удалил сообщение из чата или канала.
+ * - user_added — В чат или канал добавлен или перешёл по ссылке новый пользователь.
+ * - user_removed — Пользователь удалён или покинул чат или канал.
  *
  * @link https://dev.max.ru/docs-api/objects/Update
  */
@@ -46,7 +64,7 @@ class Update extends BaseResponseModel
     }
 
     /**
-     * @return UpdateType|null Тип обновления.
+     * @return UpdateType|null Тип события.
      */
     public function getUpdateType(): ?UpdateType
     {
@@ -54,7 +72,7 @@ class Update extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Тип обновления (minLength: 1).
+     * @return non-empty-string Тип события (minLength: 1).
      */
     public function getUpdateTypeRaw(): string
     {

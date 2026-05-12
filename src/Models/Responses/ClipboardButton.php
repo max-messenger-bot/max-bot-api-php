@@ -9,7 +9,7 @@ namespace MaxMessenger\Bot\Models\Responses;
  *
  * После нажатия на кнопку указанный текст копируется в буфер обмена.
  */
-final class ClipboardButton extends Button
+class ClipboardButton extends Button
 {
     /**
      * @var array{

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Вы получите этот update, когда пользователь включит уведомления в диалоге с ботом.
+ * Вы получите это событие, как только пользователь включит уведомления о новых сообщениях в диалоге с ботом.
  */
 class DialogUnmutedUpdate extends Update
 {

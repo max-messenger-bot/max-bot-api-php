@@ -17,22 +17,17 @@ use MaxMessenger\Bot\Models\Requests\SubscriptionRequestBody;
  * Запрашивает у пользователя:
  * - API key (токен доступа)
  * - URL адрес Webhook
- * - Типы обновлений для получения
+ * - Типы событий для получения
  * - Кодовое слово (secret)
  */
-class MaxSubscribe
+final class MaxSubscribe
 {
     /**
      * Основная функция
      */
     public static function main(): void
     {
-        echo "\n";
-        echo sprintf("%s\n", str_repeat('█', 50));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("█%s█\n", mb_str_pad('Настройка Webhook подписки Max Bot API', 48, ' ', STR_PAD_BOTH));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("%s\n", str_repeat('█', 50));
+        Utils::printHeader('Настройка Webhook подписки Max Bot API');
 
         // Шаг 1: API Key
         $apiKey = Utils::requestApiKey();
@@ -42,12 +37,12 @@ class MaxSubscribe
         $url = self::requestWebhookUrl();
         echo sprintf("✓ URL принят: %s\n", $url);
 
-        // Шаг 3: Выбор типов обновлений
+        // Шаг 3: Выбор типов событий
         $updateTypes = self::selectUpdateTypes();
         if ($updateTypes === true) {
-            echo "✓ Выбраны все типы обновлений\n";
+            echo "✓ Выбраны все типы событий\n";
         } else {
-            echo sprintf("✓ Выбрано типов обновлений: %d\n", count($updateTypes));
+            echo sprintf("✓ Выбрано типов событий: %d\n", count($updateTypes));
         }
 
         // Шаг 4: Кодовое слово
@@ -76,9 +71,9 @@ class MaxSubscribe
         echo sprintf("%s\n", str_repeat('─', 50));
         echo sprintf("URL: %s\n", $url);
         if ($updateTypes === true) {
-            echo "Типы обновлений: Все\n";
+            echo "Типы событий: Все\n";
         } else {
-            echo sprintf("Типы обновлений: %s\n", implode(', ', $updateTypes));
+            echo sprintf("Типы событий: %s\n", implode(', ', $updateTypes));
         }
         echo sprintf("Кодовое слово: %s\n", str_repeat('*', min(strlen($secret), 10)));
         echo sprintf("%s\n", str_repeat('─', 50));
@@ -87,11 +82,11 @@ class MaxSubscribe
     }
 
     /**
-     * Отображение списка типов обновлений
+     * Отображение списка типов событий
      */
     private static function displayUpdateTypes(): void
     {
-        echo "\nДоступные типы обновлений:\n";
+        echo "\nДоступные типы событий:\n";
         echo sprintf("%s\n", str_repeat('─', 50));
 
         $cases = UpdateType::cases();
@@ -209,7 +204,7 @@ class MaxSubscribe
      * @param MaxApiClient $client API клиент
      * @param non-empty-string $url URL Webhook
      * @param non-empty-string $secret Секретное слово
-     * @param list<string>|true $updateTypes Типы обновлений или true для всех типов
+     * @param list<string>|true $updateTypes Типы событий или true для всех типов
      * @return bool true при успешном сохранении
      */
     private static function saveSubscription(
@@ -221,7 +216,7 @@ class MaxSubscribe
         echo "\n🔄 Сохранение подписки на сервер... ";
 
         try {
-            // Если выбраны все типы обновлений (true), передаём пустой список
+            // Если выбраны все типы событий (true), передаём пустой список
             $typesToSave = $updateTypes === true ? [] : $updateTypes;
 
             // Преобразуем строки в UpdateType enum
@@ -249,15 +244,15 @@ class MaxSubscribe
     }
 
     /**
-     * Выбор типов обновлений
+     * Выбор типов событий
      *
-     * @return list<string>|true Список типов обновлений или true для всех типов
+     * @return list<string>|true Список типов событий или true для всех типов
      */
     private static function selectUpdateTypes(): array|true
     {
         self::displayUpdateTypes();
 
-        echo "\nВведите номера типов обновлений через запятую (например: 0,1,2,8)\n";
+        echo "\nВведите номера типов событий через запятую (например: 0,1,2,8)\n";
         echo "Или введите 'all' для выбора всех типов: ";
 
         $input = fgets(STDIN);
@@ -296,12 +291,12 @@ class MaxSubscribe
         }
 
         if ($hasError || empty($selectedTypes)) {
-            echo "❌ Не выбрано ни одного типа обновлений\n";
+            echo "❌ Не выбрано ни одного типа событий\n";
             return self::selectUpdateTypes();
         }
 
-        // Вывод списка выбранных типов обновлений
-        echo "\n✅ Выбраны типы обновлений:\n";
+        // Вывод списка выбранных типов событий
+        echo "\n✅ Выбраны типы событий:\n";
         echo sprintf("%s\n", str_repeat('─', 50));
         foreach ($selectedTypes as $type) {
             echo sprintf("  • %s\n", $type);
@@ -316,7 +311,7 @@ class MaxSubscribe
      *
      * @param MaxApiClient $client API клиент
      * @param non-empty-string $url URL Webhook
-     * @param list<string>|true $updateTypes Типы обновлений или true для всех типов
+     * @param list<string>|true $updateTypes Типы событий или true для всех типов
      * @return bool true если данные совпадают
      */
     private static function verifySubscription(
@@ -349,7 +344,7 @@ class MaxSubscribe
                 return false;
             }
 
-            // Проверяем типы обновлений
+            // Проверяем типы событий
             $savedTypes = $foundSubscription->getUpdateTypes();
             $savedTypeValues = $savedTypes !== null
                 ? array_map(static fn(UpdateType $type): string => $type->value, $savedTypes)
@@ -362,7 +357,7 @@ class MaxSubscribe
                     echo "✅ Подтверждено (все типы)\n";
                     return true;
                 }
-                echo "❌ Типы обновлений не совпадают\n";
+                echo "❌ Типы событий не совпадают\n";
                 return false;
             }
 
@@ -376,7 +371,7 @@ class MaxSubscribe
                 return true;
             }
 
-            echo "❌ Типы обновлений не совпадают\n";
+            echo "❌ Типы событий не совпадают\n";
             echo sprintf("  Ожидалось: %s\n", implode(', ', $expectedTypes));
             echo sprintf("  Получено: %s\n", implode(', ', $savedTypeValues));
             return false;

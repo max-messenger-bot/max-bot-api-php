@@ -24,7 +24,7 @@ final class MessageRemovedEvent extends BaseEvent
     }
 
     /**
-     * @return non-empty-string ID удаленного сообщения.
+     * @return non-empty-string ID удалённого сообщения.
      */
     public function getMessageId(): string
     {

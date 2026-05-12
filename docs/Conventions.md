@@ -5,9 +5,10 @@
 - **Бот** — объект класса `\MaxMessenger\Bot\MaxBot`.
 - **API-клиент** — объект класса `\MaxMessenger\Bot\MaxApiClient`.
 - **Конфигурация** — объект класса `\MaxMessenger\Bot\MaxApiConfig`.
-- **Обновление** — объект класса `\MaxMessenger\Bot\Models\Responses\Update`.
-- **Тип обновления** — значение в поле `update_type` объекта обновления.
-- **Событие** — объект класса, унаследованного от `\MaxMessenger\Bot\MaxBot\Events\BaseEvent`.
+- **Событие** — объект класса `\MaxMessenger\Bot\Models\Responses\Update`
+  (в некоторых разделах документации, под событием может иметься ввиду **событие бота** или само событие в API Max).
+- **Тип события** — значение в поле `update_type` объекта **событие**.
+- **Событие бота** — объект класса, унаследованного от `\MaxMessenger\Bot\MaxBot\Events\BaseEvent`.
 - **Модель запроса** — класс, унаследованный от `\MaxMessenger\Bot\Models\Requests\BaseRequestModel`.
 - **Модель ответа** — класс, унаследованный от `\MaxMessenger\Bot\Models\Responses\BaseResponseModel`.
 
@@ -95,7 +96,7 @@ src/
 ├── Exceptions/                   # Исключения
 │   ├── MaxBot/                   # Исключения MaxBot
 │   │   ├── Events/               # Исключения событий бота
-│   │   └── Update/               # Исключения обновлений
+│   │   └── Update/               # Исключения событий
 │   └── Validation/               # Исключения валидации
 ├── HttpClient/                   # HTTP-клиент для API-запросов
 │   ├── Body/                     # Тела HTTP-запросов

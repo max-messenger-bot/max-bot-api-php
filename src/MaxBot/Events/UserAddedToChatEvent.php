@@ -24,7 +24,7 @@ final class UserAddedToChatEvent extends BaseEvent
     }
 
     /**
-     * @return int|null Пользователь, который добавил пользователя в чат.
+     * @return int|null Пользователь, который добавил нового пользователя в чат.
      *     Может быть `null`, если пользователь присоединился к чату по ссылке.
      */
     public function getInviterId(): ?int
@@ -49,7 +49,7 @@ final class UserAddedToChatEvent extends BaseEvent
     }
 
     /**
-     * @return bool Указывает, был ли пользователь добавлен в канал или нет.
+     * @return bool Указывает, что пользователь добавлен в канал, а не в чат.
      */
     public function isChannel(): bool
     {

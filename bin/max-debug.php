@@ -17,21 +17,16 @@ use MaxMessenger\Bot\Models\Responses\Update;
  * - API key (токен доступа)
  *
  * Если есть подписки - выводит сообщение о невозможности Long Polling
- * Если подписок нет - запускает бесконечный цикл получения обновлений
+ * Если подписок нет - запускает бесконечный цикл получения событий
  */
-class MaxDebug
+final class MaxDebug
 {
     /**
      * Основная функция
      */
     public static function main(): void
     {
-        echo "\n";
-        echo sprintf("%s\n", str_repeat('█', 50));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("█%s█\n", mb_str_pad('Отладка Max Bot API (Long Polling)', 48, ' ', STR_PAD_BOTH));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("%s\n", str_repeat('█', 50));
+        Utils::printHeader('Отладка Max Bot API (Long Polling)');
 
         // Шаг 1: API Key
         $apiKey = Utils::requestApiKey();
@@ -59,14 +54,12 @@ class MaxDebug
 
             if (!empty($subscriptions)) {
                 echo sprintf("%s\n", str_repeat('─', 50));
-                echo "⚠️  Получение обновлений методом \"Long Polling\" невозможно\n";
-                echo "    при наличии подписок.\n";
+                echo "⚠️  Получение событий методом \"Long Polling\" невозможно при наличии подписок.\n";
                 echo "\n";
                 echo sprintf("    Найдено активных подписок: %d\n", count($subscriptions));
                 echo "\n";
                 echo "    Для использования Long Polling удалите все подписки:\n";
                 echo "    - Используйте скрипт max-unsubscribe.php\n";
-                echo "    - Или через @MasterBot\n";
                 echo sprintf("%s\n\n", str_repeat('─', 50));
                 return;
             }
@@ -86,15 +79,15 @@ class MaxDebug
     }
 
     /**
-     * Подробный вывод информации об обновлении
+     * Подробный вывод информации о событии
      */
     private static function printUpdate(Update $update, int $number): void
     {
         echo sprintf("%s\n", str_repeat('─', 50));
-        echo sprintf("Обновление #%d\n", $number);
+        echo sprintf("Событие #%d\n", $number);
         echo sprintf("%s\n", str_repeat('─', 50));
 
-        // Тип обновления
+        // Тип события
         $updateType = $update->getUpdateType();
         $updateTypeRaw = $update->getUpdateTypeRaw();
         echo sprintf("Тип: %s (%s)\n", $updateType?->value ?? 'unknown', $updateTypeRaw);
@@ -128,7 +121,7 @@ class MaxDebug
 
         while (true) {
             try {
-                echo sprintf("[%s] Ожидание обновлений...\n", date('Y-m-d H:i:s'));
+                echo sprintf("[%s] Ожидание событий...\n", date('Y-m-d H:i:s'));
 
                 $response = $client->getUpdates(
                     timeout: 60,
@@ -139,7 +132,7 @@ class MaxDebug
                 $marker = $response->getMarker();
 
                 if (empty($updates)) {
-                    echo sprintf("[%s] Обновлений нет\n\n", date('Y-m-d H:i:s'));
+                    echo sprintf("[%s] Событий нет\n\n", date('Y-m-d H:i:s'));
                 } else {
                     foreach ($updates as $update) {
                         $updateCount++;

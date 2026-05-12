@@ -39,7 +39,7 @@ final class BotAddedToChatEvent extends BaseEvent
     }
 
     /**
-     * @return bool Указывает, был ли бот добавлен в канал или нет.
+     * @return bool Указывает, что бот добавлен в канал, а не в чат.
      */
     public function isChannel(): bool
     {

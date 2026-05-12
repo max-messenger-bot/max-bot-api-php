@@ -7,7 +7,7 @@ namespace MaxMessenger\Bot\Models\Responses;
 use DateTimeImmutable;
 
 /**
- * Вы получите этот update, когда пользователь заглушит диалог с ботом.
+ * Вы получите это событие, как только пользователь отключит уведомления о новых сообщениях в диалоге с ботом.
  */
 class DialogMutedUpdate extends Update
 {

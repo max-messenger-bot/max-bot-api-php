@@ -18,19 +18,14 @@ use MaxMessenger\Bot\MaxApiClient;
  *
  * Выводит список всех подписок, удаляет выбранную и показывает обновлённый список
  */
-class MaxUnsubscribe
+final class MaxUnsubscribe
 {
     /**
      * Основная функция
      */
     public static function main(): void
     {
-        echo "\n";
-        echo sprintf("%s\n", str_repeat('█', 50));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("█%s█\n", mb_str_pad('Удаление Webhook подписки Max Bot API', 48, ' ', STR_PAD_BOTH));
-        echo sprintf("█%s█\n", str_repeat(' ', 48));
-        echo sprintf("%s\n", str_repeat('█', 50));
+        Utils::printHeader('Удаление Webhook подписки Max Bot API');
 
         // Шаг 1: API Key
         $apiKey = Utils::requestApiKey();

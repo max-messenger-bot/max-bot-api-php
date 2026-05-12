@@ -19,7 +19,7 @@ use function strlen;
 /**
  * Утилиты для консольных скриптов
  */
-class Utils
+final class Utils
 {
     /**
      * Путь к файлу с ключами
@@ -126,6 +126,19 @@ class Utils
     }
 
     /**
+     * @param non-empty-string $title
+     */
+    public static function printHeader(string $title): void
+    {
+        echo "\n";
+        echo sprintf("%s\n", str_repeat('█', 50));
+        echo sprintf("█%s█\n", str_repeat(' ', 48));
+        echo sprintf("█%s█\n", str_pad($title, 48 + strlen($title) - mb_strlen($title), ' ', STR_PAD_BOTH));
+        echo sprintf("█%s█\n", str_repeat(' ', 48));
+        echo sprintf("%s\n", str_repeat('█', 50));
+    }
+
+    /**
      * @param list<Subscription> $subscriptions
      */
     public static function printSubscriptionList(array $subscriptions): void
@@ -154,12 +167,12 @@ class Utils
                 echo sprintf("   • Версия API: %s\n", $version);
             }
 
-            // Типы обновлений
+            // Типы событий
             $updateTypes = $subscription->getUpdateTypes();
             if ($updateTypes === null || $updateTypes === []) {
-                echo "   • Типы обновлений: все\n";
+                echo "   • Типы событий: все\n";
             } else {
-                echo "   • Типы обновлений:\n";
+                echo "   • Типы событий:\n";
                 foreach ($updateTypes as $type) {
                     echo sprintf("     ┃ %s\n", $type->value);
                 }

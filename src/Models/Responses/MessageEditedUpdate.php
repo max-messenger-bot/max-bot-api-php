@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Вы получите этот `update`, как только сообщение будет отредактировано.
+ * Вы получите это событие, как только пользователь отредактирует сообщение.
  */
 class MessageEditedUpdate extends Update
 {

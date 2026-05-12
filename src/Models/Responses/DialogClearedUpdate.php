@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Бот получает этот тип обновления сразу после очистки истории диалога.
+ * Вы получите это событие, как только пользователь очистит историю сообщений.
  */
 class DialogClearedUpdate extends Update
 {
@@ -29,7 +29,7 @@ class DialogClearedUpdate extends Update
     }
 
     /**
-     * @return User Пользователь, который очистил историю диалога.
+     * @return User Пользователь, который очистил историю сообщений.
      */
     public function getUser(): User
     {

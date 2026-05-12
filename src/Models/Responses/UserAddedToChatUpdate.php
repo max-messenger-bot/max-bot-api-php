@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Вы получите это обновление, когда пользователь будет добавлен в чат, где бот является администратором.
+ * Вы получите это событие, как только пользователь будет добавлен в чат, где бот является администратором.
  */
 class UserAddedToChatUpdate extends Update
 {
@@ -30,7 +30,7 @@ class UserAddedToChatUpdate extends Update
     }
 
     /**
-     * @return int|null Пользователь, который добавил пользователя в чат.
+     * @return int|null Пользователь, который добавил нового пользователя в чат.
      *     Может быть `null`, если пользователь присоединился к чату по ссылке.
      */
     public function getInviterId(): ?int
@@ -49,7 +49,7 @@ class UserAddedToChatUpdate extends Update
     }
 
     /**
-     * @return bool Указывает, был ли пользователь добавлен в канал или нет.
+     * @return bool Указывает, что пользователь добавлен в канал, а не в чат.
      */
     public function isChannel(): bool
     {

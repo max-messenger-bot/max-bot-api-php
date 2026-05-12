@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Представляет выделенную часть текста.
+ * Представляет выделенный текст.
  */
 class HighlightedMarkup extends MarkupElement
 {

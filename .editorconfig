@@ -14,13 +14,10 @@ trim_trailing_whitespace = true
 [*.md]
 trim_trailing_whitespace = false
 
-[{Exceptions,HttpClient}.md]
-max_line_length = 160
-
 [*.yml]
 indent_size = 2
 
-[schema_*.yaml]
+[schema.yaml]
 indent_size = 2
 max_line_length = 80
 

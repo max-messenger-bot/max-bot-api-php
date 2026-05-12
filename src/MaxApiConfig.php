@@ -25,7 +25,7 @@ final class MaxApiConfig implements MaxApiConfigInterface
      * @var non-negative-int The maximum number of **milliseconds** that a request can run.
      *     Use `0` to wait indefinitely.
      */
-    public int $timeout = 1000;
+    public int $timeout = 10000;
     /**
      * @var SensitiveParameterValue<non-empty-string>|null
      */

@@ -9,8 +9,8 @@ use MaxMessenger\Bot\Models\Enums\MarkupElementType;
 /**
  * Тип элемента разметки.
  *
- * Может быть \*\*жирный\*\*, \*курсив\*, \~зачеркнутый\~, \<ins>подчеркнутый\</ins>, \`моноширинный\`,
- * ссылка или упоминание пользователя.
+ * Может быть \*\*жирный\*\*, \*курсив\*, \~зачёркнутый\~, \<ins>подчёркнутый\</ins>, \`моноширинный\`, выделенный,
+ * цитата, заголовок, ссылка или упоминание пользователя.
  */
 class MarkupElement extends BaseResponseModel
 {
@@ -41,8 +41,7 @@ class MarkupElement extends BaseResponseModel
     }
 
     /**
-     * @return MarkupElementType|null Тип элемента разметки. Может быть \*\*жирный\*\*, \*курсив\*, \~зачеркнутый\~,
-     *     \<ins>подчеркнутый\</ins>, \`моноширинный\`, ссылка или упоминание пользователя.
+     * @return MarkupElementType|null Тип элемента разметки.
      */
     public function getType(): ?MarkupElementType
     {
@@ -50,8 +49,7 @@ class MarkupElement extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Тип элемента разметки. Может быть \*\*жирный\*\*, \*курсив\*, \~зачеркнутый\~,
-     *     \<ins>подчеркнутый\</ins>, \`моноширинный\`, ссылка или упоминание пользователя.
+     * @return non-empty-string Тип элемента разметки.
      */
     public function getTypeRaw(): string
     {
@@ -75,6 +73,7 @@ class MarkupElement extends BaseResponseModel
             'highlighted' => HighlightedMarkup::class,
             'link' => LinkMarkup::class,
             'monospaced' => MonospacedMarkup::class,
+            'quote' => QuoteMarkup::class,
             'strikethrough' => StrikethroughMarkup::class,
             'strong' => StrongMarkup::class,
             'underline' => UnderlineMarkup::class,

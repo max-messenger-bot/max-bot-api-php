@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Бот получает этот тип обновления, как только пользователь нажал кнопку `Start`.
+ * Вы получите это событие, как только пользователь начнёт или возобновит общение с ботом (нажмёт кнопку "Начать").
  */
 class BotStartedUpdate extends Update
 {
@@ -30,7 +30,7 @@ class BotStartedUpdate extends Update
     }
 
     /**
-     * @return non-empty-string|null Дополнительные данные из дип-линков, переданные при запуске бота
+     * @return non-empty-string|null Дополнительные данные из диплинков, переданные при запуске бота
      *     (minLength: 1, maxLength: 128).
      */
     public function getPayload(): ?string
@@ -39,7 +39,7 @@ class BotStartedUpdate extends Update
     }
 
     /**
-     * @return User Пользователь, который нажал кнопку 'Start'.
+     * @return User Пользователь, который нажал кнопку 'Начать'.
      */
     public function getUser(): User
     {

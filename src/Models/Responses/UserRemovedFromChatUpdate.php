@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Вы получите это обновление, когда пользователь будет удалён из чата, где бот является администратором.
+ * Вы получите это событие, как только пользователь будет удалён из чата, где бот является администратором.
  */
 class UserRemovedFromChatUpdate extends Update
 {
@@ -49,7 +49,7 @@ class UserRemovedFromChatUpdate extends Update
     }
 
     /**
-     * @return bool Указывает, был ли пользователь удалён из канала или нет.
+     * @return bool Указывает, что пользователь удалён из канала, а не из чата.
      */
     public function isChannel(): bool
     {

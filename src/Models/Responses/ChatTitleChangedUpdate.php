@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Models\Responses;
 
 /**
- * Бот получит это обновление, когда будет изменено название чата.
+ * Вы получите это событие, как только будет изменено название чата        .
  */
 class ChatTitleChangedUpdate extends Update
 {

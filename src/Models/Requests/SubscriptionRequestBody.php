@@ -32,8 +32,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
      * @param non-empty-string|null $secret Секрет, который должен быть отправлен в заголовке
      *     `X-Max-Bot-Api-Secret` в каждом запросе Webhook (minLength: 5, maxLength: 256).
      *     Разрешены только символы `A-Z`, `a-z`, `0-9`, `_` и `-`.
-     * @param UpdateType[]|null $update_types Список типов обновлений, которые хочет получать ваш бот.
-     *     Для полного списка типов см. объект `Update`.
+     * @param UpdateType[]|null $update_types Список типов событий, которые хочет получать ваш бот.
      * @param non-empty-string|null $version Версия API (minLength: 1, pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
      *     Влияет на представление модели.
      */
@@ -116,8 +115,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
      * @param non-empty-string|null $secret Секрет, который должен быть отправлен в заголовке
      *     `X-Max-Bot-Api-Secret` в каждом запросе Webhook (minLength: 5, maxLength: 256).
      *     Разрешены только символы `A-Z`, `a-z`, `0-9`, `_` и `-`.
-     * @param UpdateType[]|null $update_types Список типов обновлений, которые хочет получать ваш бот.
-     *     Для полного списка типов см. объект `Update`.
+     * @param UpdateType[]|null $update_types Список типов событий, которые хочет получать ваш бот.
      * @param non-empty-string|null $version Версия API (minLength: 1, pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
      *     Влияет на представление модели.
      */
@@ -135,8 +133,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
      * @param non-empty-string|null $secret Секрет, который должен быть отправлен в заголовке
      *     `X-Max-Bot-Api-Secret` в каждом запросе Webhook (minLength: 5, maxLength: 256).
      *     Разрешены только символы `A-Z`, `a-z`, `0-9`, `_` и `-`.
-     * @param UpdateType[]|null $update_types Список типов обновлений, которые хочет получать ваш бот.
-     *     Для полного списка типов см. объект `Update`.
+     * @param UpdateType[]|null $update_types Список типов событий, которые хочет получать ваш бот.
      * @param non-empty-string|null $version Версия API (minLength: 1, pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
      *     Влияет на представление модели.
      */
@@ -165,8 +162,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
     }
 
     /**
-     * @param UpdateType[] $update_types Список типов обновлений, которые хочет получать ваш бот.
-     *     Для полного списка типов см. объект `Update`.
+     * @param UpdateType[] $update_types Список типов событий, которые хочет получать ваш бот.
      * @return $this
      */
     public function setUpdateTypes(array $update_types): self
