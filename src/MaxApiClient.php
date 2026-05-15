@@ -110,7 +110,7 @@ final class MaxApiClient
      * Ответом может быть обновленное сообщение и/или одноразовое уведомление для пользователя.
      *
      * @param non-empty-string $callbackId Идентификатор кнопки, на которую нажал пользователь
-     *                                     (minLength: 1, pattern: '^\s+$').
+     *                                     (minLength: 1, pattern: '^[\x21-\x7E]+$').
      *                                     Бот получает идентификатор как часть `Update` с типом `message_callback`.
      *                                     Пример получения идентификатора: `$update->getCallback()->getCallbackId()`.
      * @param CallbackAnswer|RawModel|NewMessageBody $answer Ответ на callback: обновленное сообщение и/или уведомление.
@@ -118,7 +118,7 @@ final class MaxApiClient
      */
     public function answerOnCallback(string $callbackId, NewMessageBody|RawModel|CallbackAnswer $answer): void
     {
-        self::validateString('callbackId', $callbackId, minLength: 1, pattern: '/^\s+$/');
+        self::validateString('callbackId', $callbackId, minLength: 1, pattern: '/^[\x21-\x7E]+$/');
 
         if ($answer instanceof NewMessageBody) {
             $answer = new CallbackAnswer($answer);
@@ -167,12 +167,12 @@ final class MaxApiClient
      *
      * > С помощью метода можно удалять сообщения, которые отправлены менее 24 часов назад.
      *
-     * @param non-empty-string $messageId ID удаляемого сообщения (minLength: 1, pattern: '^mid\.[0-9a-f]+$').
+     * @param non-empty-string $messageId ID удаляемого сообщения (minLength: 1, pattern: '^mid\.[\x21-\x7E]+$').
      * @link https://dev.max.ru/docs-api/methods/DELETE/messages
      */
     public function deleteMessage(string $messageId): void
     {
-        self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[0-9a-f]+$/');
+        self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[\x21-\x7E]+$/');
 
         $data = $this->httpClient->delete('/messages', ['message_id' => $messageId]);
 
@@ -204,13 +204,13 @@ final class MaxApiClient
      *
      * > С помощью метода можно отредактировать сообщения, которые отправлены менее 24 часов назад.
      *
-     * @param non-empty-string $messageId ID редактируемого сообщения (minLength: 1, pattern: '^mid\.[0-9a-f]+$').
+     * @param non-empty-string $messageId ID редактируемого сообщения (minLength: 1, pattern: '^mid\.[\x21-\x7E]+$').
      * @param NewMessageBody|RawModel $message Тело нового сообщения.
      * @link https://dev.max.ru/docs-api/methods/PUT/messages
      */
     public function editMessage(string $messageId, NewMessageBody|RawModel $message): void
     {
-        self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[0-9a-f]+$/');
+        self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[\x21-\x7E]+$/');
 
         $data = $this->httpClient->put('/messages', $message->jsonSerialize(), ['message_id' => $messageId]);
 
@@ -361,13 +361,13 @@ final class MaxApiClient
      * Возвращает сообщение по его ID.
      *
      * @param non-empty-string $messageId ID сообщения (`mid`), чтобы получить одно сообщение в чате
-     *                                    (pattern: '^mid\.[0-9a-f]+$').
+     *                                    (pattern: '^mid\.[\x21-\x7E]+$').
      * @return Message Возвращает одно сообщение.
      * @link https://dev.max.ru/docs-api/methods/GET/messages/-messageId-
      */
     public function getMessageById(string $messageId): Message
     {
-        self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[0-9a-f]+$/');
+        self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[\x21-\x7E]+$/');
 
         $data = $this->httpClient->get("/messages/$messageId");
 
@@ -572,13 +572,13 @@ final class MaxApiClient
      *
      * Возвращает подробную информацию о прикреплённом видео (URL-адреса воспроизведения и дополнительные метаданные).
      *
-     * @param non-empty-string $videoToken Токен видео-вложения (minLength: 1, pattern: '^[a-zA-Z0-9\+/_-]+={0-2}$').
+     * @param non-empty-string $videoToken Токен видео-вложения (minLength: 1, pattern: '^vid\.[\x21-\x7E]+$').
      * @return VideoAttachmentDetails Подробная информация о видео.
      * @link https://dev.max.ru/docs-api/methods/GET/videos/-videoToken-
      */
     public function getVideoAttachmentDetails(string $videoToken): VideoAttachmentDetails
     {
-        self::validateString('videoToken', $videoToken, minLength: 1, pattern: '/^vid\.[0-9a-f]+$/');
+        self::validateString('videoToken', $videoToken, minLength: 1, pattern: '/^vid\.[\x21-\x7E]+$/');
 
         $data = $this->httpClient->get("/videos/$videoToken");
 
