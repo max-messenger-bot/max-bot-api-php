@@ -25,7 +25,7 @@ final class RawModelTest extends Unit
 
     public function testCustomModelExtendingRawModel(): void
     {
-        $message = new class('Привет, мир!') extends RawModel {
+        $message = new class ('Привет, мир!') extends RawModel {
             public function __construct(string $text)
             {
                 parent::__construct([

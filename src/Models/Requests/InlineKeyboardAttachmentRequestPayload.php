@@ -19,11 +19,11 @@ use function count;
  */
 final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
 {
-    public const MAX_ROWS = 30;
-    public const MAX_BUTTONS_IN_ROW = 7;
-
     use ValidateTrait;
     use ValidateRequiredTrait;
+
+    public const MAX_ROWS = 30;
+    public const MAX_BUTTONS_IN_ROW = 7;
 
     /**
      * @var array{

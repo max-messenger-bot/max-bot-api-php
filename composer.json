@@ -34,6 +34,7 @@
     "require-dev": {
         "codeception/codeception": "^5.3",
         "codeception/module-asserts": "*",
+        "squizlabs/php_codesniffer": "^4.0",
         "vimeo/psalm": "^6.16"
     },
     "config": {

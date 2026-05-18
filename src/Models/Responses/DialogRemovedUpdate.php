@@ -45,5 +45,4 @@ class DialogRemovedUpdate extends Update
     {
         return $this->data['user_locale'] ?? null;
     }
-
 }
