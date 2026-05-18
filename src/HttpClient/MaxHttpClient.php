@@ -24,15 +24,17 @@ use function is_array;
 /**
  * HTTP-клиент для API Max.
  */
-final readonly class MaxHttpClient implements MaxHttpClientInterface
+final class MaxHttpClient implements MaxHttpClientInterface
 {
+    private ?HttpClientInterface $httpClient = null;
+
     /**
      * @param Closure(non-empty-string $method, HttpClientException $exception): void|null $exceptionLogger
      */
     public function __construct(
-        private MaxApiConfigInterface $config,
-        public ?string $version = null,
-        private ?Closure $exceptionLogger = null
+        private readonly MaxApiConfigInterface $config,
+        public readonly ?string $version = null,
+        private readonly ?Closure $exceptionLogger = null
     ) {
     }
 
@@ -48,7 +50,7 @@ final readonly class MaxHttpClient implements MaxHttpClientInterface
 
     public function getHttpClient(): HttpClientInterface
     {
-        return $this->config->getHttpClient();
+        return $this->httpClient ??= $this->config->getHttpClient();
     }
 
     public function patch(string $path, object $body, ?array $query = null): array

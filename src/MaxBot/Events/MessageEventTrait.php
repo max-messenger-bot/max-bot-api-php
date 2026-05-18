@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\MaxBot\Events;
 
+use MaxMessenger\Bot\Exceptions\MaxBot\Events\MessageMissingException;
 use MaxMessenger\Bot\Exceptions\MaxBot\Events\SenderUnknownException;
 use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\ForbiddenException;
 use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\NotFoundException;
-use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Models\Enums\ChatType;
 use MaxMessenger\Bot\Models\Enums\MessageLinkType;
 use MaxMessenger\Bot\Models\Requests\NewMessageBody;
@@ -18,10 +18,6 @@ use MaxMessenger\Bot\Models\Responses\User;
 
 use function is_string;
 
-/**
- * @psalm-require-extends BaseEvent
- * @property-read MaxApiClient $apiClient
- */
 trait MessageEventTrait
 {
     /**
@@ -35,7 +31,7 @@ trait MessageEventTrait
      */
     public function deleteMessage(): void
     {
-        $this->apiClient->deleteMessage($this->getMessage()->getBody()->getMid());
+        $this->apiClient->deleteMessage($this->requireMessage()->getBody()->getMid());
     }
 
     /**
@@ -47,9 +43,7 @@ trait MessageEventTrait
      */
     public function forwardToChat(int $chatId): SendMessageResult
     {
-        $origMessage = $this->getMessage();
-
-        $link = NewMessageLink::newFromMessage($origMessage, MessageLinkType::Forward);
+        $link = NewMessageLink::newFromMessage($this->requireMessage(), MessageLinkType::Forward);
         $forwardMessage = new NewMessageBody(link: $link);
 
         return $this->apiClient->sendMessageToChat($chatId, $forwardMessage);
@@ -64,21 +58,19 @@ trait MessageEventTrait
      */
     public function forwardToUser(int $userId): SendMessageResult
     {
-        $origMessage = $this->getMessage();
-
-        $link = NewMessageLink::newFromMessage($origMessage, MessageLinkType::Forward);
+        $link = NewMessageLink::newFromMessage($this->requireMessage(), MessageLinkType::Forward);
         $forwardMessage = new NewMessageBody(link: $link);
 
         return $this->apiClient->sendMessageToUser($userId, $forwardMessage);
     }
 
-    public function getChatId(): int
+    public function getChatId(): ?int
     {
-        return $this->getMessage()->getRecipient()->getChatId();
+        /** @psalm-suppress TypeDoesNotContainNull, RedundantCondition Psalm bug */
+        return $this->getMessage()?->getRecipient()->getChatId();
     }
 
-    abstract public function getMessage(): Message;
-
+    abstract public function getMessage(): ?Message;
 
     /**
      * @return User|null Пользователь, отправивший сообщение.
@@ -86,7 +78,8 @@ trait MessageEventTrait
      */
     public function getUser(): ?User
     {
-        return $this->getMessage()->getSender();
+        /** @psalm-suppress TypeDoesNotContainNull, RedundantCondition Psalm bug */
+        return $this->getMessage()?->getSender();
     }
 
     /**
@@ -103,7 +96,8 @@ trait MessageEventTrait
      */
     public function isChannel(): bool
     {
-        return $this->getMessage()->getRecipient()->getChatType() === ChatType::Channel;
+        /** @psalm-suppress TypeDoesNotContainNull, RedundantCondition Psalm bug */
+        return $this->getMessage()?->getRecipient()->getChatType() === ChatType::Channel;
     }
 
     /**
@@ -111,7 +105,8 @@ trait MessageEventTrait
      */
     public function isChat(): bool
     {
-        return $this->getMessage()->getRecipient()->getChatType() === ChatType::Chat;
+        /** @psalm-suppress TypeDoesNotContainNull, RedundantCondition Psalm bug */
+        return $this->getMessage()?->getRecipient()->getChatType() === ChatType::Chat;
     }
 
     /**
@@ -119,7 +114,8 @@ trait MessageEventTrait
      */
     public function isDialog(): bool
     {
-        return $this->getMessage()->getRecipient()->getChatType() === ChatType::Dialog;
+        /** @psalm-suppress TypeDoesNotContainNull, RedundantCondition Psalm bug */
+        return $this->getMessage()?->getRecipient()->getChatType() === ChatType::Dialog;
     }
 
     /**
@@ -137,7 +133,7 @@ trait MessageEventTrait
         bool $asReply = false,
         bool $disableLinkPreview = false
     ): SendMessageResult {
-        $origMessage = $this->getMessage();
+        $origMessage = $this->requireMessage();
         $chatId = $origMessage->getRecipient()->getChatId();
 
         if ($asReply) {
@@ -166,7 +162,7 @@ trait MessageEventTrait
         bool $forwardOrigMessage = false,
         bool $disableLinkPreview = false
     ): SendMessageResult {
-        $origMessage = $this->getMessage();
+        $origMessage = $this->requireMessage();
         $sender = $origMessage->getSender() ?? throw new SenderUnknownException();
 
         if ($forwardOrigMessage) {
@@ -177,5 +173,11 @@ trait MessageEventTrait
         }
 
         return $this->apiClient->sendMessageToUser($sender->getUserId(), $message, $disableLinkPreview);
+    }
+
+    private function requireMessage(): Message
+    {
+        /** @psalm-suppress TypeDoesNotContainNull, RedundantCondition Psalm bug */
+        return $this->getMessage() ?? throw new MessageMissingException();
     }
 }

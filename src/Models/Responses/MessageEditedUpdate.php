@@ -11,20 +11,20 @@ class MessageEditedUpdate extends Update
 {
     /**
      * @var array{
-     *     message: array
+     *     message?: array
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
-    private Message|false $message = false;
+    private Message|false|null $message = false;
 
     /**
-     * @return Message Отредактированное сообщение.
+     * @return Message|null Отредактированное сообщение.
      */
-    public function getMessage(): Message
+    public function getMessage(): ?Message
     {
         return $this->message === false
-            ? $this->message = Message::newFromData($this->data['message'])
+            ? $this->message = Message::newFromNullableData($this->data['message'] ?? null)
             : $this->message;
     }
 }

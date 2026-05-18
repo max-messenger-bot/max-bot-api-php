@@ -14,7 +14,7 @@ final class MessageEditedEvent extends BaseEvent
 {
     use MessageEventTrait;
 
-    public function getMessage(): Message
+    public function getMessage(): ?Message
     {
         return $this->update->getMessage();
     }

@@ -30,7 +30,8 @@ class MessageCreatedUpdate extends Update
     }
 
     /**
-     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47 (minLength: 1). Доступно только в диалогах.
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47 (minLength: 1).
+     *     Доступно только в диалогах.
      */
     public function getUserLocale(): ?string
     {
