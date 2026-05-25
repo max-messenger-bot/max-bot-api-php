@@ -1,11 +1,14 @@
 {
     "name": "max-messenger-bot/max-bot-api-php",
-    "description": "Max messenger Bot & Api",
+    "description": "PHP SDK for the Max Messenger Bot API",
     "keywords": [
         "max",
         "messenger",
         "bot",
+        "max messenger",
+        "max bot",
         "api",
+        "sdk",
         "php"
     ],
     "type": "library",

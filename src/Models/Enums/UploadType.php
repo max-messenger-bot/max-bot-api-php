@@ -11,7 +11,7 @@ namespace MaxMessenger\Bot\Models\Enums;
  * - `image`: JPG, JPEG, PNG, GIF, TIFF, BMP, HEIC.
  * - `video`: MP4, MOV, MKV, WEBM, MATROSKA.
  * - `audio`: MP3, WAV, M4A и другие.
- * - `file`: любые типы файлов.
+ * - `file`: файл для загрузки. Поддерживаются распространённые форматы.
  */
 enum UploadType: string
 {

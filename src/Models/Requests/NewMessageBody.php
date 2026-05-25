@@ -24,7 +24,7 @@ final class NewMessageBody extends BaseRequestModel
 
     /**
      * @var array{
-     *     text?: non-empty-string,
+     *     text?: string,
      *     attachments?: list<AttachmentRequest>,
      *     link?: NewMessageLink,
      *     notify: bool,
@@ -35,8 +35,9 @@ final class NewMessageBody extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $text Текст сообщения (minLength: 1, maxLength: 4000).
-     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если пусто, все вложения будут удалены.
+     * @param string|null $text Текст сообщения (maxLength: 4000).
+     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если в этом поле при обновлении сообщения
+     *     передан пустой список, все вложения будут удалены.
      * @param NewMessageLink|null $link Ссылка на сообщение.
      * @param bool $notify Если false, участники чата не будут уведомлены (по умолчанию `true`).
      * @param TextFormat|null $format Если установлен, текст сообщения будет форматирован данным способом.
@@ -66,7 +67,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить вложение к сообщению.
+     * Прикрепляет вложение к сообщению.
      *
      * @param AttachmentRequest $attachment Вложение для сообщения.
      * @return $this
@@ -79,9 +80,9 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить аудио к сообщению.
+     * Прикрепляет аудио к сообщению.
      *
-     *  Должно быть единственным вложением в сообщении.
+     * Должно быть единственным вложением в сообщении.
      *
      * @param non-empty-string $token Токен — уникальный ID загруженного медиафайла (minLength: 1).
      * @return $this
@@ -94,7 +95,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить карточку контакта к сообщению.
+     * Прикрепляет карточку контакта к сообщению.
      *
      * @param non-empty-string|null $vcfInfo
      * @return $this
@@ -109,7 +110,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить файл к сообщению.
+     * Прикрепляет файл к сообщению.
      *
      * Должен быть единственным вложением в сообщении.
      *
@@ -124,7 +125,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить изображение к сообщению.
+     * Прикрепляет изображение к сообщению.
      *
      * @param non-empty-string $token Токен существующего вложения (minLength: 1).
      * @return $this
@@ -137,7 +138,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить встроенную клавиатуру к сообщению и вернуть модель с для наполнения клавиатуры кнопками.
+     * Прикрепляет встроенную клавиатуру к сообщению и возвращает объект для наполнения клавиатуры кнопками.
      *
      * Вы можете подключить к чат-боту в MAX inline-клавиатуру. Она позволяет разместить под сообщением бота
      * до 210 кнопок, сгруппированных в 30 рядов — до 7 кнопок в каждом (до 3, если это кнопки типа `link`, `open_app`,
@@ -152,7 +153,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить встроенную клавиатуру к сообщению.
+     * Прикрепляет встроенную клавиатуру к сообщению.
      *
      * Вы можете подключить к чат-боту в MAX inline-клавиатуру. Она позволяет разместить под сообщением бота
      * до 210 кнопок, сгруппированных в 30 рядов — до 7 кнопок в каждом (до 3, если это кнопки типа `link`, `open_app`,
@@ -171,7 +172,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить координаты локации к сообщению.
+     * Прикрепляет координаты локации к сообщению.
      *
      * @param float $latitude Широта.
      * @param float $longitude Долгота.
@@ -185,7 +186,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить предпросмотр медиафайла по-внешнему URL.
+     * Прикрепляет предпросмотр медиафайла по внешнему URL.
      *
      * @param non-empty-string $url URL, прикрепленный к сообщению в качестве предпросмотра медиа (minLength: 1).
      * @param non-empty-string|null $token Токен вложения (minLength: 1).
@@ -199,7 +200,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить стикер к сообщению.
+     * Прикрепляет стикер к сообщению.
      *
      * Должен быть единственным вложением в сообщении.
      *
@@ -214,7 +215,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить изображение к сообщению.
+     * Прикрепляет изображение к сообщению.
      *
      * @param non-empty-string $url Любой внешний URL изображения, которое вы хотите прикрепить (minLength: 1)
      * @return $this
@@ -227,7 +228,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * Прикрепить видео к сообщению.
+     * Прикрепляет видео к сообщению.
      *
      * @param non-empty-string $token Токен — уникальный ID загруженного медиафайла (minLength: 1).
      * @return $this
@@ -297,8 +298,9 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $text Текст сообщения (minLength: 1, maxLength: 4000).
-     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если пусто, все вложения будут удалены.
+     * @param string|null $text Текст сообщения (maxLength: 4000).
+     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если в этом поле при обновлении сообщения
+     *     передан пустой список, все вложения будут удалены.
      * @param NewMessageLink|null $link Ссылка на сообщение.
      * @param bool $notify Если false, участники чата не будут уведомлены (по умолчанию `true`).
      * @param TextFormat|null $format Если установлен, текст сообщения будет форматирован данным способом.
@@ -314,8 +316,9 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $text Текст сообщения (minLength: 1, maxLength: 4000).
-     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если пусто, все вложения будут удалены.
+     * @param string|null $text Текст сообщения (maxLength: 4000).
+     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если в этом поле при обновлении сообщения
+     *     передан пустой список, все вложения будут удалены.
      * @param NewMessageLink|null $link Ссылка на сообщение.
      * @param bool $notify Если false, участники чата не будут уведомлены (по умолчанию `true`).
      * @param TextFormat|null $format Если установлен, текст сообщения будет форматирован данным способом.
@@ -331,7 +334,8 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param AttachmentRequest[] $attachments Вложения сообщения. Если пусто, все вложения будут удалены.
+     * @param AttachmentRequest[] $attachments Вложения сообщения. Если в этом поле при обновлении сообщения
+     *     передан пустой список, все вложения будут удалены.
      * @return $this
      */
     public function setAttachments(array $attachments): self
@@ -401,16 +405,44 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $text Текст сообщения (minLength: 1, maxLength: 4000).
+     * @param string $text Текст сообщения (maxLength: 4000).
      * @return $this
      */
     public function setText(string $text): self
     {
-        self::validateString('text', $text, minLength: 1, maxLength: 4000);
+        self::validateString('text', $text, maxLength: 4000);
 
         $this->data['text'] = $text;
 
         return $this;
+    }
+
+    /**
+     * Добавляет строку к тексту сообщения.
+     *
+     * @param string $appendedText Добавляемый текст (maxLength: 4000).
+     * @return $this
+     */
+    public function addLine(string $appendedText): self
+    {
+        $text = $this->data['text'] ?? '';
+
+        $text = $text === ''
+            ? $appendedText
+            : "$text\n$appendedText";
+
+        return $this->setText($text);
+    }
+
+    /**
+     * Добавляет текст к сообщению.
+     *
+     * @param string $appendedText Добавляемый текст (maxLength: 4000).
+     * @return $this
+     */
+    public function addText(string $appendedText): self
+    {
+        return $this->setText(($this->data['text'] ?? '') . $appendedText);
     }
 
     /**
