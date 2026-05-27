@@ -5,7 +5,7 @@
 Вы можете преобразовать любую стандартную модель запроса в `RawModel`:
 
 ```php
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
 // Создаём стандартную модель
 $message = new NewMessageBody('Привет, мир!');
@@ -25,7 +25,7 @@ $apiClient->sendMessageToChat($chatId, $rawMessage);
 Вы можете создать `RawModel` с произвольными данными:
 
 ```php
-use MaxMessenger\Bot\Models\Requests\RawModel;
+use MaxMessenger\Bot\Model\Request\RawModel;
 
 // Создаём сообщение с нестандартной структурой
 $message = new RawModel([
@@ -42,7 +42,7 @@ $apiClient->sendMessageToChat($chatId, $message);
 Иногда нужно лишь немного изменить стандартную модель:
 
 ```php
-use MaxMessenger\Bot\Models\Requests\ChatPatch;
+use MaxMessenger\Bot\Model\Request\ChatPatch;
 
 // Создаём стандартную модель для редактирования чата
 $chatPatch = new ChatPatch(title: 'Новое название');
@@ -60,8 +60,8 @@ $apiClient->editChat($chatId, $rawChatPatch);
 Вложенные модели автоматически преобразуются в `RawModel`:
 
 ```php
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
-use MaxMessenger\Bot\Models\Requests\RawModel;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
+use MaxMessenger\Bot\Model\Request\RawModel;
 
 // Создаём сообщение
 $message = new NewMessageBody('Текст сообщения');
@@ -72,11 +72,11 @@ $message = (new NewMessageBody('Текст сообщения'))
 $rawMessage = $message->getRawModel();
 
 var_dump($rawMessage);
-// class MaxMessenger\Bot\Models\Requests\RawModel (1) {
+// class MaxMessenger\Bot\Model\Request\RawModel (1) {
 //   protected array $data => array(3) {
 //     'text' => string(29) "Текст сообщения"
 //     'notify' => bool(true)
-//     'link' => class MaxMessenger\Bot\Models\Requests\NewMessageLink (3) {
+//     'link' => class MaxMessenger\Bot\Model\Request\NewMessageLink (3) {
 //       protected array $data => array(2) { ... }
 //     }
 //   }
@@ -84,10 +84,10 @@ var_dump($rawMessage);
 
 // Вложенные структуры тоже будут RawModel
 var_dump($rawMessage['link']);
-// class MaxMessenger\Bot\Models\Requests\RawModel (1) {
+// class MaxMessenger\Bot\Model\Request\RawModel (1) {
 //   protected array $data => array(2) {
 //     'mid' => string(36) "mid.ffffbea82cf265aa15ab6843019d844d"
-//     'type' => enum MaxMessenger\Bot\Models\Enums\MessageLinkType::Reply : string("reply");
+//     'type' => enum MaxMessenger\Bot\Model\Enum\MessageLinkType::Reply : string("reply");
 //   }
 // }
 
@@ -98,7 +98,7 @@ var_dump($rawMessage['link']);
 Вы можете создать свою собственную модель, унаследовавшись от `RawModel`:
 
 ```php
-use MaxMessenger\Bot\Models\Requests\RawModel;
+use MaxMessenger\Bot\Model\Request\RawModel;
 
 class CustomMessage extends RawModel
 {
@@ -131,7 +131,7 @@ $apiClient->sendMessageToChat($chatId, $message);
 `RawModel` реализует `ArrayAccess`, поэтому вы можете работать с ним как с массивом:
 
 ```php
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
 $message = new NewMessageBody('Текст');
 $rawMessage = $message->getRawModel();
@@ -154,7 +154,7 @@ if (isset($rawMessage['text'])) {
 ## Пример: отправка сообщения с произвольной разметкой
 
 ```php
-use MaxMessenger\Bot\Models\Requests\RawModel;
+use MaxMessenger\Bot\Model\Request\RawModel;
 
 $message = new RawModel([
     'text' => '*Жирный текст* и _курсив_',
@@ -168,7 +168,7 @@ $apiClient->sendMessageToChat($chatId, $message);
 ## Пример: подписка с нестандартными параметрами
 
 ```php
-use MaxMessenger\Bot\Models\Requests\RawModel;
+use MaxMessenger\Bot\Model\Request\RawModel;
 
 $subscription = new RawModel([
     'url' => 'https://your-webhook.example.com/max',

@@ -20,7 +20,7 @@
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
 
@@ -38,7 +38,7 @@ $commandHandler->onCommand('start', function (MessageCreatedEvent $event): bool 
 Регистрация обработчиков для разных команд:
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 $commandHandler = $bot->getCommandHandler();
 
@@ -73,7 +73,7 @@ $commandHandler->onCommand('info', function (MessageCreatedEvent $event): bool {
 Использование fallback-обработчика для команд без специфичного обработчика:
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 $commandHandler = $bot->getCommandHandler();
 
@@ -95,7 +95,7 @@ $commandHandler->onCommands(function (MessageCreatedEvent $event): bool {
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
 
@@ -121,7 +121,7 @@ $commandHandler->onCommand('echo', function (MessageCreatedEvent $event): bool {
 Обработка команды с несколькими аргументами:
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 // Используем пробел как разделитель
 $commandHandler = $bot->getCommandHandler(' ');
@@ -156,7 +156,7 @@ $commandHandler->onCommand('add', function (MessageCreatedEvent $event): bool {
 ### Проверка прав пользователя
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 // Список администраторов
 $adminIds = [123456, 789012];
@@ -187,8 +187,8 @@ $commandHandler->onCommand('admin', function (MessageCreatedEvent $event) use ($
 require_once __DIR__ . '/vendor/autoload.php';
 
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
-use MaxMessenger\Bot\MaxBot\Events\BaseEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use Throwable;
 
 $bot = new MaxBot('your-access-token', 'your-secret');

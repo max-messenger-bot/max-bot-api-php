@@ -5,12 +5,12 @@
 - **Бот** — объект класса `\MaxMessenger\Bot\MaxBot`.
 - **API-клиент** — объект класса `\MaxMessenger\Bot\MaxApiClient`.
 - **Конфигурация** — объект класса `\MaxMessenger\Bot\MaxApiConfig`.
-- **Событие** — объект класса `\MaxMessenger\Bot\Models\Responses\Update`
+- **Событие** — объект класса `\MaxMessenger\Bot\Model\Response\Update`
   (в некоторых разделах документации, под событием может иметься ввиду **событие бота** или само событие в API Max).
 - **Тип события** — значение в поле `update_type` объекта **событие**.
-- **Событие бота** — объект класса, унаследованного от `\MaxMessenger\Bot\MaxBot\Events\BaseEvent`.
-- **Модель запроса** — класс, унаследованный от `\MaxMessenger\Bot\Models\Requests\BaseRequestModel`.
-- **Модель ответа** — класс, унаследованный от `\MaxMessenger\Bot\Models\Responses\BaseResponseModel`.
+- **Событие бота** — объект класса, унаследованного от `\MaxMessenger\Bot\MaxBot\Event\BaseEvent`.
+- **Модель запроса** — класс, унаследованный от `\MaxMessenger\Bot\Model\Request\BaseRequestModel`.
+- **Модель ответа** — класс, унаследованный от `\MaxMessenger\Bot\Model\Response\BaseResponseModel`.
 
 ## Соглашения о стиле кода
 
@@ -82,9 +82,9 @@ declare(strict_types=1);
 
 - `BaseRequestModel` — базовый класс для моделей запросов
 - `BaseResponseModel` — базовый класс для моделей ответов
-- Модели запросов находятся в `Models/Requests/` без вложенных папок
-- Модели ответов находятся в `Models/Responses/` без вложенных папок
-- Перечисления находятся в `Models/Enums/` без вложенных папок
+- Модели запросов находятся в `Model/Request/` без вложенных папок
+- Модели ответов находятся в `Model/Response/` без вложенных папок
+- Перечисления находятся в `Model/Enum/` без вложенных папок
 - При генерации моделей используется схема из `schemas/`
 - Используются оригинальные описания из схемы с исходным форматированием
 
@@ -92,21 +92,21 @@ declare(strict_types=1);
 
 ```
 src/
-├── Contracts/                    # Интерфейсы
-├── Exceptions/                   # Исключения
+├── Contract/                     # Интерфейсы
+├── Exception/                    # Исключения
 │   ├── MaxBot/                   # Исключения MaxBot
-│   │   ├── Events/               # Исключения событий бота
+│   │   ├── Event/                # Исключения событий бота
 │   │   └── Update/               # Исключения событий
 │   └── Validation/               # Исключения валидации
 ├── HttpClient/                   # HTTP-клиент для API-запросов
 │   ├── Body/                     # Тела HTTP-запросов
-│   └── Exceptions/               # Исключения HTTP-клиента
+│   └── Exception/                # Исключения HTTP-клиента
 │       └── HttpResponse/         # HTTP-ответ исключения
 │           └── Http/             # HTTP-исключения Max API
 ├── MaxBot/                       # Вспомогательные классы бота
-│   └── Events/                   # События бота
-└── Models/                       # Модели данных
-    ├── Enums/                    # Перечисления
-    ├── Requests/                 # Модели запросов
-    └── Responses/                # Модели ответов
+│   └── Event/                    # События бота
+└── Model/                        # Модели данных
+    ├── Enum/                     # Перечисления
+    ├── Request/                  # Модели запросов
+    └── Response/                 # Модели ответов
 ```

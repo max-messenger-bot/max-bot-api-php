@@ -32,7 +32,7 @@ $apiClient->sendMessageToUser($userId, "Привет\nHello");
 **Через объект класса NewMessageBody:**
 
 ```php
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
 $apiClient->sendMessageToUser($userId, NewMessageBody::make('Привет'));
 ```
@@ -52,8 +52,8 @@ $apiClient->sendMessageToChat($chatId, 'Привет');
 ## Отправка сообщений с форматированием
 
 ```php
-use MaxMessenger\Bot\Models\Enums\TextFormat;
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+use MaxMessenger\Bot\Model\Enum\TextFormat;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
 $message = NewMessageBody::new()
     ->setText("**Жирный**\n*курсив*\n++подчёркнутый++\n~~зачёркнутый~~\n`моноширинный`")

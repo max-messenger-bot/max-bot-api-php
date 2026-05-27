@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit\HttpClient\Body;
 
 use Codeception\Test\Unit;
-use MaxMessenger\Bot\Exceptions\HttpClient\HttpRequest\JsonEncodeException;
+use MaxMessenger\Bot\Exception\HttpClient\HttpRequest\JsonEncodeException;
 use MaxMessenger\Bot\HttpClient\Body\JsonBody;
 
 final class JsonBodyTest extends Unit

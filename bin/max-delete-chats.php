@@ -6,10 +6,10 @@ require_once __DIR__ . '/utils.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use MaxMessenger\Bot\Bin\Utils;
-use MaxMessenger\Bot\Exceptions\SimpleQueryError;
+use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
-use MaxMessenger\Bot\Models\Responses\BotInfo;
-use MaxMessenger\Bot\Models\Responses\Chat;
+use MaxMessenger\Bot\Model\Response\BotInfo;
+use MaxMessenger\Bot\Model\Response\Chat;
 
 /**
  * Консольная команда для просмотра списка чатов и удаления чатов Max Bot API

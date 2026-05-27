@@ -28,7 +28,7 @@
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
 

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit\HttpClient;
 
 use Codeception\Test\Unit;
-use MaxMessenger\Bot\Contracts\MaxApiConfigInterface;
-use MaxMessenger\Bot\Exceptions\AccessTokenException;
-use MaxMessenger\Bot\Exceptions\HttpClient\HttpResponse\UnexpectedFormatException;
+use MaxMessenger\Bot\Contract\MaxApiConfigInterface;
+use MaxMessenger\Bot\Exception\AccessTokenException;
+use MaxMessenger\Bot\Exception\HttpClient\HttpResponse\UnexpectedFormatException;
 use MaxMessenger\Bot\HttpClient\JsonRequest;
 use MaxMessenger\Bot\HttpClient\JsonResponse;
 use MaxMessenger\Bot\HttpClient\MaxHttpClient;

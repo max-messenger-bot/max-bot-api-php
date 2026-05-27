@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\MaxBot;
 
 use Closure;
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 use function is_array;
 use function is_string;

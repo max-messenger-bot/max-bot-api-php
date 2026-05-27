@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\HttpClient;
 
-use MaxMessenger\Bot\Exceptions\AccessTokenException;
+use MaxMessenger\Bot\Exception\AccessTokenException;
 use MaxMessenger\Bot\HttpClient\Body\JsonBody;
 use Mj4444\SimpleHttpClient\Contracts\HttpRequest\BodyInterface;
 use Mj4444\SimpleHttpClient\Contracts\HttpRequestInterface;

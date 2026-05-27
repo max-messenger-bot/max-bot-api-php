@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\HttpClient;
 
 use JsonException;
-use MaxMessenger\Bot\Exceptions\HttpClient\HttpResponse\JsonDecodeException;
-use MaxMessenger\Bot\Exceptions\HttpClient\HttpResponse\UnexpectedContentTypeException;
-use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\MaxHttpException;
-use MaxMessenger\Bot\Models\Responses\Error;
+use MaxMessenger\Bot\Exception\HttpClient\HttpResponse\JsonDecodeException;
+use MaxMessenger\Bot\Exception\HttpClient\HttpResponse\UnexpectedContentTypeException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\MaxHttpException;
+use MaxMessenger\Bot\Model\Response\Error;
 use Mj4444\SimpleHttpClient\Contracts\HttpResponseInterface;
 use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\HttpException;
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\MaxBot;
 
 use Closure;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
-use MaxMessenger\Bot\Models\Enums\ChatType;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
+use MaxMessenger\Bot\Model\Enum\ChatType;
 
 /**
  * Вспомогательный класс для обработки команд.

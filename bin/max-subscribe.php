@@ -6,10 +6,10 @@ require_once __DIR__ . '/utils.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use MaxMessenger\Bot\Bin\Utils;
-use MaxMessenger\Bot\Exceptions\SimpleQueryError;
+use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
-use MaxMessenger\Bot\Models\Enums\UpdateType;
-use MaxMessenger\Bot\Models\Requests\SubscriptionRequestBody;
+use MaxMessenger\Bot\Model\Enum\UpdateType;
+use MaxMessenger\Bot\Model\Request\SubscriptionRequestBody;
 
 /**
  * Консольная команда для настройки Webhook подписки Max Bot API

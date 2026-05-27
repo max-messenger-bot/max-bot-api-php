@@ -21,8 +21,8 @@ CallbackJsonHandler.
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\BotStartedEvent;
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
 
@@ -43,7 +43,7 @@ $bot->onBotStarted(function (BotStartedEvent $event): bool {
 Теперь обработаем нажатие кнопки с помощью CallbackHandler:
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 $callbackHandler = $bot->addCallbackHandler();
 
@@ -59,7 +59,7 @@ $callbackHandler->onAction('help', function (MessageCallbackEvent $event): bool 
 Использование разделителя для получения аргументов:
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 $callbackHandler = $bot->addCallbackHandler(actionSeparator: ':');
 
@@ -80,7 +80,7 @@ $callbackHandler->onAction('buy', function (MessageCallbackEvent $event): bool {
 Регистрация обработчиков для разных действий:
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 $callbackHandler = $bot->addCallbackHandler();
 
@@ -119,7 +119,7 @@ $callbackHandler->onAction('profile', function (MessageCallbackEvent $event): bo
 Использование CallbackJsonHandler для сложных данных:
 
 ```php
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
 $message = new NewMessageBody('Карточка товара');
 $message->addInlineKeyboard()
@@ -127,7 +127,7 @@ $message->addInlineKeyboard()
 ```
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 $callbackHandler = $bot->addCallbackJsonHandler(actionKey: 'action');
 
@@ -155,7 +155,7 @@ $callbackHandler->onAction('buy', function (MessageCallbackEvent $event): bool {
 ### Обработка нескольких действий с JSON
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 $callbackHandler = $bot->addCallbackJsonHandler(actionKey: 'cmd');
 
@@ -191,9 +191,9 @@ $callbackHandler->onAction('select', function (MessageCallbackEvent $event): boo
 Использование метода `answer()` для изменения сообщения:
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
-use MaxMessenger\Bot\Models\Enums\TextFormat;
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
+use MaxMessenger\Bot\Model\Enum\TextFormat;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
 $callbackHandler = $bot->addCallbackHandler(actionSeparator: ':');
 
@@ -216,7 +216,7 @@ $callbackHandler->onAction('vote', function (MessageCallbackEvent $event): bool 
 Использование `answerNotification()` для одноразового уведомления:
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 $callbackHandler = $bot->addCallbackHandler(actionSeparator: ':');
 
@@ -235,7 +235,7 @@ $callbackHandler->onAction('download', function (MessageCallbackEvent $event): b
 ### Удаление сообщения после нажатия
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 $callbackHandler = $bot->addCallbackHandler();
 
@@ -255,11 +255,11 @@ $callbackHandler->onAction('dismiss', function (MessageCallbackEvent $event): bo
 require_once __DIR__ . '/vendor/autoload.php';
 
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\BaseEvent;
-use MaxMessenger\Bot\MaxBot\Events\BotStartedEvent;
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
-use MaxMessenger\Bot\Models\Enums\TextFormat;
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
+use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
+use MaxMessenger\Bot\Model\Enum\TextFormat;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 use Throwable;
 
 $bot = new MaxBot('your-access-token', 'your-secret');

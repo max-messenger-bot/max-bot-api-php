@@ -6,9 +6,9 @@ require_once __DIR__ . '/utils.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use MaxMessenger\Bot\Bin\Utils;
-use MaxMessenger\Bot\Exceptions\SimpleQueryError;
+use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
-use MaxMessenger\Bot\Models\Responses\Update;
+use MaxMessenger\Bot\Model\Response\Update;
 
 /**
  * Консольная команда для отладки Max Bot API через Long Polling

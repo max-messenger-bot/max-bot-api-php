@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\HttpClient;
 
 use Closure;
-use MaxMessenger\Bot\Contracts\MaxApiConfigInterface;
-use MaxMessenger\Bot\Contracts\MaxHttpClientInterface;
-use MaxMessenger\Bot\Exceptions\AccessTokenException;
-use MaxMessenger\Bot\Exceptions\HttpClient\HttpResponse\UnexpectedFormatException;
-use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\InternalHttpException;
-use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\TooManyRequestsException;
+use MaxMessenger\Bot\Contract\MaxApiConfigInterface;
+use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
+use MaxMessenger\Bot\Exception\AccessTokenException;
+use MaxMessenger\Bot\Exception\HttpClient\HttpResponse\UnexpectedFormatException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\InternalHttpException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\TooManyRequestsException;
 use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
 use Mj4444\SimpleHttpClient\Contracts\HttpResponseInterface;
 use Mj4444\SimpleHttpClient\Exceptions\HttpClientErrorException;

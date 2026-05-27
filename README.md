@@ -10,7 +10,7 @@
 Представление данных в виде объектов делает этот пакет предпочтительным для новичков:
 не нужно разбираться в документации и изучать структуру данных API Max — IDE сама подскажет доступные поля и методы.
 
-**Актуальность:** 25 мая 2026 г.<br>
+**Актуальность:** 27 мая 2026 г.<br>
 **Версия схемы API:** 0.0.30
 
 ```php
@@ -23,8 +23,8 @@ $apiClient->sendMessageToUser(12345678, 'Привет');
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\BotStartedEvent;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
 
@@ -106,8 +106,8 @@ composer require max-messenger-bot/max-bot-api-php
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\BotStartedEvent;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
 
@@ -167,7 +167,7 @@ $apiClient->sendMessageToUser(12345678, 'Привет');
 
 ```php
 use MaxMessenger\Bot\MaxApiClient;
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
 $apiClient = new MaxApiClient('your-access-token');
 
@@ -180,7 +180,7 @@ $apiClient->sendMessageToUser(12345678, $message);
 
 ```php
 use MaxMessenger\Bot\MaxApiClient;
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
 $apiClient = new MaxApiClient('your-access-token');
 

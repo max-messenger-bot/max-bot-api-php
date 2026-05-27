@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit\HttpClient;
 
 use Codeception\Test\Unit;
-use MaxMessenger\Bot\Exceptions\AccessTokenException;
+use MaxMessenger\Bot\Exception\AccessTokenException;
 use MaxMessenger\Bot\HttpClient\JsonRequest;
 use MaxMessenger\Bot\HttpClient\JsonResponse;
 use Mj4444\SimpleHttpClient\HttpRequest\HttpMethod;

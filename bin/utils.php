@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Bin;
 
-use MaxMessenger\Bot\Exceptions\SimpleQueryError;
+use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
-use MaxMessenger\Bot\Models\Responses\BotInfo;
-use MaxMessenger\Bot\Models\Responses\Chat;
-use MaxMessenger\Bot\Models\Responses\Subscription;
+use MaxMessenger\Bot\Model\Response\BotInfo;
+use MaxMessenger\Bot\Model\Response\Chat;
+use MaxMessenger\Bot\Model\Response\Subscription;
 use Throwable;
 
 use function count;

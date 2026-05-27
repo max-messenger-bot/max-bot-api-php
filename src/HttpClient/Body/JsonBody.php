@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\HttpClient\Body;
 
 use JsonException;
-use MaxMessenger\Bot\Exceptions\HttpClient\HttpRequest\JsonEncodeException;
+use MaxMessenger\Bot\Exception\HttpClient\HttpRequest\JsonEncodeException;
 use Mj4444\SimpleHttpClient\Contracts\HttpRequest\BodyInterface;
 
 /**

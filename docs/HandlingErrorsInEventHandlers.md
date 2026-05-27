@@ -18,7 +18,7 @@
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\BaseEvent;
+use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use Throwable;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
@@ -156,8 +156,8 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 Вы можете использовать `EventException` для явного управления потоком обработки из обработчика исключений:
 
 ```php
-use MaxMessenger\Bot\Exceptions\MaxBot\Events\EventException;
-use MaxMessenger\Bot\MaxBot\Events\Event;
+use MaxMessenger\Bot\Exception\MaxBot\Event\EventException;
+use MaxMessenger\Bot\MaxBot\Event\Event;
 
 $bot->onException(function (Throwable $exception, BaseEvent $event): void {
     // Логирование
@@ -248,8 +248,8 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\BaseEvent;
-use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\MaxHttpException;
+use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\MaxHttpException;
 use Throwable;
 
 $bot = new MaxBot('your-access-token', 'your-secret');

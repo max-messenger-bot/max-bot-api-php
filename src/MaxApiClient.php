@@ -6,44 +6,44 @@ namespace MaxMessenger\Bot;
 
 use BackedEnum;
 use Closure;
-use MaxMessenger\Bot\Contracts\MaxApiConfigInterface;
-use MaxMessenger\Bot\Contracts\MaxHttpClientInterface;
-use MaxMessenger\Bot\Exceptions\RequiredArgumentsException;
-use MaxMessenger\Bot\Exceptions\SimpleQueryError;
-use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\BadRequestException;
+use MaxMessenger\Bot\Contract\MaxApiConfigInterface;
+use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
+use MaxMessenger\Bot\Exception\RequiredArgumentsException;
+use MaxMessenger\Bot\Exception\SimpleQueryError;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\BadRequestException;
 use MaxMessenger\Bot\HttpClient\MaxHttpClient;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
-use MaxMessenger\Bot\Models\Enums\SenderAction;
-use MaxMessenger\Bot\Models\Enums\UpdateType;
-use MaxMessenger\Bot\Models\Enums\UploadType;
-use MaxMessenger\Bot\Models\Requests\ActionRequestBody;
-use MaxMessenger\Bot\Models\Requests\BotPatch;
-use MaxMessenger\Bot\Models\Requests\CallbackAnswer;
-use MaxMessenger\Bot\Models\Requests\ChatAdmin;
-use MaxMessenger\Bot\Models\Requests\ChatAdminsList;
-use MaxMessenger\Bot\Models\Requests\ChatPatch;
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
-use MaxMessenger\Bot\Models\Requests\PinMessageBody;
-use MaxMessenger\Bot\Models\Requests\RawModel;
-use MaxMessenger\Bot\Models\Requests\SubscriptionRequestBody;
-use MaxMessenger\Bot\Models\Requests\UserIdsList;
-use MaxMessenger\Bot\Models\Requests\ValidateTrait;
-use MaxMessenger\Bot\Models\Responses\BotInfo;
-use MaxMessenger\Bot\Models\Responses\Chat;
-use MaxMessenger\Bot\Models\Responses\ChatList;
-use MaxMessenger\Bot\Models\Responses\ChatMember;
-use MaxMessenger\Bot\Models\Responses\ChatMembersList;
-use MaxMessenger\Bot\Models\Responses\ContactAttachmentPayload;
-use MaxMessenger\Bot\Models\Responses\GetPinnedMessageResult;
-use MaxMessenger\Bot\Models\Responses\GetSubscriptionsResult;
-use MaxMessenger\Bot\Models\Responses\Message;
-use MaxMessenger\Bot\Models\Responses\MessageList;
-use MaxMessenger\Bot\Models\Responses\ModifyMembersResult;
-use MaxMessenger\Bot\Models\Responses\SendMessageResult;
-use MaxMessenger\Bot\Models\Responses\SimpleQueryResult;
-use MaxMessenger\Bot\Models\Responses\UpdateList;
-use MaxMessenger\Bot\Models\Responses\UploadEndpoint;
-use MaxMessenger\Bot\Models\Responses\VideoAttachmentDetails;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
+use MaxMessenger\Bot\Model\Enum\SenderAction;
+use MaxMessenger\Bot\Model\Enum\UpdateType;
+use MaxMessenger\Bot\Model\Enum\UploadType;
+use MaxMessenger\Bot\Model\Request\ActionRequestBody;
+use MaxMessenger\Bot\Model\Request\BotPatch;
+use MaxMessenger\Bot\Model\Request\CallbackAnswer;
+use MaxMessenger\Bot\Model\Request\ChatAdmin;
+use MaxMessenger\Bot\Model\Request\ChatAdminsList;
+use MaxMessenger\Bot\Model\Request\ChatPatch;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
+use MaxMessenger\Bot\Model\Request\PinMessageBody;
+use MaxMessenger\Bot\Model\Request\RawModel;
+use MaxMessenger\Bot\Model\Request\SubscriptionRequestBody;
+use MaxMessenger\Bot\Model\Request\UserIdsList;
+use MaxMessenger\Bot\Model\Request\ValidateTrait;
+use MaxMessenger\Bot\Model\Response\BotInfo;
+use MaxMessenger\Bot\Model\Response\Chat;
+use MaxMessenger\Bot\Model\Response\ChatList;
+use MaxMessenger\Bot\Model\Response\ChatMember;
+use MaxMessenger\Bot\Model\Response\ChatMembersList;
+use MaxMessenger\Bot\Model\Response\ContactAttachmentPayload;
+use MaxMessenger\Bot\Model\Response\GetPinnedMessageResult;
+use MaxMessenger\Bot\Model\Response\GetSubscriptionsResult;
+use MaxMessenger\Bot\Model\Response\Message;
+use MaxMessenger\Bot\Model\Response\MessageList;
+use MaxMessenger\Bot\Model\Response\ModifyMembersResult;
+use MaxMessenger\Bot\Model\Response\SendMessageResult;
+use MaxMessenger\Bot\Model\Response\SimpleQueryResult;
+use MaxMessenger\Bot\Model\Response\UpdateList;
+use MaxMessenger\Bot\Model\Response\UploadEndpoint;
+use MaxMessenger\Bot\Model\Response\VideoAttachmentDetails;
 use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
 use SensitiveParameter;
 
@@ -776,20 +776,6 @@ final class MaxApiClient
         bool $disableLinkPreview = false
     ): SendMessageResult {
         return $this->sendMessage($userId, null, $message, $disableLinkPreview);
-    }
-
-    /**
-     * Назначает администраторов группового чата.
-     *
-     * Максимум 50 администраторов в чате.
-     *
-     * @param int $chatId ID чата.
-     * @param ChatAdminsList|RawModel|ChatAdmin[] $admins Список администраторов.
-     * @deprecated
-     */
-    public function setAdmins(int $chatId, ChatAdminsList|RawModel|array $admins): void
-    {
-        $this->postAdmins($chatId, $admins);
     }
 
     /**

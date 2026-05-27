@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot;
 
-use MaxMessenger\Bot\Contracts\MaxApiConfigInterface;
+use MaxMessenger\Bot\Contract\MaxApiConfigInterface;
 use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
 use Mj4444\SimpleHttpClient\CurlHttpClient;
 use SensitiveParameter;

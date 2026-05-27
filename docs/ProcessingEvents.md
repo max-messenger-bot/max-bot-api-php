@@ -52,8 +52,8 @@
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\Models\Enums\UpdateType;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\Model\Enum\UpdateType;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
 
@@ -69,9 +69,9 @@ $bot->on(UpdateType::MessageCreated, function (MessageCreatedEvent $event): bool
 Вы можете использовать удобные методы для регистрации обработчиков конкретных типов событий:
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
-use MaxMessenger\Bot\MaxBot\Events\MessageEditedEvent;
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageEditedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 // Обработка новых сообщений
 $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
@@ -156,7 +156,7 @@ $bot->onFinal(function (BaseEvent $event): void {
 Регистрирует обработчик исключений, возникших при обработке событий.
 
 ```php
-use MaxMessenger\Bot\MaxBot\Events\BaseEvent;
+use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use Throwable;
 
 $bot->onException(function (Throwable $exception, BaseEvent $event): bool {

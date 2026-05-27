@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit\HttpClient;
 
 use Codeception\Test\Unit;
-use MaxMessenger\Bot\Exceptions\HttpClient\HttpResponse\JsonDecodeException;
-use MaxMessenger\Bot\Exceptions\HttpClient\HttpResponse\UnexpectedContentTypeException;
-use MaxMessenger\Bot\HttpClient\Exceptions\HttpResponse\Http\MaxHttpException;
+use MaxMessenger\Bot\Exception\HttpClient\HttpResponse\JsonDecodeException;
+use MaxMessenger\Bot\Exception\HttpClient\HttpResponse\UnexpectedContentTypeException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\MaxHttpException;
 use MaxMessenger\Bot\HttpClient\JsonRequest;
 use MaxMessenger\Bot\HttpClient\JsonResponse;
-use MaxMessenger\Bot\Models\Responses\Error;
+use MaxMessenger\Bot\Model\Response\Error;
 use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\HttpException;
 use Mj4444\SimpleHttpClient\HttpRequest\HttpMethod;
 use SensitiveParameterValue;

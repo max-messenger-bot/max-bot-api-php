@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\MaxBot;
 
 use Closure;
-use MaxMessenger\Bot\MaxBot\Events\MessageCallbackEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 /**
  * Вспомогательный класс для обработки нажатий Callback-кнопок.

@@ -46,8 +46,8 @@ if ($update['update_type'] === 'message_created') {
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
-use MaxMessenger\Bot\Models\Responses\MessageCreatedUpdate;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
+use MaxMessenger\Bot\Model\Response\MessageCreatedUpdate;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
 
@@ -71,7 +71,7 @@ if ($update instanceof MessageCreatedUpdate) {
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
 
@@ -92,7 +92,7 @@ if ($event instanceof MessageCreatedEvent) {
 
 ```php
 use MaxMessenger\Bot\MaxApiClient;
-use MaxMessenger\Bot\Models\Requests\SubscriptionRequestBody;
+use MaxMessenger\Bot\Model\Request\SubscriptionRequestBody;
 
 $apiClient = new MaxApiClient('your-access-token');
 

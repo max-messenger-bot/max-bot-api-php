@@ -2,10 +2,10 @@
 
 ## Терминология
 
-**Событие** — это объект класса `\MaxMessenger\Bot\Models\Responses\Update` или наследуемого от него класса.
+**Событие** — это объект класса `\MaxMessenger\Bot\Model\Response\Update` или наследуемого от него класса.
 Тип события содержится в поле `update_type`.
 
-**Событие бота** — это объект класса, наследуемого от `\MaxMessenger\Bot\MaxBot\Events\BaseEvent`.
+**Событие бота** — это объект класса, наследуемого от `\MaxMessenger\Bot\MaxBot\Event\BaseEvent`.
 
 ## Рекомендации
 

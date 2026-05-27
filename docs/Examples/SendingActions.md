@@ -31,7 +31,7 @@
 
 ```php
 use MaxMessenger\Bot\MaxApiClient;
-use MaxMessenger\Bot\Models\Enums\SenderAction;
+use MaxMessenger\Bot\Model\Enum\SenderAction;
 
 $client = new MaxApiClient('your-access-token');
 
@@ -44,7 +44,7 @@ $client->sendAction($chatId, SenderAction::TypingOn);
 Вы также можете использовать `RawModel` для отправки действий:
 
 ```php
-use MaxMessenger\Bot\Models\Requests\RawModel;
+use MaxMessenger\Bot\Model\Request\RawModel;
 
 $action = new RawModel(['action' => 'typing_on']);
 
@@ -59,8 +59,8 @@ $client->sendAction($chatId, $action);
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
-use MaxMessenger\Bot\Models\Enums\SenderAction;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
+use MaxMessenger\Bot\Model\Enum\SenderAction;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
 
@@ -86,7 +86,7 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 Последовательная смена действий для реалистичного поведения:
 
 ```php
-use MaxMessenger\Bot\Models\Enums\SenderAction;
+use MaxMessenger\Bot\Model\Enum\SenderAction;
 
 $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
     $chatId = $event->getChatId();
@@ -112,7 +112,7 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 Используйте действие `mark_seen` для отметки сообщений:
 
 ```php
-use MaxMessenger\Bot\Models\Enums\SenderAction;
+use MaxMessenger\Bot\Model\Enum\SenderAction;
 
 $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
     $chatId = $event->getChatId();
@@ -131,8 +131,8 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 Показываем пользователю, что бот отправляет файл:
 
 ```php
-use MaxMessenger\Bot\Models\Enums\SenderAction;
-use MaxMessenger\Bot\Models\Requests\NewMessageBody;
+use MaxMessenger\Bot\Model\Enum\SenderAction;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
 $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
     $chatId = $event->getChatId();
@@ -156,9 +156,9 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 require_once __DIR__ . '/vendor/autoload.php';
 
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Events\BaseEvent;
-use MaxMessenger\Bot\MaxBot\Events\MessageCreatedEvent;
-use MaxMessenger\Bot\Models\Enums\SenderAction;
+use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
+use MaxMessenger\Bot\Model\Enum\SenderAction;
 use Throwable;
 
 $bot = new MaxBot('your-access-token', 'your-secret');
