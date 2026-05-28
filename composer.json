@@ -40,6 +40,11 @@
         "squizlabs/php_codesniffer": "^4.0",
         "vimeo/psalm": "^6.16"
     },
+    "scripts": {
+        "test": "codecept run",
+        "phpcs": "phpcs",
+        "psalm": "psalm"
+    },
     "config": {
         "sort-packages": true
     }
