@@ -9,6 +9,4 @@ namespace MaxMessenger\Bot\Exception\HttpClient\HttpResponse;
  *
  * Abstract exception for handling data parsing errors from HTTP responses.
  */
-abstract class ParseDataException extends HttpResponseException
-{
-}
+abstract class ParseDataException extends HttpResponseException {}

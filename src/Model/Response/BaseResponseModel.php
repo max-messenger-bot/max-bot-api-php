@@ -13,9 +13,8 @@ use Traversable;
 abstract class BaseResponseModel implements ModelInterface
 {
     final private function __construct(
-        protected readonly array $data
-    ) {
-    }
+        protected readonly array $data,
+    ) {}
 
     /**
      * Returns an iterator of the model's raw data.

@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\Model\Response;
 /**
  * Представляет \*\*жирный\*\* текст.
  */
-class StrongMarkup extends MarkupElement
-{
-}
+class StrongMarkup extends MarkupElement {}

@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\Model\Response;
 /**
  * Представляет заголовок.
  */
-class HeadingMarkup extends MarkupElement
-{
-}
+class HeadingMarkup extends MarkupElement {}

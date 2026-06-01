@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\Model\Response;
 /**
  * Представляет выделенный текст.
  */
-class HighlightedMarkup extends MarkupElement
-{
-}
+class HighlightedMarkup extends MarkupElement {}

@@ -9,6 +9,4 @@ namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
  *
  * Не предоставлен `access_token` или токен недействителен.
  */
-final class UnauthorizedException extends MaxHttpException
-{
-}
+final class UnauthorizedException extends MaxHttpException {}

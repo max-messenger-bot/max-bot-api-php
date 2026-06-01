@@ -35,14 +35,6 @@
                 <file name="src/MaxBot.php" />
             </errorLevel>
         </PossiblyUnusedMethod>
-        <UnusedClass>
-            <errorLevel type="suppress">
-                <directory name="tests/Unit" />
-                <file name="src/Model/Response/PhotoTokens.php" />
-                <file name="src/Model/Response/UploadedFile.php" />
-                <file name="src/MaxBot.php" />
-            </errorLevel>
-        </UnusedClass>
         <PropertyNotSetInConstructor>
             <errorLevel type="suppress">
                 <directory name="tests/Unit" />
@@ -53,5 +45,13 @@
                 <directory name="tests/Unit" />
             </errorLevel>
         </RedundantCondition>
+        <UnusedClass>
+            <errorLevel type="suppress">
+                <directory name="tests/Unit" />
+                <file name="src/Model/Response/PhotoTokens.php" />
+                <file name="src/Model/Response/UploadedFile.php" />
+                <file name="src/MaxBot.php" />
+            </errorLevel>
+        </UnusedClass>
     </issueHandlers>
 </psalm>

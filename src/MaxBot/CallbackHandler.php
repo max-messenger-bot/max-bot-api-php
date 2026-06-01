@@ -25,9 +25,8 @@ final class CallbackHandler
     public function __construct(
         private array $actionHandlers = [],
         public ?string $actionSeparator = null,
-        public int $actionMaxLength = 64
-    ) {
-    }
+        public int $actionMaxLength = 64,
+    ) {}
 
     /**
      * @return positive-int

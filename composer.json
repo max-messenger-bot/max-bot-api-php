@@ -37,14 +37,24 @@
     "require-dev": {
         "codeception/codeception": "^5.3",
         "codeception/module-asserts": "*",
-        "squizlabs/php_codesniffer": "^4.0",
+        "friendsofphp/php-cs-fixer": "^3.95",
         "vimeo/psalm": "^6.16"
     },
     "scripts": {
         "test": "codecept run",
-        "phpcs": "phpcs",
-        "psalm": "psalm"
+        "psalm": "psalm",
+        "php-cs-fixer": "php-cs-fixer check --diff",
+        "php-cs-fixer-fix": "php-cs-fixer fix"
     },
+    "bin": [
+        "bin/max-chats",
+        "bin/max-debug",
+        "bin/max-delete-chats",
+        "bin/max-subscribe",
+        "bin/max-subscribes",
+        "bin/max-unsubscribe",
+        "bin/polling-to-webhook"
+    ],
     "config": {
         "sort-packages": true
     }

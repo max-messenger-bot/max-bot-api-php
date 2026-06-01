@@ -11,6 +11,4 @@ use RuntimeException;
  *
  * Base class for runtime exceptions in the API Max client.
  */
-class MaxApiException extends RuntimeException
-{
-}
+class MaxApiException extends RuntimeException {}

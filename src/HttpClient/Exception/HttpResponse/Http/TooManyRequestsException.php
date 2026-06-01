@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
 /**
  * Превышено количество запросов.
  */
-final class TooManyRequestsException extends MaxHttpException
-{
-}
+final class TooManyRequestsException extends MaxHttpException {}

@@ -9,6 +9,4 @@ namespace MaxMessenger\Bot\Exception\Validation;
  *
  * Exception thrown when keyboard configuration violates validation rules.
  */
-final class KeyboardException extends ValidationException
-{
-}
+final class KeyboardException extends ValidationException {}

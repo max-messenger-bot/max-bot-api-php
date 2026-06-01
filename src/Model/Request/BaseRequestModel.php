@@ -46,7 +46,7 @@ abstract class BaseRequestModel implements ModelInterface
     {
         $this->validateRequired();
 
-        return (object)$this->getRawData();
+        return (object) $this->getRawData();
     }
 
     /**
@@ -94,7 +94,5 @@ abstract class BaseRequestModel implements ModelInterface
         throw new ActionProhibited();
     }
 
-    public function validateRequired(): void
-    {
-    }
+    public function validateRequired(): void {}
 }

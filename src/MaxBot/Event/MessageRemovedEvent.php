@@ -31,6 +31,11 @@ final class MessageRemovedEvent extends BaseEvent
         return $this->update->getMessageId();
     }
 
+    public function getUser(): null
+    {
+        return null;
+    }
+
     /**
      * @return int ID пользователя, удалившего сообщение.
      */

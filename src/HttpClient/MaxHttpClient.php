@@ -34,9 +34,8 @@ final class MaxHttpClient implements MaxHttpClientInterface
     public function __construct(
         private readonly MaxApiConfigInterface $config,
         public readonly ?string $version = null,
-        private readonly ?Closure $exceptionLogger = null
-    ) {
-    }
+        private readonly ?Closure $exceptionLogger = null,
+    ) {}
 
     public function delete(string $path, ?array $query = null): array
     {
@@ -112,7 +111,7 @@ final class MaxHttpClient implements MaxHttpClientInterface
         ?array $query,
         HttpMethod $method,
         ?object $body = null,
-        int $timeout = null
+        int $timeout = null,
     ): JsonRequest {
         $url = $this->config->getBaseUrl() . $path;
         $accessToken = $this->config->getAccessToken() ?? throw new AccessTokenException();

@@ -40,7 +40,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
         ?string $url = null,
         ?string $secret = null,
         ?array $update_types = null,
-        ?string $version = null
+        ?string $version = null,
     ) {
         $this->required = ['url'];
 
@@ -123,7 +123,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
         string $url,
         ?string $secret = null,
         ?array $update_types = null,
-        ?string $version = null
+        ?string $version = null,
     ): self {
         return new self($url, $secret, $update_types, $version);
     }
@@ -141,7 +141,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
         ?string $url = null,
         ?string $secret = null,
         ?array $update_types = null,
-        ?string $version = null
+        ?string $version = null,
     ): self {
         return new self($url, $secret, $update_types, $version);
     }

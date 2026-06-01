@@ -3,6 +3,6 @@
 /schemas/*
 !/schemas/schema.yaml
 /test/
-/dev/
 /composer.lock
 /notes.txt
+/.php-cs-fixer.cache

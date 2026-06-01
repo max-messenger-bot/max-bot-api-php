@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\Model\Response;
 /**
  * Представляет цитату.
  */
-class QuoteMarkup extends MarkupElement
-{
-}
+class QuoteMarkup extends MarkupElement {}

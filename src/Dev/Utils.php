@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MaxMessenger\Bot\Bin;
+namespace MaxMessenger\Bot\Dev;
 
 use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
@@ -24,7 +24,7 @@ final class Utils
     /**
      * Путь к файлу с ключами
      */
-    private const KEYS_FILE = __DIR__ . '/.keys';
+    private const KEYS_FILE = __DIR__ . '/../../dev/.keys';
 
     /**
      * Получение API ключа из файла .keys
@@ -39,24 +39,78 @@ final class Utils
         if (!file_exists(self::KEYS_FILE)) {
             echo "\n";
             echo "ℹ️  Файл .keys не найден\n";
-            echo "   Чтобы не вводить ключ каждый раз, создайте файл .keys\n";
-            echo "   в папке bin/ и добавьте в него ключи в формате:\n";
-            echo "   key-name=api-key\n";
+            echo "   Чтобы не вводить ключ каждый раз, установите пакет как отдельный\n";
+            echo "   проект и создайте файл .keys в папке dev/:\n";
             echo "\n";
+            echo "   1. Установите пакет как проект:\n";
+            echo "      composer create-project max-messenger-bot/max-bot-api-php my-bot-dev\n";
+            echo "\n";
+            echo "   2. Перейдите в папку проекта:\n";
+            echo "      cd my-bot-dev\n";
+            echo "\n";
+            echo "   3. Создайте файл dev/.keys на основе примера:\n";
+            echo "      cp dev/.keys.example dev/.keys\n";
+            echo "\n";
+            echo "   4. Добавьте в dev/.keys ключи в формате:\n";
+            echo "      key-name=api-key\n";
+            echo "\n";
+
             return null;
         }
 
-        $keys = self::loadKeysFromFile();
+        $keys = self::loadConfigFromFile(self::KEYS_FILE);
 
         if (empty($keys)) {
             echo "\n";
             echo "⚠️  Файл .keys пуст или содержит некорректные данные\n";
             echo "   Добавьте ключи в формате: key-name=api-key\n";
             echo "\n";
+
             return null;
         }
 
         return self::selectKeyFromList($keys);
+    }
+
+    /**
+     * Загрузка конфигурации из файла
+     *
+     * @return array<non-empty-string, non-empty-string> Ассоциативный массив [имя => значение]
+     */
+    public static function loadConfigFromFile(string $fileName): array
+    {
+        $content = file_get_contents($fileName);
+
+        if ($content === false) {
+            return [];
+        }
+
+        $values = [];
+        $lines = explode("\n", str_replace("\r\n", "\r", $content));
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+
+            // Пропуск пустых строк и комментариев
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+
+            $parts = explode('=', $line, 2);
+
+            if (count($parts) !== 2) {
+                continue;
+            }
+
+            $name = trim($parts[0]);
+            $value = trim($parts[1]);
+
+            if ($name !== '' && $value !== '') {
+                $values[$name] = $value;
+            }
+        }
+
+        return $values;
     }
 
     /**
@@ -68,12 +122,13 @@ final class Utils
     {
         if (empty($chats)) {
             echo "ℹ️  Чаты не найдены\n\n";
+
             return;
         }
 
-        echo sprintf("%s\n", str_repeat('─', 50));
+        self::printLine();
         echo sprintf("Чатов на странице: %d\n", count($chats));
-        echo sprintf("%s\n\n", str_repeat('─', 50));
+        self::printLine(true);
 
         foreach ($chats as $index => $chat) {
             $number = $index + 1;
@@ -122,7 +177,18 @@ final class Utils
             echo "\n";
         }
 
-        echo sprintf("%s\n", str_repeat('─', 50));
+        self::printLine();
+    }
+
+    public static function printDoubleLine(bool $addEmptyLineAfter = false, bool $addEmptyLineBefore = false): void
+    {
+        if ($addEmptyLineBefore) {
+            echo "\n";
+        }
+        echo sprintf("%s\n", str_repeat('═', 50));
+        if ($addEmptyLineAfter) {
+            echo "\n";
+        }
     }
 
     /**
@@ -138,6 +204,17 @@ final class Utils
         echo sprintf("%s\n", str_repeat('█', 50));
     }
 
+    public static function printLine(bool $addEmptyLineAfter = false, bool $addEmptyLineBefore = false): void
+    {
+        if ($addEmptyLineBefore) {
+            echo "\n";
+        }
+        echo sprintf("%s\n", str_repeat('─', 50));
+        if ($addEmptyLineAfter) {
+            echo "\n";
+        }
+    }
+
     /**
      * @param list<Subscription> $subscriptions
      */
@@ -145,12 +222,13 @@ final class Utils
     {
         if (empty($subscriptions)) {
             echo "ℹ️  Подписки не найдены\n\n";
+
             return;
         }
 
-        echo sprintf("%s\n", str_repeat('─', 50));
+        self::printLine();
         echo sprintf("Найдено подписок: %d\n", count($subscriptions));
-        echo sprintf("%s\n\n", str_repeat('─', 50));
+        self::printLine(true);
 
         foreach ($subscriptions as $index => $subscription) {
             $number = $index + 1;
@@ -181,7 +259,7 @@ final class Utils
             echo "\n";
         }
 
-        echo sprintf("%s\n", str_repeat('─', 50));
+        self::printLine();
     }
 
     /**
@@ -217,9 +295,9 @@ final class Utils
      */
     public static function requestApiKey(): string
     {
-        echo sprintf("\n%s\n", str_repeat('═', 50));
+        self::printDoubleLine(false, true);
         echo "ШАГ 1: API Key (токен доступа)\n";
-        echo sprintf("%s\n\n", str_repeat('═', 50));
+        self::printDoubleLine(true);
 
         // Попытка получить ключ из файла .keys
         $apiKey = self::getApiKeyFromKeysFile();
@@ -239,6 +317,7 @@ final class Utils
 
         if (strlen($apiKey) < 10) {
             echo "❌ Слишком короткий API key\n";
+
             return self::requestApiKey();
         }
 
@@ -264,55 +343,17 @@ final class Utils
             $client = new MaxApiClient($apiKey);
             $client->getMyInfo();
             echo "✅ Успешно\n";
+
             return true;
         } catch (SimpleQueryError $e) {
             echo sprintf("❌ Ошибка API: %s\n", $e->getMessage());
+
             return false;
         } catch (Throwable $e) {
             echo sprintf("❌ Ошибка: %s\n", $e->getMessage());
+
             return false;
         }
-    }
-
-    /**
-     * Загрузка ключей из файла
-     *
-     * @return array<non-empty-string, non-empty-string> Ассоциативный массив [имя => ключ]
-     */
-    private static function loadKeysFromFile(): array
-    {
-        $content = file_get_contents(self::KEYS_FILE);
-
-        if ($content === false) {
-            return [];
-        }
-
-        $keys = [];
-        $lines = explode("\n", $content);
-
-        foreach ($lines as $line) {
-            $line = trim($line);
-
-            // Пропуск пустых строк и комментариев
-            if ($line === '' || str_starts_with($line, '#')) {
-                continue;
-            }
-
-            $parts = explode('=', $line, 2);
-
-            if (count($parts) !== 2) {
-                continue;
-            }
-
-            $name = trim($parts[0]);
-            $key = trim($parts[1]);
-
-            if ($name !== '' && $key !== '') {
-                $keys[$name] = $key;
-            }
-        }
-
-        return $keys;
     }
 
     /**
@@ -325,14 +366,14 @@ final class Utils
     {
         echo "\n";
         echo "Доступные ключи:\n";
-        echo str_repeat('─', 50) . "\n";
+        self::printLine();
 
         $names = array_keys($keys);
         foreach ($names as $index => $name) {
             printf("  %d. %s\n", $index + 1, $name);
         }
 
-        echo str_repeat('─', 50) . "\n";
+        self::printLine();
         echo 'Введите номер ключа для выбора (или 0 для ввода своего ключа): ';
 
         $input = fgets(STDIN);
@@ -351,20 +392,22 @@ final class Utils
         // Проверка: ввод должен быть числом
         if (!preg_match('/^\d+$/', $input)) {
             echo "❌ Ошибка: введите номер ключа\n";
+
             return null;
         }
 
-        $selectedIndex = (int)$input - 1;
+        $selectedIndex = (int) $input - 1;
 
         if (!isset($names[$selectedIndex])) {
             echo "❌ Неверный номер ключа\n";
+
             return null;
         }
 
         $selectedName = $names[$selectedIndex];
         $selectedKey = $keys[$selectedName];
 
-        echo '✓ Выбран ключ: ' . $selectedName . "\n";
+        echo sprintf("✓ Выбран ключ: %s (***%s)\n", $selectedName, substr($selectedKey, -4));
 
         return $selectedKey;
     }

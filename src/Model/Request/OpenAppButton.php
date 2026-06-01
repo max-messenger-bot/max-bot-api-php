@@ -35,7 +35,7 @@ final class OpenAppButton extends Button
         ?string $text = null,
         ?string $webApp = null,
         ?int $contactId = null,
-        ?string $payload = null
+        ?string $payload = null,
     ) {
         $this->required = ['text'];
 
@@ -97,7 +97,7 @@ final class OpenAppButton extends Button
         string $text,
         ?string $webApp = null,
         ?int $contactId = null,
-        ?string $payload = null
+        ?string $payload = null,
     ): self {
         return new self($text, $webApp, $contactId, $payload);
     }
@@ -114,7 +114,7 @@ final class OpenAppButton extends Button
         ?string $text = null,
         ?string $webApp = null,
         ?int $contactId = null,
-        ?string $payload = null
+        ?string $payload = null,
     ): self {
         return new self($text, $webApp, $contactId, $payload);
     }

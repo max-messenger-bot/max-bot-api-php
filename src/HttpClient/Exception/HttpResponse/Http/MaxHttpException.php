@@ -15,7 +15,7 @@ abstract class MaxHttpException extends HttpException
 {
     public function __construct(
         HttpResponseInterface $response,
-        public readonly Error $error
+        public readonly Error $error,
     ) {
         parent::__construct($response, $this->error->getMessage());
     }

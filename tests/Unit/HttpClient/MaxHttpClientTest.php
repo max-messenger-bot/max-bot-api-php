@@ -192,7 +192,7 @@ final class MaxHttpClientTest extends Unit
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
         $client = new MaxHttpClient($config);
-        $result = $client->patch('/test/patch', (object)['name' => 'updated']);
+        $result = $client->patch('/test/patch', (object) ['name' => 'updated']);
 
         self::assertIsArray($result);
         self::assertSame('patched', $result['status']);
@@ -208,7 +208,7 @@ final class MaxHttpClientTest extends Unit
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
         $client = new MaxHttpClient($config);
-        $result = $client->patch('/test/patch', (object)['foo' => 'bar'], ['param' => 'value']);
+        $result = $client->patch('/test/patch', (object) ['foo' => 'bar'], ['param' => 'value']);
 
         self::assertSame(['status' => 'ok'], $result);
     }
@@ -223,7 +223,7 @@ final class MaxHttpClientTest extends Unit
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
         $client = new MaxHttpClient($config);
-        $result = $client->post('/test/post', (object)['message' => 'hello']);
+        $result = $client->post('/test/post', (object) ['message' => 'hello']);
 
         self::assertIsArray($result);
         self::assertArrayHasKey('id', $result);
@@ -254,7 +254,7 @@ final class MaxHttpClientTest extends Unit
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
         $client = new MaxHttpClient($config);
-        $result = $client->post('/test/post', (object)['text' => 'hi'], ['chat_id' => 123]);
+        $result = $client->post('/test/post', (object) ['text' => 'hi'], ['chat_id' => 123]);
 
         self::assertSame(['sent' => true], $result);
     }
@@ -269,7 +269,7 @@ final class MaxHttpClientTest extends Unit
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
         $client = new MaxHttpClient($config);
-        $result = $client->put('/test/put', (object)['title' => 'new title']);
+        $result = $client->put('/test/put', (object) ['title' => 'new title']);
 
         self::assertIsArray($result);
         self::assertTrue($result['updated']);
@@ -285,7 +285,7 @@ final class MaxHttpClientTest extends Unit
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
         $client = new MaxHttpClient($config);
-        $result = $client->put('/test/put', (object)['data' => 'new'], ['force' => 'true']);
+        $result = $client->put('/test/put', (object) ['data' => 'new'], ['force' => 'true']);
 
         self::assertSame(['replaced' => true], $result);
     }
@@ -366,7 +366,7 @@ final class MaxHttpClientTest extends Unit
             $httpCode,
             $request->getUrl(),
             'application/json',
-            $body
+            $body,
         );
     }
 
@@ -375,11 +375,11 @@ final class MaxHttpClientTest extends Unit
      */
     private function createMockConfig(
         ?string $accessToken = self::TEST_TOKEN,
-        ?HttpClientInterface $mockHttpClient = null
+        ?HttpClientInterface $mockHttpClient = null,
     ): MaxApiConfigInterface {
         $mock = $this->createMock(MaxApiConfigInterface::class);
         $mock->method('getAccessToken')->willReturn(
-            $accessToken !== null ? new SensitiveParameterValue($accessToken) : null
+            $accessToken !== null ? new SensitiveParameterValue($accessToken) : null,
         );
         $mock->method('getBaseUrl')->willReturn(self::BASE_URL);
         $mock->method('getHttpClient')->willReturn($mockHttpClient ?? $this->createMock(HttpClientInterface::class));

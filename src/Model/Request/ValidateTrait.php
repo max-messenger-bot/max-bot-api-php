@@ -27,7 +27,7 @@ trait ValidateTrait
         string $argumentName,
         ?array $value,
         ?int $minItems = null,
-        ?int $maxItems = null
+        ?int $maxItems = null,
     ): void {
         if (static::$disableValidation || $value === null) {
             return;
@@ -53,7 +53,7 @@ trait ValidateTrait
         string $argumentName,
         ?array $value,
         ?int $minItems = null,
-        ?int $maxItems = null
+        ?int $maxItems = null,
     ): void {
         if (static::$disableValidation || $value === null) {
             return;
@@ -71,7 +71,7 @@ trait ValidateTrait
         string $argumentName,
         ?int $value,
         ?int $minimum = null,
-        ?int $maximum = null
+        ?int $maximum = null,
     ): void {
         if (static::$disableValidation || $value === null) {
             return;
@@ -89,7 +89,7 @@ trait ValidateTrait
     protected static function validateMustBeLess(
         string $argument1Name,
         string $argument2Name,
-        bool $conditionIsMet
+        bool $conditionIsMet,
     ): void {
         if (!static::$disableValidation && !$conditionIsMet) {
             throw new MustBeLessException($argument1Name, $argument2Name);
@@ -114,7 +114,7 @@ trait ValidateTrait
         ?string $value,
         ?int $minLength = null,
         ?int $maxLength = null,
-        ?string $pattern = null
+        ?string $pattern = null,
     ): void {
         if (static::$disableValidation || $value === null) {
             return;

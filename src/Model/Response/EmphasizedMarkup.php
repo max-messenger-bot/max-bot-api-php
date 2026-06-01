@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\Model\Response;
 /**
  * Представляет \*курсив\*.
  */
-class EmphasizedMarkup extends MarkupElement
-{
-}
+class EmphasizedMarkup extends MarkupElement {}

@@ -26,7 +26,7 @@ final class ContactAttachmentRequestPayload extends BaseRequestModel
      */
     public function __construct(
         ?int $contactId = null,
-        ?string $vcfInfo = null
+        ?string $vcfInfo = null,
     ) {
         $this->requiredOnce = ['contact_id', 'vcf_info'];
 
@@ -67,7 +67,7 @@ final class ContactAttachmentRequestPayload extends BaseRequestModel
      */
     public static function make(
         ?int $contactId = null,
-        ?string $vcfInfo = null
+        ?string $vcfInfo = null,
     ): self {
         return new self($contactId, $vcfInfo);
     }
@@ -78,7 +78,7 @@ final class ContactAttachmentRequestPayload extends BaseRequestModel
      */
     public static function new(
         ?int $contactId = null,
-        ?string $vcfInfo = null
+        ?string $vcfInfo = null,
     ): self {
         return new self($contactId, $vcfInfo);
     }

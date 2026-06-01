@@ -11,6 +11,4 @@ use MaxMessenger\Bot\Exception\MaxApiException;
  *
  * Base class for exceptions related to update processing.
  */
-abstract class UpdateRequestException extends MaxApiException
-{
-}
+abstract class UpdateRequestException extends MaxApiException {}

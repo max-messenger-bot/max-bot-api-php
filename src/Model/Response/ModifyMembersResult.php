@@ -29,7 +29,7 @@ class ModifyMembersResult extends SimpleQueryResult
     {
         return $this->failedUserDetails === false
             ? ($this->failedUserDetails = FailedUserDetails::newListFromNullableData(
-                $this->data['failed_user_details'] ?? null
+                $this->data['failed_user_details'] ?? null,
             ))
             : $this->failedUserDetails;
     }

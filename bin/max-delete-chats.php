@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/utils.php';
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/bootstrap.php';
 
-use MaxMessenger\Bot\Bin\Utils;
+use MaxMessenger\Bot\Dev\Utils;
 use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Model\Response\BotInfo;
@@ -55,10 +54,11 @@ final class MaxDeleteChats
         echo "\n";
         echo sprintf("⚠️  Вы уверены, что хотите безвозвратно удалить чат \"%s\"?\n", $chatTitle);
         echo "   Введите 'yes' для подтверждения: ";
-        $confirm = trim((string)fgets(STDIN));
+        $confirm = trim((string) fgets(STDIN));
 
         if ($confirm !== 'yes') {
             echo "❌ Удаление отменено\n";
+
             return;
         }
 
@@ -119,17 +119,18 @@ final class MaxDeleteChats
                 $pageNumber++;
             } catch (SimpleQueryError $e) {
                 echo sprintf("❌ Ошибка API: %s\n", $e->getMessage());
+
                 exit(1);
             } catch (Throwable $e) {
                 echo sprintf("❌ Ошибка: %s\n", $e->getMessage());
+
                 exit(1);
             }
         } while (true);
 
-        echo "\n";
-        echo sprintf("%s\n", str_repeat('═', 50));
+        Utils::printDoubleLine(false, true);
         echo "✅ Просмотр чатов завершён\n";
-        echo sprintf("%s\n", str_repeat('═', 50));
+        Utils::printDoubleLine();
     }
 
     /**
@@ -149,7 +150,7 @@ final class MaxDeleteChats
             echo "\n";
             echo 'Введите номер чата для удаления'
                 . ' (555 для удаления всех частов на странице или Enter для следующей страницы): ';
-            $input = trim((string)fgets(STDIN));
+            $input = trim((string) fgets(STDIN));
 
             if ($input === '') {
                 // Пользователь нажал Enter - выход для перехода к следующей странице
@@ -167,7 +168,7 @@ final class MaxDeleteChats
                     self::deleteChat($ownerChats, $index, $client);
                 }
             } else {
-                $selectedIndex = (int)$input - 1;
+                $selectedIndex = (int) $input - 1;
 
                 if (!isset($ownerChats[$selectedIndex])) {
                     echo "❌ Ошибка: неверный номер чата\n";
@@ -181,6 +182,7 @@ final class MaxDeleteChats
             // Если страница стала пустой после удаления, выходим
             if (empty($ownerChats)) {
                 echo "ℹ️  Страница пуста после удаления\n";
+
                 return;
             }
         }

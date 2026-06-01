@@ -9,6 +9,4 @@ namespace MaxMessenger\Bot\Exception;
  *
  * Exception thrown when a simple query to the API fails.
  */
-final class SimpleQueryError extends MaxApiException
-{
-}
+final class SimpleQueryError extends MaxApiException {}

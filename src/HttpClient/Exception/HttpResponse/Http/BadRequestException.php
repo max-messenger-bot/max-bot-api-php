@@ -16,7 +16,7 @@ final class BadRequestException extends MaxHttpException
      */
     public function isAttachmentNotReady(): bool
     {
-        return $this->error->getCode() === 'attachment.not.ready' ||
-            str_contains($this->error->getMessage(), 'attachment.file.not.processed');
+        return $this->error->getCode() === 'attachment.not.ready'
+            || str_contains($this->error->getMessage(), 'attachment.file.not.processed');
     }
 }

@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/utils.php';
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/bootstrap.php';
 
-use MaxMessenger\Bot\Bin\Utils;
+use MaxMessenger\Bot\Dev\Utils;
 use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Model\Response\BotInfo;
@@ -76,17 +75,18 @@ final class MaxChats
                 }
             } catch (SimpleQueryError $e) {
                 echo sprintf("❌ Ошибка API: %s\n", $e->getMessage());
+
                 exit(1);
             } catch (Throwable $e) {
                 echo sprintf("❌ Ошибка: %s\n", $e->getMessage());
+
                 exit(1);
             }
         } while ($marker !== null);
 
-        echo "\n";
-        echo sprintf("%s\n", str_repeat('═', 50));
+        Utils::printDoubleLine(false, true);
         echo "✅ Просмотр чатов завершён\n";
-        echo sprintf("%s\n", str_repeat('═', 50));
+        Utils::printDoubleLine();
     }
 }
 

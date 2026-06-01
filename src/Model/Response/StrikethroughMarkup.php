@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\Model\Response;
 /**
  * Представляет \~зачёркнутый\~ текст.
  */
-class StrikethroughMarkup extends MarkupElement
-{
-}
+class StrikethroughMarkup extends MarkupElement {}

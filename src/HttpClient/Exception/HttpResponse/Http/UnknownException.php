@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
 /**
  * Неизвестная ошибка сервера.
  */
-final class UnknownException extends MaxHttpException
-{
-}
+final class UnknownException extends MaxHttpException {}

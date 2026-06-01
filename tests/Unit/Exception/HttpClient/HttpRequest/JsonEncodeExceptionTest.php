@@ -15,17 +15,17 @@ final class JsonEncodeExceptionTest extends Unit
     {
         $data = ['key' => 'value'];
 
-        $exception = new JsonEncodeException((object)$data, $this->createPrevious());
+        $exception = new JsonEncodeException((object) $data, $this->createPrevious());
 
-        self::assertSame($data, (array)$exception->data);
-        self::assertSame($data, (array)$exception->getData());
+        self::assertSame($data, (array) $exception->data);
+        self::assertSame($data, (array) $exception->getData());
     }
 
     public function testExtendsMaxApiException(): void
     {
         $data = ['foo' => 'bar'];
 
-        $exception = new JsonEncodeException((object)$data, $this->createPrevious());
+        $exception = new JsonEncodeException((object) $data, $this->createPrevious());
 
         self::assertInstanceOf(MaxApiException::class, $exception);
     }
@@ -34,7 +34,7 @@ final class JsonEncodeExceptionTest extends Unit
     {
         $previous = new JsonException('Error', 123);
 
-        $exception = new JsonEncodeException((object)[], $previous);
+        $exception = new JsonEncodeException((object) [], $previous);
 
         self::assertSame(123, $exception->getCode());
     }
@@ -43,7 +43,7 @@ final class JsonEncodeExceptionTest extends Unit
     {
         $previous = new JsonException('Malformed UTF-8', code: JSON_ERROR_UTF8);
 
-        $exception = new JsonEncodeException((object)[], $previous);
+        $exception = new JsonEncodeException((object) [], $previous);
 
         self::assertSame('Malformed UTF-8', $exception->getMessage());
     }
@@ -52,7 +52,7 @@ final class JsonEncodeExceptionTest extends Unit
     {
         $previous = new JsonException('Previous error');
 
-        $exception = new JsonEncodeException((object)[], $previous);
+        $exception = new JsonEncodeException((object) [], $previous);
 
         self::assertSame($previous, $exception->getPrevious());
     }
@@ -65,12 +65,12 @@ final class JsonEncodeExceptionTest extends Unit
             'nested' => ['key' => 'value'],
         ];
 
-        $exception = new JsonEncodeException((object)$data, $this->createPrevious());
+        $exception = new JsonEncodeException((object) $data, $this->createPrevious());
 
-        $result = (array)$exception->getData();
+        $result = (array) $exception->getData();
         self::assertSame('test', $result['name']);
         self::assertSame([1, 2, 3], $result['items']);
-        self::assertSame(['key' => 'value'], (array)$result['nested']);
+        self::assertSame(['key' => 'value'], (array) $result['nested']);
     }
 
     private function createPrevious(): JsonException

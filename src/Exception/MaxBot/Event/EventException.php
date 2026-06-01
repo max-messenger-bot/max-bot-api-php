@@ -30,7 +30,7 @@ final class EventException extends MaxApiLogicException
      *     `null` — не менять статус.
      */
     public function __construct(
-        public readonly ?bool $isHandled = null
+        public readonly ?bool $isHandled = null,
     ) {
         parent::__construct('Internal Event Exception');
     }

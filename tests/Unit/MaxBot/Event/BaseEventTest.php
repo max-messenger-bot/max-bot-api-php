@@ -234,7 +234,7 @@ final class BaseEventTest extends Unit
         $exceptionHandlers = [
             static function (): void {
                 Event::exit();
-            }
+            },
         ];
 
         $event = BaseEvent::new($update, $this->apiClient, $exceptionHandlers);
@@ -255,8 +255,7 @@ final class BaseEventTest extends Unit
     {
         $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
         $exceptionHandlers = [
-            static function (): void {
-            }
+            static function (): void {},
         ];
 
         $event = BaseEvent::new($update, $this->apiClient, $exceptionHandlers);
@@ -345,8 +344,7 @@ final class BaseEventTest extends Unit
         $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
 
         $event = BaseEvent::new($update, $this->apiClient, []);
-        $result = $event->handle(static function (BaseEvent $_e): void {
-        }, false);
+        $result = $event->handle(static function (BaseEvent $_e): void {}, false);
 
         self::assertFalse($result);
         self::assertFalse($event->isHandled);
@@ -357,8 +355,7 @@ final class BaseEventTest extends Unit
         $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
 
         $event = BaseEvent::new($update, $this->apiClient, []);
-        $result = $event->handle(static function (BaseEvent $_e): void {
-        }, true);
+        $result = $event->handle(static function (BaseEvent $_e): void {}, true);
 
         self::assertTrue($result);
         self::assertTrue($event->isHandled);
@@ -382,8 +379,7 @@ final class BaseEventTest extends Unit
         $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
 
         $event = BaseEvent::new($update, $this->apiClient, []);
-        $result = $event->handle(static function (BaseEvent $_e): void {
-        });
+        $result = $event->handle(static function (BaseEvent $_e): void {});
 
         self::assertFalse($result);
         self::assertNull($event->isHandled);

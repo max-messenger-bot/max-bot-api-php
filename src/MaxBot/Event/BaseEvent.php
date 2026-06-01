@@ -48,7 +48,7 @@ abstract class BaseEvent
     /**
      * @var bool|null Статус обработки события в рамках текущего списка.
      */
-    public bool|null $isHandled = null;
+    public ?bool $isHandled = null;
 
     /**
      * @param list<Closure(Throwable $exception, BaseEvent $event): (bool|void)> $exceptionHandlers
@@ -57,9 +57,8 @@ abstract class BaseEvent
         public readonly Update $update,
         public readonly MaxApiClient $apiClient,
         private readonly array $exceptionHandlers,
-        public ArrayObject $userData
-    ) {
-    }
+        public ArrayObject $userData,
+    ) {}
 
     /**
      * Прерывает обработку **события** или **исключения**, установить **событию** статус `обработано`.
@@ -85,10 +84,7 @@ abstract class BaseEvent
         throw new EventException();
     }
 
-    public function getChatId(): ?int
-    {
-        return null;
-    }
+    abstract public function getChatId(): ?int;
 
     /**
      * @return DateTimeImmutable Время, когда произошло событие.
@@ -106,15 +102,9 @@ abstract class BaseEvent
         return $this->update->getTimestampRaw();
     }
 
-    public function getUser(): ?User
-    {
-        return null;
-    }
+    abstract public function getUser(): ?User;
 
-    public function getUserId(): ?int
-    {
-        return null;
-    }
+    abstract public function getUserId(): ?int;
 
     /**
      * Обработать событие заданным обработчиком.
@@ -155,7 +145,7 @@ abstract class BaseEvent
         Update $update,
         MaxApiClient $maxApiClient,
         array $exceptionHandlers,
-        ArrayObject $userData = new ArrayObject()
+        ArrayObject $userData = new ArrayObject(),
     ): self {
         $classMap = [
             BotAddedToChatUpdate::class => BotAddedToChatEvent::class,

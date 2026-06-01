@@ -9,6 +9,4 @@ namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
  *
  * У вас нет прав доступа к этому ресурсу.
  */
-final class ForbiddenException extends MaxHttpException
-{
-}
+final class ForbiddenException extends MaxHttpException {}

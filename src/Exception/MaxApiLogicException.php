@@ -11,6 +11,4 @@ use LogicException;
  *
  * Base class for logic exceptions in the Max Bot API client.
  */
-abstract class MaxApiLogicException extends LogicException
-{
-}
+abstract class MaxApiLogicException extends LogicException {}

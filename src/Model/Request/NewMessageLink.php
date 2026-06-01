@@ -79,7 +79,7 @@ final class NewMessageLink extends BaseRequestModel
 
     public static function newFromMessage(
         Message|MessageBody $message,
-        MessageLinkType $type = MessageLinkType::Reply
+        MessageLinkType $type = MessageLinkType::Reply,
     ): self {
         if ($message instanceof Message) {
             $message = $message->getBody();

@@ -43,7 +43,7 @@ final class ChatButton extends Button
         ?string $chatTitle = null,
         ?string $chatDescription = null,
         ?string $startPayload = null,
-        ?int $uuid = null
+        ?int $uuid = null,
     ) {
         $this->required = ['chat_title'];
 
@@ -119,7 +119,7 @@ final class ChatButton extends Button
         string $chatTitle,
         ?string $chatDescription = null,
         ?string $startPayload = null,
-        ?int $uuid = null
+        ?int $uuid = null,
     ): self {
         return new self($text, $chatTitle, $chatDescription, $startPayload, $uuid);
     }
@@ -137,7 +137,7 @@ final class ChatButton extends Button
         ?string $chatTitle = null,
         ?string $chatDescription = null,
         ?string $startPayload = null,
-        ?int $uuid = null
+        ?int $uuid = null,
     ): self {
         return new self($text, $chatTitle, $chatDescription, $startPayload, $uuid);
     }

@@ -1,0 +1,5 @@
+[allowlist]
+description = "False positives in API schema examples"
+paths = [
+    '''schemas/''',
+]

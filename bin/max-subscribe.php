@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/utils.php';
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/bootstrap.php';
 
-use MaxMessenger\Bot\Bin\Utils;
+use MaxMessenger\Bot\Dev\Utils;
 use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Model\Enum\UpdateType;
@@ -55,20 +54,22 @@ final class MaxSubscribe
         // Сохранение подписки на сервер
         if (!self::saveSubscription($client, $url, $secret, $updateTypes)) {
             echo "\n❌ Не удалось сохранить подписку\n";
+
             exit(1);
         }
 
         // Проверка сохранённой подписки
         if (!self::verifySubscription($client, $url, $updateTypes)) {
             echo "\n❌ Не удалось подтвердить подписку\n";
+
             exit(1);
         }
 
         // Вывод итоговой информации
         echo "\n";
-        echo sprintf("%s\n", str_repeat('─', 50));
+        Utils::printLine();
         echo "Итоговая конфигурация:\n";
-        echo sprintf("%s\n", str_repeat('─', 50));
+        Utils::printLine();
         echo sprintf("URL: %s\n", $url);
         if ($updateTypes === true) {
             echo "Типы событий: Все\n";
@@ -76,7 +77,7 @@ final class MaxSubscribe
             echo sprintf("Типы событий: %s\n", implode(', ', $updateTypes));
         }
         echo sprintf("Кодовое слово: %s\n", str_repeat('*', min(strlen($secret), 10)));
-        echo sprintf("%s\n", str_repeat('─', 50));
+        Utils::printLine();
 
         echo "\n✅ Webhook подписка успешно настроена!\n\n";
     }
@@ -87,14 +88,14 @@ final class MaxSubscribe
     private static function displayUpdateTypes(): void
     {
         echo "\nДоступные типы событий:\n";
-        echo sprintf("%s\n", str_repeat('─', 50));
+        Utils::printLine();
 
         $cases = UpdateType::cases();
         foreach ($cases as $index => $case) {
             printf("  %2d. %-30s %s\n", $index, $case->value, $case->name);
         }
 
-        echo sprintf("%s\n", str_repeat('─', 50));
+        Utils::printLine();
     }
 
     /**
@@ -151,9 +152,9 @@ final class MaxSubscribe
      */
     private static function requestSecret(): string
     {
-        echo sprintf("\n%s\n", str_repeat('═', 50));
+        Utils::printDoubleLine(false, true);
         echo "ШАГ 2: Кодовое слово (Secret)\n";
-        echo sprintf("%s\n\n", str_repeat('═', 50));
+        Utils::printDoubleLine(true);
 
         echo "Введите кодовое слово для проверки подлинности запросов\n";
         echo "Требования:\n";
@@ -165,6 +166,7 @@ final class MaxSubscribe
 
         if (!self::isValidSecret($secret)) {
             echo "❌ Кодовое слово не соответствует требованиям\n";
+
             return self::requestSecret();
         }
 
@@ -178,9 +180,9 @@ final class MaxSubscribe
      */
     private static function requestWebhookUrl(): string
     {
-        echo sprintf("\n%s\n", str_repeat('═', 50));
+        Utils::printDoubleLine(false, true);
         echo "ШАГ 2: URL адрес Webhook\n";
-        echo sprintf("%s\n\n", str_repeat('═', 50));
+        Utils::printDoubleLine(true);
 
         echo "Введите URL вашего Webhook endpoint\n";
         echo "Требования:\n";
@@ -192,6 +194,7 @@ final class MaxSubscribe
 
         if (!self::isValidUrl($url)) {
             echo "❌ Неверный формат URL (должен быть https:// без порта)\n";
+
             return self::requestWebhookUrl();
         }
 
@@ -211,7 +214,7 @@ final class MaxSubscribe
         MaxApiClient $client,
         string $url,
         string $secret,
-        array|true $updateTypes
+        array|true $updateTypes,
     ): bool {
         echo "\n🔄 Сохранение подписки на сервер... ";
 
@@ -227,7 +230,7 @@ final class MaxSubscribe
             $subscription = SubscriptionRequestBody::new(
                 url: $url,
                 secret: $secret,
-                update_types: !empty($updateTypeEnums) ? $updateTypeEnums : null
+                update_types: !empty($updateTypeEnums) ? $updateTypeEnums : null,
             );
 
             $client->subscribe($subscription);
@@ -236,9 +239,11 @@ final class MaxSubscribe
             return true;
         } catch (SimpleQueryError $e) {
             echo sprintf("❌ Ошибка API: %s\n", $e->getMessage());
+
             return false;
         } catch (Throwable $e) {
             echo sprintf("❌ Ошибка: %s\n", $e->getMessage());
+
             return false;
         }
     }
@@ -270,6 +275,7 @@ final class MaxSubscribe
         // Проверка: ввод должен содержать только цифры и запятые
         if (!preg_match('/^[0-9,]+$/', $input)) {
             echo "❌ Ошибка: ввод должен содержать только цифры и запятые\n";
+
             return self::selectUpdateTypes();
         }
 
@@ -282,8 +288,8 @@ final class MaxSubscribe
             if ($index === '') {
                 continue;
             }
-            if (isset($cases[(int)$index])) {
-                $selectedTypes[] = $cases[(int)$index]->value;
+            if (isset($cases[(int) $index])) {
+                $selectedTypes[] = $cases[(int) $index]->value;
             } else {
                 echo "⚠️  Неверный индекс: $index\n";
                 $hasError = true;
@@ -292,16 +298,17 @@ final class MaxSubscribe
 
         if ($hasError || empty($selectedTypes)) {
             echo "❌ Не выбрано ни одного типа событий\n";
+
             return self::selectUpdateTypes();
         }
 
         // Вывод списка выбранных типов событий
         echo "\n✅ Выбраны типы событий:\n";
-        echo sprintf("%s\n", str_repeat('─', 50));
+        Utils::printLine();
         foreach ($selectedTypes as $type) {
             echo sprintf("  • %s\n", $type);
         }
-        echo sprintf("%s\n", str_repeat('─', 50));
+        Utils::printLine();
 
         return $selectedTypes;
     }
@@ -317,7 +324,7 @@ final class MaxSubscribe
     private static function verifySubscription(
         MaxApiClient $client,
         string $url,
-        array|true $updateTypes
+        array|true $updateTypes,
     ): bool {
         echo "\n🔄 Проверка сохранённой подписки... ";
 
@@ -327,6 +334,7 @@ final class MaxSubscribe
 
             if (empty($subscriptions)) {
                 echo "❌ Подписки не найдены\n";
+
                 return false;
             }
 
@@ -341,6 +349,7 @@ final class MaxSubscribe
 
             if ($foundSubscription === null) {
                 echo "❌ Подписка с указанным URL не найдена\n";
+
                 return false;
             }
 
@@ -358,6 +367,7 @@ final class MaxSubscribe
                     return true;
                 }
                 echo "❌ Типы событий не совпадают\n";
+
                 return false;
             }
 
@@ -368,18 +378,22 @@ final class MaxSubscribe
 
             if ($expectedTypes === $savedTypeValues) {
                 echo "✅ Подтверждено\n";
+
                 return true;
             }
 
             echo "❌ Типы событий не совпадают\n";
             echo sprintf("  Ожидалось: %s\n", implode(', ', $expectedTypes));
             echo sprintf("  Получено: %s\n", implode(', ', $savedTypeValues));
+
             return false;
         } catch (SimpleQueryError $e) {
             echo sprintf('❌ Ошибка API: %s\n', $e->getMessage());
+
             return false;
         } catch (Throwable $e) {
             echo sprintf('❌ Ошибка: %s\n', $e->getMessage());
+
             return false;
         }
     }

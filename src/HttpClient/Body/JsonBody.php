@@ -17,8 +17,7 @@ final readonly class JsonBody implements BodyInterface
 {
     public function __construct(
         private object $body,
-    ) {
-    }
+    ) {}
 
     public function getBody(): string
     {

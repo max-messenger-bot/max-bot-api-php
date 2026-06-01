@@ -30,7 +30,7 @@ final class CallbackAnswer extends BaseRequestModel
      */
     public function __construct(
         ?NewMessageBody $message = null,
-        ?string $notification = null
+        ?string $notification = null,
     ) {
         $this->requiredOnce = ['message', 'notification'];
 
@@ -72,7 +72,7 @@ final class CallbackAnswer extends BaseRequestModel
      */
     public static function make(
         ?NewMessageBody $message = null,
-        ?string $notification = null
+        ?string $notification = null,
     ): self {
         return new self($message, $notification);
     }
@@ -84,7 +84,7 @@ final class CallbackAnswer extends BaseRequestModel
      */
     public static function new(
         ?NewMessageBody $message = null,
-        ?string $notification = null
+        ?string $notification = null,
     ): self {
         return new self($message, $notification);
     }

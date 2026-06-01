@@ -37,7 +37,7 @@ final class ChatPatch extends BaseRequestModel
         ?PhotoAttachmentRequestPayload $icon = null,
         ?string $title = null,
         ?string $pin = null,
-        bool $notify = true
+        bool $notify = true,
     ) {
         if ($icon !== null) {
             $this->setIcon($icon);
@@ -103,7 +103,7 @@ final class ChatPatch extends BaseRequestModel
         ?PhotoAttachmentRequestPayload $icon = null,
         ?string $title = null,
         ?string $pin = null,
-        bool $notify = true
+        bool $notify = true,
     ): self {
         return new self($icon, $title, $pin, $notify);
     }
@@ -119,7 +119,7 @@ final class ChatPatch extends BaseRequestModel
         ?PhotoAttachmentRequestPayload $icon = null,
         ?string $title = null,
         ?string $pin = null,
-        bool $notify = true
+        bool $notify = true,
     ): self {
         return new self($icon, $title, $pin, $notify);
     }

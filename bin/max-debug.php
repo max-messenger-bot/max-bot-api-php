@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/utils.php';
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/bootstrap.php';
 
-use MaxMessenger\Bot\Bin\Utils;
+use MaxMessenger\Bot\Dev\Utils;
 use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Model\Response\Update;
@@ -53,14 +52,15 @@ final class MaxDebug
             echo "✅ Получено\n\n";
 
             if (!empty($subscriptions)) {
-                echo sprintf("%s\n", str_repeat('─', 50));
+                Utils::printLine();
                 echo "⚠️  Получение событий методом \"Long Polling\" невозможно при наличии подписок.\n";
                 echo "\n";
                 echo sprintf("    Найдено активных подписок: %d\n", count($subscriptions));
                 echo "\n";
                 echo "    Для использования Long Polling удалите все подписки:\n";
                 echo "    - Используйте скрипт max-unsubscribe.php\n";
-                echo sprintf("%s\n\n", str_repeat('─', 50));
+                Utils::printLine(true);
+
                 return;
             }
 
@@ -71,9 +71,11 @@ final class MaxDebug
             self::runLongPolling($client);
         } catch (SimpleQueryError $e) {
             echo sprintf("❌ Ошибка API: %s\n", $e->getMessage());
+
             exit(1);
         } catch (Throwable $e) {
             echo sprintf("❌ Ошибка: %s\n", $e->getMessage());
+
             exit(1);
         }
     }
@@ -83,9 +85,9 @@ final class MaxDebug
      */
     private static function printUpdate(Update $update, int $number): void
     {
-        echo sprintf("%s\n", str_repeat('─', 50));
+        Utils::printLine();
         echo sprintf("Событие #%d\n", $number);
-        echo sprintf("%s\n", str_repeat('─', 50));
+        Utils::printLine();
 
         // Тип события
         $updateType = $update->getUpdateType();
@@ -103,7 +105,7 @@ final class MaxDebug
             echo sprintf("%s\n", $json);
         }
 
-        echo sprintf("%s\n\n", str_repeat('─', 50));
+        Utils::printLine(true);
     }
 
     /**
@@ -111,10 +113,10 @@ final class MaxDebug
      */
     private static function runLongPolling(MaxApiClient $client): void
     {
-        echo sprintf("%s\n", str_repeat('─', 50));
+        Utils::printLine();
         echo "🚀 Запуск Long Polling...\n";
         echo "Нажмите Ctrl+C для остановки\n";
-        echo sprintf("%s\n\n", str_repeat('─', 50));
+        Utils::printLine(true);
 
         $marker = null;
         $updateCount = 0;
@@ -125,7 +127,7 @@ final class MaxDebug
 
                 $response = $client->getUpdates(
                     timeout: 60,
-                    marker: $marker
+                    marker: $marker,
                 );
 
                 $updates = $response->getUpdates();

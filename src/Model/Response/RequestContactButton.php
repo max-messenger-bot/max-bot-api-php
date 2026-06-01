@@ -9,6 +9,4 @@ namespace MaxMessenger\Bot\Model\Response;
  *
  * После нажатия на такую кнопку клиент отправляет новое сообщение с вложением текущего контакта пользователя.
  */
-class RequestContactButton extends Button
-{
-}
+class RequestContactButton extends Button {}

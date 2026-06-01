@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/utils.php';
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/bootstrap.php';
 
-use MaxMessenger\Bot\Bin\Utils;
+use MaxMessenger\Bot\Dev\Utils;
 use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
 
@@ -65,19 +64,22 @@ final class MaxUnsubscribe
 
             if ($input === '0') {
                 echo "\nℹ️  Отмена операции\n\n";
+
                 return;
             }
 
             // Проверка ввода (только цифры)
             if (!preg_match('/^\d+$/', $input)) {
                 echo "❌ Ошибка: введите только число\n\n";
+
                 return;
             }
 
-            $selectedIndex = (int)$input - 1;
+            $selectedIndex = (int) $input - 1;
 
             if (!isset($subscriptions[$selectedIndex])) {
                 echo "❌ Неверный номер подписки\n\n";
+
                 return;
             }
 
@@ -91,6 +93,7 @@ final class MaxUnsubscribe
 
             if (strtolower($confirm) !== 'yes') {
                 echo "\nℹ️  Отмена удаления\n\n";
+
                 return;
             }
 
@@ -107,21 +110,24 @@ final class MaxUnsubscribe
 
             if (empty($subscriptions)) {
                 echo "ℹ️  Подписки не найдены\n\n";
-                echo sprintf("%s\n", str_repeat('─', 50));
+                Utils::printLine();
                 echo "✅ Подписка успешно удалена\n";
-                echo sprintf("%s\n\n", str_repeat('─', 50));
+                Utils::printLine(true);
+
                 return;
             }
 
             Utils::printSubscriptionList($subscriptions);
 
             echo "✅ Подписка успешно удалена\n";
-            echo sprintf("%s\n\n", str_repeat('─', 50));
+            Utils::printLine(true);
         } catch (SimpleQueryError $e) {
             echo sprintf("❌ Ошибка API: %s\n", $e->getMessage());
+
             exit(1);
         } catch (Throwable $e) {
             echo sprintf("❌ Ошибка: %s\n", $e->getMessage());
+
             exit(1);
         }
     }

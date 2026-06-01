@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
 /**
  * Метод не разрешён.
  */
-final class NotAllowedException extends MaxHttpException
-{
-}
+final class NotAllowedException extends MaxHttpException {}

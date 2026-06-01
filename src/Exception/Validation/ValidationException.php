@@ -11,6 +11,4 @@ use MaxMessenger\Bot\Exception\MaxApiException;
  *
  * Base class for validation exceptions in the Max Bot API client.
  */
-abstract class ValidationException extends MaxApiException
-{
-}
+abstract class ValidationException extends MaxApiException {}

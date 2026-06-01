@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\Model\Response;
 /**
  * Представляет \<ins>подчёркнутый\</ins> текст.
  */
-class UnderlineMarkup extends MarkupElement
-{
-}
+class UnderlineMarkup extends MarkupElement {}

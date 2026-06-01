@@ -71,7 +71,7 @@ final class MaxApiClient
     public function __construct(
         #[SensitiveParameter]
         string|MaxApiConfigInterface $accessTokenOrConfig,
-        private readonly ?Closure $exceptionLogger = null
+        private readonly ?Closure $exceptionLogger = null,
     ) {
         $this->config = is_string($accessTokenOrConfig)
             ? new MaxApiConfig($accessTokenOrConfig)
@@ -319,7 +319,7 @@ final class MaxApiClient
         int $chatId,
         ?array $userIds = null,
         ?int $marker = null,
-        int $count = 20
+        int $count = 20,
     ): ChatMembersList {
         $params = [];
         if ($userIds !== null) {
@@ -403,7 +403,7 @@ final class MaxApiClient
         ?int $chatId = null,
         ?int $from = null,
         ?int $to = null,
-        int $count = 50
+        int $count = 50,
     ): MessageList {
         if ($messageIds !== null) {
             self::validateArray('messageIds', $messageIds, minItems: 1);
@@ -461,7 +461,7 @@ final class MaxApiClient
         int $chatId,
         ?int $from = null,
         ?int $to = null,
-        int $count = 50
+        int $count = 50,
     ): MessageList {
         return $this->getMessages(null, $chatId, $from, $to, $count);
     }
@@ -536,7 +536,7 @@ final class MaxApiClient
         int $limit = 100,
         int $timeout = 60,
         ?int $marker = null,
-        ?array $types = null
+        ?array $types = null,
     ): UpdateList {
         $params = [
             'limit' => $limit,
@@ -703,7 +703,7 @@ final class MaxApiClient
         ?int $userId,
         ?int $chatId,
         NewMessageBody|RawModel|string $message,
-        bool $disableLinkPreview = false
+        bool $disableLinkPreview = false,
     ): SendMessageResult {
         $params = [];
         if ($userId !== null && $chatId !== null) {
@@ -755,7 +755,7 @@ final class MaxApiClient
     public function sendMessageToChat(
         int $chatId,
         NewMessageBody|RawModel|string $message,
-        bool $disableLinkPreview = false
+        bool $disableLinkPreview = false,
     ): SendMessageResult {
         return $this->sendMessage(null, $chatId, $message, $disableLinkPreview);
     }
@@ -773,7 +773,7 @@ final class MaxApiClient
     public function sendMessageToUser(
         int $userId,
         NewMessageBody|RawModel|string $message,
-        bool $disableLinkPreview = false
+        bool $disableLinkPreview = false,
     ): SendMessageResult {
         return $this->sendMessage($userId, null, $message, $disableLinkPreview);
     }

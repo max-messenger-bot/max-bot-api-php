@@ -35,9 +35,8 @@ final class CommandHandler
         private array $commandHandlers = [],
         private array $commandsHandlers = [],
         public ?string $commandSeparator = null,
-        public int $commandMaxLength = 64
-    ) {
-    }
+        public int $commandMaxLength = 64,
+    ) {}
 
     /**
      * @return positive-int

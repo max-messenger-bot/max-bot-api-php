@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
 /**
  * Неподдерживаемый тип данных.
  */
-final class UnsupportedMediaTypeException extends MaxHttpException
-{
-}
+final class UnsupportedMediaTypeException extends MaxHttpException {}

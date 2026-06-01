@@ -16,7 +16,7 @@ final class JsonEncodeException extends MaxApiException
 {
     public function __construct(
         public readonly array|object $data,
-        JsonException $previous
+        JsonException $previous,
     ) {
         parent::__construct($previous->getMessage(), $previous->getCode(), $previous);
     }

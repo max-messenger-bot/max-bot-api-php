@@ -131,7 +131,7 @@ trait MessageEventTrait
     public function reply(
         NewMessageBody|string $message,
         bool $asReply = false,
-        bool $disableLinkPreview = false
+        bool $disableLinkPreview = false,
     ): SendMessageResult {
         $origMessage = $this->requireMessage();
         $chatId = $origMessage->getRecipient()->getChatId();
@@ -160,7 +160,7 @@ trait MessageEventTrait
     public function replyToUser(
         NewMessageBody|string $message,
         bool $forwardOrigMessage = false,
-        bool $disableLinkPreview = false
+        bool $disableLinkPreview = false,
     ): SendMessageResult {
         $origMessage = $this->requireMessage();
         $sender = $origMessage->getSender() ?? throw new SenderUnknownException();

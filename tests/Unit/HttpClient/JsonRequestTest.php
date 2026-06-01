@@ -18,7 +18,7 @@ final class JsonRequestTest extends Unit
 
     public function testGetBodyWithBody(): void
     {
-        $body = (object)['name' => 'test'];
+        $body = (object) ['name' => 'test'];
         $request = $this->createRequest(body: $body, method: HttpMethod::Post);
 
         $result = $request->getBody();
@@ -64,7 +64,7 @@ final class JsonRequestTest extends Unit
             HttpMethod::Get,
             null,
             null,
-            new SensitiveParameterValue('')
+            new SensitiveParameterValue(''),
         );
 
         try {
@@ -188,7 +188,7 @@ final class JsonRequestTest extends Unit
             null,
             ['Content-Type' => ['application/json']],
             'application/json',
-            '{"status":"ok"}'
+            '{"status":"ok"}',
         );
 
         self::assertInstanceOf(JsonResponse::class, $response);
@@ -208,7 +208,7 @@ final class JsonRequestTest extends Unit
         HttpMethod $method = HttpMethod::Get,
         ?object $body = null,
         ?int $timeout = null,
-        string $token = self::TEST_TOKEN
+        string $token = self::TEST_TOKEN,
     ): JsonRequest {
         return new JsonRequest(
             $url,
@@ -216,7 +216,7 @@ final class JsonRequestTest extends Unit
             $method,
             $body,
             $timeout,
-            new SensitiveParameterValue($token)
+            new SensitiveParameterValue($token),
         );
     }
 }

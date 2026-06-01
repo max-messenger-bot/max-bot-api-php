@@ -100,7 +100,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
         string $chatTitle,
         ?string $chatDescription = null,
         ?string $startPayload = null,
-        ?int $uuid = null
+        ?int $uuid = null,
     ): self {
         $this->addButton(ChatButton::make($text, $chatTitle, $chatDescription, $startPayload, $uuid));
 
@@ -161,7 +161,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
         string $text,
         ?string $webApp = null,
         ?int $contactId = null,
-        ?string $payload = null
+        ?string $payload = null,
     ): self {
         $this->addButton(OpenAppButton::make($text, $webApp, $contactId, $payload));
 

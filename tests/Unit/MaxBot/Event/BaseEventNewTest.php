@@ -58,13 +58,12 @@ final class BaseEventNewTest extends Unit
                 'mid' => 'mid.test',
                 'chat_id' => 123,
                 'body' => ['text' => 'test'],
-                'timestamp' => $timestamp
+                'timestamp' => $timestamp,
             ],
         ]);
         $userData = new ArrayObject(['key' => 'value']);
         $exceptionHandlers = [
-            static function (Throwable $_e, BaseEvent $_event): void {
-            }
+            static function (Throwable $_e, BaseEvent $_event): void {},
         ];
 
         $event = BaseEvent::new($update, $this->apiClient, $exceptionHandlers, $userData);
@@ -96,27 +95,27 @@ final class BaseEventNewTest extends Unit
         return [
             'BotAddedToChatUpdate' => [
                 Update::newFromData(
-                    ['update_type' => 'bot_added', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData]
+                    ['update_type' => 'bot_added', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData],
                 ),
-                BotAddedToChatEvent::class
+                BotAddedToChatEvent::class,
             ],
             'BotRemovedFromChatUpdate' => [
                 Update::newFromData(
-                    ['update_type' => 'bot_removed', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData]
+                    ['update_type' => 'bot_removed', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData],
                 ),
-                BotRemovedFromChatEvent::class
+                BotRemovedFromChatEvent::class,
             ],
             'BotStartedUpdate' => [
                 Update::newFromData(
-                    ['update_type' => 'bot_started', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData]
+                    ['update_type' => 'bot_started', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData],
                 ),
-                BotStartedEvent::class
+                BotStartedEvent::class,
             ],
             'BotStoppedUpdate' => [
                 Update::newFromData(
-                    ['update_type' => 'bot_stopped', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData]
+                    ['update_type' => 'bot_stopped', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData],
                 ),
-                BotStoppedEvent::class
+                BotStoppedEvent::class,
             ],
             'ChatTitleChangedUpdate' => [
                 Update::newFromData(
@@ -125,10 +124,10 @@ final class BaseEventNewTest extends Unit
                         'timestamp' => $timestamp,
                         'chat_id' => 123,
                         'title' => 'New Title',
-                        'user' => $userData
-                    ]
+                        'user' => $userData,
+                    ],
                 ),
-                ChatTitleChangedEvent::class
+                ChatTitleChangedEvent::class,
             ],
             'DialogClearedUpdate' => [
                 Update::newFromData(
@@ -136,10 +135,10 @@ final class BaseEventNewTest extends Unit
                         'update_type' => 'dialog_cleared',
                         'timestamp' => $timestamp,
                         'chat_id' => 123,
-                        'user' => $userData
-                    ]
+                        'user' => $userData,
+                    ],
                 ),
-                DialogClearedEvent::class
+                DialogClearedEvent::class,
             ],
             'DialogMutedUpdate' => [
                 Update::newFromData(
@@ -148,10 +147,10 @@ final class BaseEventNewTest extends Unit
                         'timestamp' => $timestamp,
                         'chat_id' => 123,
                         'muted_until' => $timestamp,
-                        'user' => $userData
-                    ]
+                        'user' => $userData,
+                    ],
                 ),
-                DialogMutedEvent::class
+                DialogMutedEvent::class,
             ],
             'DialogRemovedUpdate' => [
                 Update::newFromData(
@@ -159,10 +158,10 @@ final class BaseEventNewTest extends Unit
                         'update_type' => 'dialog_removed',
                         'timestamp' => $timestamp,
                         'chat_id' => 123,
-                        'user' => $userData
-                    ]
+                        'user' => $userData,
+                    ],
                 ),
-                DialogRemovedEvent::class
+                DialogRemovedEvent::class,
             ],
             'DialogUnmutedUpdate' => [
                 Update::newFromData(
@@ -170,10 +169,10 @@ final class BaseEventNewTest extends Unit
                         'update_type' => 'dialog_unmuted',
                         'timestamp' => $timestamp,
                         'chat_id' => 123,
-                        'user' => $userData
-                    ]
+                        'user' => $userData,
+                    ],
                 ),
-                DialogUnmutedEvent::class
+                DialogUnmutedEvent::class,
             ],
             'MessageCallbackUpdate' => [
                 Update::newFromData(
@@ -181,22 +180,22 @@ final class BaseEventNewTest extends Unit
                         'update_type' => 'message_callback',
                         'timestamp' => $timestamp,
                         'message' => $messageData,
-                        'callback' => ['callback_id' => 'test', 'payload' => 'test', 'user' => $userData]
-                    ]
+                        'callback' => ['callback_id' => 'test', 'payload' => 'test', 'user' => $userData],
+                    ],
                 ),
-                MessageCallbackEvent::class
+                MessageCallbackEvent::class,
             ],
             'MessageCreatedUpdate' => [
                 Update::newFromData(
-                    ['update_type' => 'message_created', 'timestamp' => $timestamp, 'message' => $messageData]
+                    ['update_type' => 'message_created', 'timestamp' => $timestamp, 'message' => $messageData],
                 ),
-                MessageCreatedEvent::class
+                MessageCreatedEvent::class,
             ],
             'MessageEditedUpdate' => [
                 Update::newFromData(
-                    ['update_type' => 'message_edited', 'timestamp' => $timestamp, 'message' => $messageData]
+                    ['update_type' => 'message_edited', 'timestamp' => $timestamp, 'message' => $messageData],
                 ),
-                MessageEditedEvent::class
+                MessageEditedEvent::class,
             ],
             'MessageRemovedUpdate' => [
                 Update::newFromData(
@@ -205,22 +204,22 @@ final class BaseEventNewTest extends Unit
                         'timestamp' => $timestamp,
                         'chat_id' => 123,
                         'message_id' => 'mid.test',
-                        'user_id' => 123
-                    ]
+                        'user_id' => 123,
+                    ],
                 ),
-                MessageRemovedEvent::class
+                MessageRemovedEvent::class,
             ],
             'UserAddedToChatUpdate' => [
                 Update::newFromData(
-                    ['update_type' => 'user_added', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData]
+                    ['update_type' => 'user_added', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData],
                 ),
-                UserAddedToChatEvent::class
+                UserAddedToChatEvent::class,
             ],
             'UserRemovedFromChatUpdate' => [
                 Update::newFromData(
-                    ['update_type' => 'user_removed', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData]
+                    ['update_type' => 'user_removed', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData],
                 ),
-                UserRemovedFromChatEvent::class
+                UserRemovedFromChatEvent::class,
             ],
         ];
     }

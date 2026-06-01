@@ -36,7 +36,7 @@ final class BotPatch extends BaseRequestModel
         ?string $lastName = null,
         ?string $description = null,
         ?array $commands = null,
-        ?PhotoAttachmentRequestPayload $photo = null
+        ?PhotoAttachmentRequestPayload $photo = null,
     ) {
         if ($firstName !== null) {
             $this->setFirstName($firstName);
@@ -134,7 +134,7 @@ final class BotPatch extends BaseRequestModel
         ?string $lastName = null,
         ?string $description = null,
         ?array $commands = null,
-        ?PhotoAttachmentRequestPayload $photo = null
+        ?PhotoAttachmentRequestPayload $photo = null,
     ): self {
         return new self($firstName, $lastName, $description, $commands, $photo);
     }
@@ -153,7 +153,7 @@ final class BotPatch extends BaseRequestModel
         ?string $lastName = null,
         ?string $description = null,
         ?array $commands = null,
-        ?PhotoAttachmentRequestPayload $photo = null
+        ?PhotoAttachmentRequestPayload $photo = null,
     ): self {
         return new self($firstName, $lastName, $description, $commands, $photo);
     }

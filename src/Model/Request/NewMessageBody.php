@@ -47,7 +47,7 @@ final class NewMessageBody extends BaseRequestModel
         ?array $attachments = null,
         ?NewMessageLink $link = null,
         bool $notify = true,
-        ?TextFormat $format = null
+        ?TextFormat $format = null,
     ) {
         $this->requiredOnce = ['text', 'attachments', 'link'];
 
@@ -103,7 +103,7 @@ final class NewMessageBody extends BaseRequestModel
     public function addContactAttachment(?int $contactId = null, ?string $vcfInfo = null): self
     {
         $this->data['attachments'][] = new ContactAttachmentRequest(
-            new ContactAttachmentRequestPayload($contactId, $vcfInfo)
+            new ContactAttachmentRequestPayload($contactId, $vcfInfo),
         );
 
         return $this;
@@ -165,7 +165,7 @@ final class NewMessageBody extends BaseRequestModel
     public function addInlineKeyboardAttachment(array $buttons): self
     {
         $this->data['attachments'][] = new InlineKeyboardAttachmentRequest(
-            new InlineKeyboardAttachmentRequestPayload($buttons)
+            new InlineKeyboardAttachmentRequestPayload($buttons),
         );
 
         return $this;
@@ -307,10 +307,10 @@ final class NewMessageBody extends BaseRequestModel
      */
     public static function make(
         ?string $text = null,
-        array|null $attachments = null,
+        ?array $attachments = null,
         ?NewMessageLink $link = null,
         bool $notify = true,
-        ?TextFormat $format = null
+        ?TextFormat $format = null,
     ): self {
         return new self($text, $attachments, $link, $notify, $format);
     }
@@ -325,10 +325,10 @@ final class NewMessageBody extends BaseRequestModel
      */
     public static function new(
         ?string $text = null,
-        array|null $attachments = null,
+        ?array $attachments = null,
         ?NewMessageLink $link = null,
         bool $notify = true,
-        ?TextFormat $format = null
+        ?TextFormat $format = null,
     ): self {
         return new self($text, $attachments, $link, $notify, $format);
     }

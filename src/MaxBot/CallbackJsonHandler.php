@@ -29,8 +29,7 @@ final class CallbackJsonHandler
     public function __construct(
         public readonly string $actionKey,
         private array $actionHandlers = [],
-    ) {
-    }
+    ) {}
 
     /**
      * @return non-empty-string

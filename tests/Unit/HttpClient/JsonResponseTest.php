@@ -140,7 +140,7 @@ final class JsonResponseTest extends Unit
             200,
             self::TEST_URL,
             'application/json',
-            '{"status":"ok"}'
+            '{"status":"ok"}',
         );
 
         self::assertSame($request, $response->request);
@@ -278,7 +278,7 @@ final class JsonResponseTest extends Unit
             HttpMethod::Get,
             null,
             null,
-            new SensitiveParameterValue(self::TEST_TOKEN)
+            new SensitiveParameterValue(self::TEST_TOKEN),
         );
     }
 
@@ -290,14 +290,14 @@ final class JsonResponseTest extends Unit
         int $httpCode = 200,
         string $url = self::TEST_URL,
         ?string $contentType = 'application/json',
-        string $body = '{}'
+        string $body = '{}',
     ): JsonResponse {
         return new JsonResponse(
             $request ?? $this->createRequest(),
             $httpCode,
             $url,
             $contentType,
-            $body
+            $body,
         );
     }
 }

@@ -83,7 +83,7 @@ final class MaxBot
         #[SensitiveParameter]
         string|MaxApiConfigInterface|MaxApiClient $accessTokenOrConfig,
         #[SensitiveParameter]
-        ?string $secret = null
+        ?string $secret = null,
     ) {
         $this->apiClient = $accessTokenOrConfig instanceof MaxApiClient
             ? $accessTokenOrConfig
@@ -195,7 +195,7 @@ final class MaxBot
         BaseEvent $event,
         array $handlers,
         HandlerListType $handlerListType = HandlerListType::Custom,
-        bool $defaultIsHandled = null
+        bool $defaultIsHandled = null,
     ): bool {
         $saveListType = $event->currentHandlerListType;
 
@@ -240,7 +240,7 @@ final class MaxBot
         int $limit = 1,
         int $timeout = 60,
         ?int $marker = null,
-        ?array $types = null
+        ?array $types = null,
     ): ?int {
         $response = $this->apiClient->getUpdates($limit, $timeout, $marker, $types);
 
@@ -549,7 +549,7 @@ final class MaxBot
             throw new BadRequestException('Body is empty.');
         }
 
-        if (strlen($body) !== (int)($_SERVER['CONTENT_LENGTH'] ?? '')) {
+        if (strlen($body) !== (int) ($_SERVER['CONTENT_LENGTH'] ?? '')) {
             throw new BadRequestException('The Body size does not match the passed content-length.');
         }
 

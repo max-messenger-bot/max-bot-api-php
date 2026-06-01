@@ -18,7 +18,7 @@ abstract class HttpResponseException extends MaxApiException
     public function __construct(
         string $message,
         private readonly HttpResponseInterface $response,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ) {
         parent::__construct($message, $response->getHttpCode(), $previous);
     }

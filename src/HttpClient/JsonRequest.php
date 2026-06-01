@@ -37,7 +37,7 @@ final readonly class JsonRequest implements HttpRequestInterface
         private HttpMethod $method,
         private ?object $body,
         private ?int $timeout,
-        private SensitiveParameterValue $accessToken
+        private SensitiveParameterValue $accessToken,
     ) {
         $this->isPost = in_array($this->method, [HttpMethod::Post, HttpMethod::Put, HttpMethod::Patch], true);
     }
@@ -117,14 +117,14 @@ final readonly class JsonRequest implements HttpRequestInterface
         ?string $redirectUrl,
         array $headers,
         ?string $contentType,
-        string $response
+        string $response,
     ): JsonResponse {
         return new JsonResponse(
             $this,
             $httpCode,
             $url,
             $contentType,
-            $response
+            $response,
         );
     }
 }

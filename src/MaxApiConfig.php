@@ -38,8 +38,8 @@ final class MaxApiConfig implements MaxApiConfigInterface
     public function __construct(
         #[SensitiveParameter]
         ?string $accessToken = null,
-        public HttpClientInterface|null $httpClient = null,
-        public string $baseUrl = 'https://platform-api.max.ru'
+        public ?HttpClientInterface $httpClient = null,
+        public string $baseUrl = 'https://platform-api.max.ru',
     ) {
         $this->setAccessToken($accessToken);
     }

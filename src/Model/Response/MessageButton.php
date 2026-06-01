@@ -9,6 +9,4 @@ namespace MaxMessenger\Bot\Model\Response;
  *
  * Кнопка для отправки сообщения.
  */
-class MessageButton extends Button
-{
-}
+class MessageButton extends Button {}

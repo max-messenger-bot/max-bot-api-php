@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
 /**
  * Внутренняя ошибка сервера.
  */
-final class InternalHttpException extends MaxHttpException
-{
-}
+final class InternalHttpException extends MaxHttpException {}

@@ -7,6 +7,4 @@ namespace MaxMessenger\Bot\Model\Response;
 /**
  * Представляет \`моноширинный\` или блок \`\`\`код\`\`\` в тексте.
  */
-class MonospacedMarkup extends MarkupElement
-{
-}
+class MonospacedMarkup extends MarkupElement {}

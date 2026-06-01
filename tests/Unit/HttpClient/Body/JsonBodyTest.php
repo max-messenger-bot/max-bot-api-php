@@ -17,7 +17,7 @@ final class JsonBodyTest extends Unit
             'value' => 123,
         ];
 
-        $body = new JsonBody((object)$data);
+        $body = new JsonBody((object) $data);
 
         self::assertSame('{"name":"test","value":123}', $body->getBody());
     }
@@ -28,7 +28,7 @@ final class JsonBodyTest extends Unit
         $resource = fopen('php://memory', 'r');
         self::assertNotFalse($resource);
 
-        $data = (object)['resource' => $resource];
+        $data = (object) ['resource' => $resource];
 
         $body = new JsonBody($data);
 
@@ -49,7 +49,7 @@ final class JsonBodyTest extends Unit
             'disabled' => false,
         ];
 
-        $body = new JsonBody((object)$data);
+        $body = new JsonBody((object) $data);
 
         self::assertSame('{"active":true,"disabled":false}', $body->getBody());
     }
@@ -58,7 +58,7 @@ final class JsonBodyTest extends Unit
     {
         $data = [];
 
-        $body = new JsonBody((object)$data);
+        $body = new JsonBody((object) $data);
 
         self::assertSame('{}', $body->getBody());
     }
@@ -70,7 +70,7 @@ final class JsonBodyTest extends Unit
             'discount' => 0.5,
         ];
 
-        $body = new JsonBody((object)$data);
+        $body = new JsonBody((object) $data);
 
         self::assertSame('{"price":19.99,"discount":0.5}', $body->getBody());
     }
@@ -84,7 +84,7 @@ final class JsonBodyTest extends Unit
             ],
         ];
 
-        $body = new JsonBody((object)$data);
+        $body = new JsonBody((object) $data);
 
         $expected = '{"user":{"name":"John","email":"john@example.com"}}';
         self::assertSame($expected, $body->getBody());
@@ -97,7 +97,7 @@ final class JsonBodyTest extends Unit
             'value' => null,
         ];
 
-        $body = new JsonBody((object)$data);
+        $body = new JsonBody((object) $data);
 
         self::assertSame('{"name":"test","value":null}', $body->getBody());
     }
@@ -108,7 +108,7 @@ final class JsonBodyTest extends Unit
             'text' => "line1\nline2\ttab\"quote\\slash",
         ];
 
-        $body = new JsonBody((object)$data);
+        $body = new JsonBody((object) $data);
 
         self::assertSame('{"text":"line1\nline2\ttab\"quote\\\\slash"}', $body->getBody());
     }
@@ -120,7 +120,7 @@ final class JsonBodyTest extends Unit
             'emoji' => '🚀',
         ];
 
-        $body = new JsonBody((object)$data);
+        $body = new JsonBody((object) $data);
 
         self::assertSame('{"text":"Привет, мир!","emoji":"🚀"}', $body->getBody());
     }
@@ -129,7 +129,7 @@ final class JsonBodyTest extends Unit
     {
         $data = [];
 
-        $body = new JsonBody((object)$data);
+        $body = new JsonBody((object) $data);
 
         self::assertSame('application/json; charset=utf-8', $body->getContentType());
     }
