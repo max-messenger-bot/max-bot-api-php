@@ -10,8 +10,8 @@
 Представление данных в виде объектов делает этот пакет предпочтительным для новичков:
 не нужно разбираться в документации и изучать структуру данных API Max — IDE сама подскажет доступные поля и методы.
 
-**Актуальность:** 1 июня 2026 г.<br>
-**Версия схемы API:** 0.0.30
+**Актуальность:** 4 июня 2026 г.<br>
+**Версия схемы API:** 0.0.32
 
 ```php
 use MaxMessenger\Bot\MaxApiClient;
@@ -195,10 +195,10 @@ $apiClient->sendMessageToUser(12345678, $message);
 #### Загрузка файлов на сервера Max
 
 Для загрузки файлов на сервера Max установите и используйте пакет
-[max-messenger-bot/max-uploader-php](https://github.com/max-messenger-bot/max-uploader-php).
+[max-messenger-bot/max-bot-uploader-php](https://github.com/max-messenger-bot/max-bot-uploader-php).
 
 ```bash
-composer require max-messenger-bot/max-uploader-php
+composer require max-messenger-bot/max-bot-uploader-php
 ```
 
 ## Документация

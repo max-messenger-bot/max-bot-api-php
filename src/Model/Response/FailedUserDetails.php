@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Подробное описание, почему пользователь не был добавлен в чат.
+ * Подробное описание, почему пользователь не был добавлен в групповой чат или канал.
  */
 class FailedUserDetails extends BaseResponseModel
 {

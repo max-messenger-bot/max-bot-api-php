@@ -22,7 +22,8 @@ final class ChatAdminsList extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param ChatAdmin[]|null $admins Список пользователей, которые получат права администратора чата.
+     * @param ChatAdmin[]|null $admins Список пользователей и ботов, которые получат права администратора
+     *     группового чата или канала.
      */
     public function __construct(?array $admins = null)
     {
@@ -58,7 +59,8 @@ final class ChatAdminsList extends BaseRequestModel
     }
 
     /**
-     * @param ChatAdmin[] $admins Список пользователей, которые получат права администратора чата.
+     * @param ChatAdmin[] $admins Список пользователей и ботов, которые получат права администратора
+     *     группового чата или канала.
      */
     public static function make(array $admins): self
     {
@@ -66,7 +68,8 @@ final class ChatAdminsList extends BaseRequestModel
     }
 
     /**
-     * @param ChatAdmin[]|null $admins Список пользователей, которые получат права администратора чата.
+     * @param ChatAdmin[]|null $admins Список пользователей и ботов, которые получат права администратора
+     *     группового чата или канала.
      */
     public static function new(?array $admins = null): self
     {
@@ -74,7 +77,8 @@ final class ChatAdminsList extends BaseRequestModel
     }
 
     /**
-     * @param ChatAdmin[] $admins Список пользователей, которые получат права администратора чата.
+     * @param ChatAdmin[] $admins Список пользователей и ботов, которые получат права администратора
+     *     группового чата или канала.
      * @return $this
      */
     public function setAdmins(array $admins): self

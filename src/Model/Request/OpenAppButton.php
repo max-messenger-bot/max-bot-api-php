@@ -28,7 +28,7 @@ final class OpenAppButton extends Button
      * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
      *     чьё мини-приложение надо запустить (minLength: 5).
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в initData
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData`
      *     мини-приложения (minLength: 1).
      */
     public function __construct(
@@ -90,7 +90,7 @@ final class OpenAppButton extends Button
      * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
      *     чьё мини-приложение надо запустить (minLength: 5).
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в initData
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData`
      *     мини-приложения (minLength: 1).
      */
     public static function make(
@@ -107,7 +107,7 @@ final class OpenAppButton extends Button
      * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
      *     чьё мини-приложение надо запустить (minLength: 5).
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в initData
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData`
      *     мини-приложения (minLength: 1).
      */
     public static function new(
@@ -131,7 +131,7 @@ final class OpenAppButton extends Button
     }
 
     /**
-     * @param non-empty-string $payload Параметр запуска, который будет передан в initData мини-приложения
+     * @param non-empty-string $payload Параметр запуска, который будет передан в `initData` мини-приложения
      *     (minLength: 1).
      * @return $this
      */

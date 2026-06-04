@@ -28,7 +28,7 @@ final class NewMessageLink extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $mid ID сообщения исходного сообщения (minLength: 1).
+     * @param non-empty-string|null $mid ID исходного сообщения (minLength: 1).
      * @param MessageLinkType $type Тип ссылки сообщения.
      */
     public function __construct(?string $mid = null, MessageLinkType $type = MessageLinkType::Reply)
@@ -60,7 +60,7 @@ final class NewMessageLink extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $mid ID сообщения исходного сообщения (minLength: 1).
+     * @param non-empty-string $mid ID исходного сообщения (minLength: 1).
      * @param MessageLinkType $type Тип ссылки сообщения.
      */
     public static function make(string $mid, MessageLinkType $type): self
@@ -69,7 +69,7 @@ final class NewMessageLink extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $mid ID сообщения исходного сообщения (minLength: 1).
+     * @param non-empty-string|null $mid ID исходного сообщения (minLength: 1).
      * @param MessageLinkType $type Тип ссылки сообщения.
      */
     public static function new(?string $mid = null, MessageLinkType $type = MessageLinkType::Reply): self
@@ -89,7 +89,7 @@ final class NewMessageLink extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $mid ID сообщения исходного сообщения (minLength: 1).
+     * @param non-empty-string $mid ID исходного сообщения (minLength: 1).
      * @return $this
      */
     public function setMid(string $mid): self

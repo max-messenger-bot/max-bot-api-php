@@ -221,7 +221,7 @@ $client->sendMessageToChat($chatId, $message);
 ## Вложения
 
 > Для загрузки файлов на сервера и получения токена вложения, используйте
-> пакет [max-messenger-bot/max-uploader-php](https://github.com/max-messenger-bot/max-uploader-php).
+> пакет [max-messenger-bot/max-bot-uploader-php](https://github.com/max-messenger-bot/max-bot-uploader-php).
 
 `NewMessageBody` поддерживает различные типы вложений через методы `add*Attachment()`.
 

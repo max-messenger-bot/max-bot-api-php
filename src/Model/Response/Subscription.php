@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use MaxMessenger\Bot\Model\Enum\UpdateType;
 
 /**
- * Схема для описания подписки на WebHook.
+ * Класс для описания подписки на WebHook.
  */
 class Subscription extends BaseResponseModel
 {

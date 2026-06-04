@@ -23,7 +23,8 @@ class ModifyMembersResult extends SimpleQueryResult
     private array|false|null $failedUserDetails = false;
 
     /**
-     * @return list<FailedUserDetails>|null Подробное описание, почему пользователь не был добавлен в чат.
+     * @return list<FailedUserDetails>|null Подробное описание, почему пользователь не был добавлен
+     *     в групповой чат или канал.
      */
     public function getFailedUserDetails(): ?array
     {

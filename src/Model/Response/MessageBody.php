@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Схема, представляющая тело сообщения.
+ * Класс, представляющий тело сообщения.
  */
 class MessageBody extends BaseResponseModel
 {

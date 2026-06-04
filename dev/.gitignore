@@ -1,4 +1,4 @@
 *
 !/.gitignore
 !/.keys.example
-!/.polling-to-webhook.example
+!/.polling-to-webhook.conf.example

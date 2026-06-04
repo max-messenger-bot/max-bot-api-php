@@ -118,10 +118,10 @@ test-bot=другой-api-токен
 В отличие от прямой обработки в цикле **Long Polling**, скрипт-обработчик запускается заново для каждого события —
 поэтому после правки кода обработчика не нужно перезапускать скрипт.
 
-Конфигурация задаётся в файле `dev/.polling-to-webhook`:
+Конфигурация задаётся в файле `dev/.polling-to-webhook.conf`:
 
 ```sh
-cp dev/.polling-to-webhook.example dev/.polling-to-webhook
+cp dev/.polling-to-webhook.conf.example dev/.polling-to-webhook.conf
 ```
 
 Параметры конфигурации:

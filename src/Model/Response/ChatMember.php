@@ -11,8 +11,8 @@ use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
 /**
  * Объект включает общую информацию о пользователе или боте, URL аватара и описание (при наличии).
  *
- * Дополнительно содержит данные для пользователей-участников чата.
- * Возвращается только при вызове некоторых методов группы /chats, например {@see MaxApiClient::getMembers()}
+ * Дополнительно содержит данные для пользователей-участников чата или канала.
+ * Возвращается только при вызове некоторых методов группы `/chats`, например {@see MaxApiClient::getMembers()}
  *
  * @link https://dev.max.ru/docs-api/objects/ChatMember
  */
@@ -32,9 +32,10 @@ class ChatMember extends UserWithPhoto
     protected readonly array $data;
 
     /**
-     * @return string|null Заголовок, который будет показан на клиенте. Если пользователь администратор или владелец
-     *     и ему не установлено это название, то поле не передаётся, клиенты на своей стороне подменят
-     *     на "владелец" или "админ".
+     * @return string|null Описание роли, которое будет отображаться на клиентском устройстве в настройках
+     *     чата или канала рядом с именем пользователя. Если пользователь администратор или владелец и ему
+     *     не установлено это название, то поле не передаётся, клиентское устройство на своей стороне подменит
+     *     значение на соответствующее: "владелец" или "админ".
      */
     public function getAlias(): ?string
     {
@@ -76,7 +77,8 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return list<ChatAdminPermission>|null Перечень прав пользователя.
+     * @return list<ChatAdminPermission>|null Перечень прав доступа пользователя или бота, если тот является
+     *     администратором группового чата или канала. Для обычных участников чата или канала поле не возвращается.
      */
     public function getPermissions(): ?array
     {
@@ -84,7 +86,8 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return list<string>|null Перечень прав пользователя.
+     * @return list<string>|null Перечень прав доступа пользователя или бота, если тот является
+     *     администратором группового чата или канала. Для обычных участников чата или канала поле не возвращается.
      */
     public function getPermissionsRaw(): ?array
     {
@@ -92,7 +95,7 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return bool Является ли пользователь администратором чата.
+     * @return bool Является ли пользователь администратором группового чата или канала.
      */
     public function isAdmin(): bool
     {
@@ -100,7 +103,7 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return bool Является ли пользователь владельцем чата.
+     * @return bool Является ли пользователь владельцем группового чата или канала.
      */
     public function isOwner(): bool
     {

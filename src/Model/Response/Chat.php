@@ -9,7 +9,9 @@ use MaxMessenger\Bot\Model\Enum\ChatStatus;
 use MaxMessenger\Bot\Model\Enum\ChatType;
 
 /**
- * Информация о групповом чате или канале.
+ * Объект содержит общую информацию о групповом чате или канале: его тип, настройки отображения
+ * (название, аватар, описание, ссылка), публичную доступность, а также информацию об участниках
+ * (владельце, боте и других пользователях), времени их последней активности и событиях.
  *
  * @link https://dev.max.ru/docs-api/objects/Chat
  */
@@ -31,7 +33,7 @@ class Chat extends BaseResponseModel
      *     description?: non-empty-string,
      *     dialog_with_user?: array,
      *     messages_count?: int,
-     *     chat_message_id?: string,
+     *     chat_message_id?: non-empty-string,
      *     pinned_message?: array
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
@@ -42,7 +44,7 @@ class Chat extends BaseResponseModel
     private Message|false|null $pinnedMessage = false;
 
     /**
-     * @return int ID чата.
+     * @return int ID чата или канала.
      */
     public function getChatId(): int
     {
@@ -50,7 +52,8 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return string|null Идентификатор сообщения с кнопкой, через которую был инициирован чат.
+     * @return non-empty-string|null Идентификатор сообщения с кнопкой, через которую был инициирован чат
+     *     (minLength: 1).
      */
     public function getChatMessageId(): ?string
     {
@@ -58,7 +61,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null Описание чата (minLength: 1).
+     * @return non-empty-string|null Описание чата или канала (minLength: 1).
      */
     public function getDescription(): ?string
     {
@@ -76,7 +79,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return Image|null Иконка чата.
+     * @return Image|null Иконка чата или канала.
      */
     public function getIcon(): ?Image
     {
@@ -86,7 +89,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return DateTimeImmutable Время последнего события в чате.
+     * @return DateTimeImmutable Время последнего события в чате или канале.
      */
     public function getLastEventTime(): DateTimeImmutable
     {
@@ -94,7 +97,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return int Время последнего события в чате (Unix-время в миллисекундах).
+     * @return int Время последнего события в чате или канале (Unix-время в миллисекундах).
      */
     public function getLastEventTimeRaw(): int
     {
@@ -118,7 +121,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return int|null ID владельца чата.
+     * @return int|null ID владельца чата или канала.
      */
     public function getOwnerId(): ?int
     {
@@ -126,8 +129,8 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return int[]|null Участники чата с временем последней активности.
-     *     Может быть `null`, если запрашивается список чатов.
+     * @return int[]|null Участники чата или канала с временем последней активности.
+     *     Может отсутствовать, если запрашивается список чатов.
      */
     public function getParticipants(): ?array
     {
@@ -135,7 +138,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return int Количество участников чата. Для диалогов всегда 2.
+     * @return int Количество участников чата или канала. Для диалогов всегда 2.
      */
     public function getParticipantsCount(): int
     {
@@ -143,7 +146,8 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return Message|null Закреплённое сообщение в чате (возвращается только при запросе конкретного чата).
+     * @return Message|null Закреплённое сообщение в чате
+     *     (возвращается только при запросе конкретного чата или канала).
      */
     public function getPinnedMessage(): ?Message
     {
@@ -173,7 +177,8 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null Отображаемое название чата (minLength: 1). Может быть `null` для диалогов.
+     * @return non-empty-string|null Отображаемое название чата или канала (minLength: 1).
+     *     Может отсутствовать для диалогов.
      */
     public function getTitle(): ?string
     {

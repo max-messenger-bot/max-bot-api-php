@@ -154,7 +154,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
      * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
      *     чьё мини-приложение надо запустить (minLength: 5).
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в initData
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData`
      *     мини-приложения (minLength: 1).
      */
     public function addOpenAppButton(

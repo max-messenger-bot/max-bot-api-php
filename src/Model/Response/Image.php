@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Общая схема, описывающая объект изображения.
+ * Общий класс, описывающий объект изображения.
  */
 class Image extends BaseResponseModel
 {

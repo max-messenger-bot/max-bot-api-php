@@ -17,7 +17,7 @@ use MaxMessenger\Bot\Model\Response\Update;
  */
 final class PollingToWebhook
 {
-    private const CONFIG_FILE = __DIR__ . '/../dev/.polling-to-webhook';
+    private const CONFIG_FILE = __DIR__ . '/../dev/.polling-to-webhook.conf';
 
     public static function main(): void
     {

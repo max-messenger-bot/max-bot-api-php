@@ -19,6 +19,11 @@
             "MaxMessenger\\Bot\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "MaxMessenger\\Bot\\Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Eugene Makhaev",
@@ -41,10 +46,10 @@
         "vimeo/psalm": "^6.16"
     },
     "scripts": {
-        "test": "codecept run",
+        "cs": "php-cs-fixer check --diff",
+        "cs-fix": "php-cs-fixer fix",
         "psalm": "psalm",
-        "php-cs-fixer": "php-cs-fixer check --diff",
-        "php-cs-fixer-fix": "php-cs-fixer fix"
+        "test": "codecept run"
     },
     "bin": [
         "bin/max-chats",

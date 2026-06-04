@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Список участников и указатель на следующую страницу данных.
+ * Список участников группового чата или канала и указатель на следующую страницу данных.
  */
 class ChatMembersList extends BaseResponseModel
 {
@@ -31,7 +31,9 @@ class ChatMembersList extends BaseResponseModel
     }
 
     /**
-     * @return list<ChatMember> Список участников чата с информацией о времени последней активности.
+     * @return list<ChatMember> Список участников группового чата или канала с общей информацией о них, а также
+     *     временем последней активности и списком прав доступа для пользователей и ботов,
+     *     которые являются администраторами.
      */
     public function getMembers(): array
     {

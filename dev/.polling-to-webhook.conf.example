@@ -1,5 +1,5 @@
 # Long Polling → Webhook Bridge
-# Скопируйте этот файл в dev/.polling-to-webhook и заполните параметры
+# Скопируйте этот файл в dev/.polling-to-webhook.conf и заполните параметры
 
 # API ключ бота для Long Polling
 API_KEY=your-api-tok

@@ -7,7 +7,7 @@ namespace MaxMessenger\Bot\Model\Response;
 use MaxMessenger\Bot\Model\Enum\AttachmentType;
 
 /**
- * Общая схема, представляющая вложение сообщения.
+ * Общий класс, представляющий вложение сообщения.
  */
 class Attachment extends BaseResponseModel
 {

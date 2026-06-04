@@ -17,8 +17,9 @@ abstract class AttachmentPayload extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return non-empty-string URL медиа-вложения (minLength: 1). Прямую ссылку на видео также можно получить с помощью
-     *     метода {@see MaxApiClient::getVideoAttachmentDetails}.
+     * @return non-empty-string URL медиа-вложения (minLength: 1). Этот URL будет получен в объекте {@see Update}
+     *     после отправки сообщения в чат. Прямую ссылку на видео также можно получить с помощью
+     *     метода {@see MaxApiClient::getVideoAttachmentDetails()}.
      */
     public function getUrl(): string
     {
