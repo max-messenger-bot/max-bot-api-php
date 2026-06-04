@@ -1,8 +1,8 @@
 # Long Polling → Webhook Bridge
-# Скопируйте этот файл в dev/.polling-to-webhook.conf и заполните параметры
+# Скопируйте этот файл в .polling-to-webhook.conf и заполните параметры
 
 # API ключ бота для Long Polling
-API_KEY=your-api-tok
+MAXBOT_ACCESS_TOKEN=your_access_token_here
 
 # Полный путь к скрипту-обработчику (webhook handler)
 SCRIPT=/path/to/your/webhook.php
@@ -11,4 +11,4 @@ SCRIPT=/path/to/your/webhook.php
 BIN=/usr/bin/php-cgi
 
 # Секрет для заголовка X-Max-Bot-Api-Secret
-SECRET=your-secret-token
+MAXBOT_SECRET=your_secret_here

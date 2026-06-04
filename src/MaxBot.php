@@ -543,7 +543,7 @@ final class MaxBot
         }
 
         /** @psalm-suppress RiskyTruthyFalsyComparison */
-        $body = file_get_contents('php://input') ?: '';
+        $body = @file_get_contents('php://input') ?: '';
 
         if (empty($body)) {
             throw new BadRequestException('Body is empty.');

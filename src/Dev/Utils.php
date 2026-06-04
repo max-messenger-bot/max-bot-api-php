@@ -12,6 +12,7 @@ use MaxMessenger\Bot\Model\Response\Subscription;
 use Throwable;
 
 use function count;
+use function dirname;
 use function printf;
 use function sprintf;
 use function strlen;
@@ -22,95 +23,126 @@ use function strlen;
 final class Utils
 {
     /**
-     * Путь к файлу с ключами
+     * Имя файла с токенами доступа
      */
-    private const KEYS_FILE = __DIR__ . '/../../dev/.keys';
+    private const TOKENS_NAME = '.tokens';
 
     /**
-     * Получение API ключа из файла .keys
+     * Получение токена доступа из файла .tokens
      *
-     * Если файл существует и содержит ключи, предлагает выбрать из списка.
-     * Если файл не существует, выводит рекомендацию создать его.
+     * Ищет файл в корне проекта и его папке dev/. Если файл найден и содержит
+     * токены, предлагает выбрать из списка. Иначе выводит подсказку, как его создать.
      *
-     * @return non-empty-string|null Возвращает выбранный ключ или null, если пользователь отменил выбор
+     * @return non-empty-string|null Выбранный токен доступа или null, если файл не найден либо выбор отменён
      */
-    public static function getApiKeyFromKeysFile(): ?string
+    public static function getAccessTokenFromTokensFile(): ?string
     {
-        if (!file_exists(self::KEYS_FILE)) {
+        $candidates = self::projectFileCandidates(self::TOKENS_NAME);
+        [$path, $tokens] = self::loadConfigFromFiles($candidates);
+
+        if ($path === null) {
+            self::printTokensFileNotFound($candidates);
+
+            return null;
+        }
+
+        if (empty($tokens)) {
             echo "\n";
-            echo "ℹ️  Файл .keys не найден\n";
-            echo "   Чтобы не вводить ключ каждый раз, установите пакет как отдельный\n";
-            echo "   проект и создайте файл .keys в папке dev/:\n";
-            echo "\n";
-            echo "   1. Установите пакет как проект:\n";
-            echo "      composer create-project max-messenger-bot/max-bot-api-php my-bot-dev\n";
-            echo "\n";
-            echo "   2. Перейдите в папку проекта:\n";
-            echo "      cd my-bot-dev\n";
-            echo "\n";
-            echo "   3. Создайте файл dev/.keys на основе примера:\n";
-            echo "      cp dev/.keys.example dev/.keys\n";
-            echo "\n";
-            echo "   4. Добавьте в dev/.keys ключи в формате:\n";
-            echo "      key-name=api-key\n";
+            echo "⚠️  Файл .tokens пуст или содержит некорректные данные\n";
+            echo "   Добавьте токены в формате: token-name=access-token\n";
             echo "\n";
 
             return null;
         }
 
-        $keys = self::loadConfigFromFile(self::KEYS_FILE);
-
-        if (empty($keys)) {
-            echo "\n";
-            echo "⚠️  Файл .keys пуст или содержит некорректные данные\n";
-            echo "   Добавьте ключи в формате: key-name=api-key\n";
-            echo "\n";
-
-            return null;
-        }
-
-        return self::selectKeyFromList($keys);
+        return self::selectTokenFromList($tokens);
     }
 
     /**
-     * Загрузка конфигурации из файла
+     * Корень проекта, в который подключён пакет.
      *
-     * @return array<non-empty-string, non-empty-string> Ассоциативный массив [имя => значение]
+     * При установке как зависимость путь пакета оканчивается на известный
+     * суффикс vendor/<vendor>/<package> — отбрасываем его строго на этом уровне.
+     * При запуске из самого пакета (standalone) — корень самого пакета.
      */
-    public static function loadConfigFromFile(string $fileName): array
+    public static function projectRoot(): string
     {
-        $content = file_get_contents($fileName);
+        $packageRoot = dirname(__DIR__, 2);
+        $vendorSuffix = '/vendor/max-messenger-bot/max-bot-api-php';
 
-        if ($content === false) {
-            return [];
+        if (str_ends_with($packageRoot, $vendorSuffix)) {
+            return substr($packageRoot, 0, -strlen($vendorSuffix));
         }
 
-        $values = [];
-        $lines = explode("\n", str_replace("\r\n", "\r", $content));
+        return $packageRoot;
+    }
 
-        foreach ($lines as $line) {
-            $line = trim($line);
+    /**
+     * Пути-кандидаты для поиска файла в порядке приоритета:
+     * корень проекта, в который подключён пакет, и его папка dev/.
+     *
+     * @return list<string>
+     */
+    public static function projectFileCandidates(string $fileName): array
+    {
+        $projectRoot = self::projectRoot();
 
-            // Пропуск пустых строк и комментариев
-            if ($line === '' || str_starts_with($line, '#')) {
-                continue;
-            }
+        return [
+            $projectRoot . '/' . $fileName,
+            $projectRoot . '/dev/' . $fileName,
+        ];
+    }
 
-            $parts = explode('=', $line, 2);
+    /**
+     * Подсказка, когда файл .tokens не найден ни в одном из мест
+     *
+     * @param list<string> $candidates
+     */
+    private static function printTokensFileNotFound(array $candidates): void
+    {
+        $example = dirname(__DIR__, 2) . '/dev/' . self::TOKENS_NAME . '.example';
+        $projectRoot = self::projectRoot();
 
-            if (count($parts) !== 2) {
-                continue;
-            }
+        echo "\n";
+        echo "ℹ️  Файл .tokens не найден\n";
+        echo "   Искал в:\n";
+        foreach ($candidates as $candidate) {
+            echo sprintf("     • %s\n", $candidate);
+        }
+        echo "\n";
+        echo "   Чтобы не вводить токен каждый раз, создайте его в корне проекта\n";
+        echo "   или в папке dev/ на основе примера:\n";
+        echo "\n";
+        echo sprintf("      cp %s %s\n", $example, $projectRoot . '/' . self::TOKENS_NAME);
+        echo "      # или\n";
+        echo sprintf("      cp %s %s\n", $example, $projectRoot . '/dev/' . self::TOKENS_NAME);
+        echo "\n";
+        echo "   Формат файла — одна запись на строку: token-name=access-token\n";
+        echo "\n";
+    }
 
-            $name = trim($parts[0]);
-            $value = trim($parts[1]);
+    /**
+     * Загрузка конфигурации из первого существующего файла-кандидата
+     *
+     * Перебирает пути по порядку и возвращает конфиг из первого прочитанного файла.
+     * Подавляем предупреждение через @, так как file_exists() не даёт гарантии
+     * наличия файла из-за файлового кеша PHP — единственная надёжная проверка
+     * это сам результат чтения.
+     *
+     * @param list<string> $fileNames Пути-кандидаты в порядке приоритета
+     * @return array{0: string|null, 1: array<non-empty-string, non-empty-string>} [найденный путь либо null, конфиг]
+     */
+    public static function loadConfigFromFiles(array $fileNames): array
+    {
+        foreach ($fileNames as $fileName) {
+            $content = @file_get_contents($fileName);
 
-            if ($name !== '' && $value !== '') {
-                $values[$name] = $value;
+            if ($content !== false) {
+                return [$fileName, self::parseConfig($content)];
             }
         }
 
-        return $values;
+        return [null, []];
     }
 
     /**
@@ -286,61 +318,61 @@ final class Utils
     }
 
     /**
-     * Запрос API key у пользователя
+     * Запрос токена доступа у пользователя
      *
-     * Сначала пытается получить ключ из файла .keys,
+     * Сначала пытается получить токен из файла .tokens,
      * если не удалось - запрашивает вручную с проверкой.
      *
      * @return non-empty-string
      */
-    public static function requestApiKey(): string
+    public static function requestAccessToken(): string
     {
         self::printDoubleLine(false, true);
-        echo "ШАГ 1: API Key (токен доступа)\n";
+        echo "ШАГ 1: Токен доступа\n";
         self::printDoubleLine(true);
 
-        // Попытка получить ключ из файла .keys
-        $apiKey = self::getApiKeyFromKeysFile();
+        // Попытка получить токен из файла .tokens
+        $accessToken = self::getAccessTokenFromTokensFile();
 
-        if ($apiKey !== null) {
-            // Проверка API ключа
-            if (self::validateApiKey($apiKey)) {
-                return $apiKey;
+        if ($accessToken !== null) {
+            // Проверка токена доступа
+            if (self::validateAccessToken($accessToken)) {
+                return $accessToken;
             }
-            echo "⚠️  Ключ не прошёл проверку, введите другой\n";
+            echo "⚠️  Токен не прошёл проверку, введите другой\n";
         }
 
-        echo "Введите ваш Max Bot API token\n";
+        echo "Введите ваш токен доступа Max Bot\n";
         echo "Получить токен можно через @MasterBot\n";
 
-        $apiKey = self::readInput("\nAPI Key: ");
+        $accessToken = self::readInput("\nТокен доступа: ");
 
-        if (strlen($apiKey) < 10) {
-            echo "❌ Слишком короткий API key\n";
+        if (strlen($accessToken) < 10) {
+            echo "❌ Слишком короткий токен доступа\n";
 
-            return self::requestApiKey();
+            return self::requestAccessToken();
         }
 
-        // Проверка API ключа
-        if (!self::validateApiKey($apiKey)) {
-            return self::requestApiKey();
+        // Проверка токена доступа
+        if (!self::validateAccessToken($accessToken)) {
+            return self::requestAccessToken();
         }
 
-        return $apiKey;
+        return $accessToken;
     }
 
     /**
-     * Проверка API ключа через вызов getMyInfo()
+     * Проверка токена доступа через вызов getMyInfo()
      *
-     * @param non-empty-string $apiKey API ключ для проверки
-     * @return bool true если ключ валиден
+     * @param non-empty-string $accessToken Токен доступа для проверки
+     * @return bool true если токен валиден
      */
-    public static function validateApiKey(string $apiKey): bool
+    public static function validateAccessToken(string $accessToken): bool
     {
-        echo "\n🔄 Проверка API key... ";
+        echo "\n🔄 Проверка токена доступа... ";
 
         try {
-            $client = new MaxApiClient($apiKey);
+            $client = new MaxApiClient($accessToken);
             $client->getMyInfo();
             echo "✅ Успешно\n";
 
@@ -357,24 +389,59 @@ final class Utils
     }
 
     /**
-     * Выбор ключа из списка
+     * Разбор содержимого конфигурационного файла
      *
-     * @param array<non-empty-string, non-empty-string> $keys Ассоциативный массив [имя => ключ]
-     * @return non-empty-string|null Выбранный ключ или null, если пользователь хочет ввести свой
+     * @return array<non-empty-string, non-empty-string> Ассоциативный массив [имя => значение]
      */
-    private static function selectKeyFromList(array $keys): ?string
+    private static function parseConfig(string $content): array
+    {
+        $values = [];
+        $lines = explode("\n", str_replace("\r\n", "\r", $content));
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+
+            // Пропуск пустых строк и комментариев
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+
+            $parts = explode('=', $line, 2);
+
+            if (count($parts) !== 2) {
+                continue;
+            }
+
+            $name = trim($parts[0]);
+            $value = trim($parts[1]);
+
+            if ($name !== '' && $value !== '') {
+                $values[$name] = $value;
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * Выбор токена из списка
+     *
+     * @param array<non-empty-string, non-empty-string> $tokens Ассоциативный массив [имя => токен]
+     * @return non-empty-string|null Выбранный токен или null, если пользователь хочет ввести свой
+     */
+    private static function selectTokenFromList(array $tokens): ?string
     {
         echo "\n";
-        echo "Доступные ключи:\n";
+        echo "Доступные токены:\n";
         self::printLine();
 
-        $names = array_keys($keys);
+        $names = array_keys($tokens);
         foreach ($names as $index => $name) {
             printf("  %d. %s\n", $index + 1, $name);
         }
 
         self::printLine();
-        echo 'Введите номер ключа для выбора (или 0 для ввода своего ключа): ';
+        echo 'Введите номер токена для выбора (или 0 для ввода своего токена): ';
 
         $input = fgets(STDIN);
 
@@ -384,14 +451,14 @@ final class Utils
 
         $input = trim($input);
 
-        // Если ввели 0 - ввод своего ключа
+        // Если ввели 0 - ввод своего токена
         if ($input === '0') {
             return null;
         }
 
         // Проверка: ввод должен быть числом
         if (!preg_match('/^\d+$/', $input)) {
-            echo "❌ Ошибка: введите номер ключа\n";
+            echo "❌ Ошибка: введите номер токена\n";
 
             return null;
         }
@@ -399,16 +466,16 @@ final class Utils
         $selectedIndex = (int) $input - 1;
 
         if (!isset($names[$selectedIndex])) {
-            echo "❌ Неверный номер ключа\n";
+            echo "❌ Неверный номер токена\n";
 
             return null;
         }
 
         $selectedName = $names[$selectedIndex];
-        $selectedKey = $keys[$selectedName];
+        $selectedToken = $tokens[$selectedName];
 
-        echo sprintf("✓ Выбран ключ: %s (***%s)\n", $selectedName, substr($selectedKey, -4));
+        echo sprintf("✓ Выбран токен: %s (***%s)\n", $selectedName, substr($selectedToken, -4));
 
-        return $selectedKey;
+        return $selectedToken;
     }
 }
