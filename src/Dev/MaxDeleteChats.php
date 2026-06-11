@@ -95,6 +95,7 @@ final class MaxDeleteChats
             echo '🔄 Получение списка чатов... ';
 
             try {
+                /** @psalm-suppress DeprecatedMethod */
                 $result = $client->getChats(5, $marker);
                 $chats = $result->getChats();
                 $marker = $result->getMarker();

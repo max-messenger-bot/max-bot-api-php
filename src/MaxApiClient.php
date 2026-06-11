@@ -305,8 +305,11 @@ final class MaxApiClient
      *
      * @param positive-int $count Количество запрашиваемых чатов (minimum: 1, maximum: 100).
      * @param int|null $marker Указатель на следующую страницу данных. Для первой страницы передайте `null`.
+     *
      * @return ChatList В ответе с пагинацией возвращаются чаты.
      * @link https://dev.max.ru/docs-api/methods/GET/chats
+     * @deprecated Начиная с июня 2026 этот метод больше не поддерживается, и API не предоставляет готовой
+     *     возможности для получения списка групповых чатов и каналов, в которые добавлен бот.
      */
     public function getChats(int $count = 50, ?int $marker = null): ChatList
     {
