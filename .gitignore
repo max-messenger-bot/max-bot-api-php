@@ -4,5 +4,6 @@
 !/schemas/schema.yaml
 /test/
 /composer.lock
-/notes.txt
+/TODO.md
 /.php-cs-fixer.cache
+/.polling-to-webhook.conf
