@@ -94,6 +94,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
      * @param non-empty-string|null $startPayload Стартовая полезная нагрузка будет отправлена боту,
      *     как только чат будет создан (minLength: 1, maxLength: 512).
      * @param int|null $uuid Уникальный ID кнопки среди всех кнопок чата на клавиатуре.
+     * @deprecated
      */
     public function addChatButton(
         string $text,
@@ -102,6 +103,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
         ?string $startPayload = null,
         ?int $uuid = null,
     ): self {
+        /** @psalm-suppress DeprecatedClass */
         $this->addButton(ChatButton::make($text, $chatTitle, $chatDescription, $startPayload, $uuid));
 
         return $this;

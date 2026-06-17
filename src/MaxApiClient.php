@@ -158,6 +158,7 @@ final class MaxApiClient
      *
      * @param int $chatId ID чата.
      * @link https://dev.max.ru/docs-api/methods/DELETE/chats/-chatId-
+     * @deprecated
      */
     public function deleteChat(int $chatId): void
     {
@@ -215,12 +216,16 @@ final class MaxApiClient
      * - В групповых чатах и каналах любые сообщения редактируются независимо от срока давности
      *
      * @param non-empty-string $messageId ID редактируемого сообщения (minLength: 1, pattern: '^mid\.[\x21-\x7E]+$').
-     * @param NewMessageBody|RawModel $message Тело нового сообщения.
+     * @param NewMessageBody|RawModel|non-empty-string $message Тело нового сообщения.
      * @link https://dev.max.ru/docs-api/methods/PUT/messages
      */
-    public function editMessage(string $messageId, NewMessageBody|RawModel $message): void
+    public function editMessage(string $messageId, NewMessageBody|RawModel|string $message): void
     {
         self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[\x21-\x7E]+$/');
+
+        if (is_string($message)) {
+            $message = new NewMessageBody($message);
+        }
 
         $data = $this->httpClient->put('/messages', $message->jsonSerialize(), ['message_id' => $messageId]);
 
@@ -580,7 +585,7 @@ final class MaxApiClient
         ?array $types = null,
     ): UpdateList {
         $params = [
-            'limit' => $limit,
+            'limit'   => $limit,
             'timeout' => $timeout,
         ];
 
@@ -713,7 +718,7 @@ final class MaxApiClient
     {
         $data = $this->httpClient->delete("/chats/$chatId/members", [
             'user_id' => $userId,
-            'block' => $block ? 'true' : 'false',
+            'block'   => $block ? 'true' : 'false',
         ]);
 
         $this->checkSimpleQueryResult($data);
@@ -747,7 +752,8 @@ final class MaxApiClient
      * @param int|null $userId Если вы хотите отправить сообщение пользователю, укажите его ID.
      * @param int|null $chatId Если сообщение отправляется в чат, укажите его ID.
      * @param NewMessageBody|RawModel|non-empty-string $message Тело нового сообщения.
-     * @param bool $disableLinkPreview Если `false`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
      * @link https://dev.max.ru/docs-api/methods/POST/messages
      */
@@ -801,7 +807,8 @@ final class MaxApiClient
      *
      * @param int $chatId ID чата.
      * @param NewMessageBody|RawModel|non-empty-string $message Тело нового сообщения.
-     * @param bool $disableLinkPreview Если `false`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
      */
     public function sendMessageToChat(
@@ -819,7 +826,8 @@ final class MaxApiClient
      *
      * @param int $userId ID пользователя.
      * @param NewMessageBody|RawModel|non-empty-string $message Тело нового сообщения.
-     * @param bool $disableLinkPreview Если `false`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
      */
     public function sendMessageToUser(

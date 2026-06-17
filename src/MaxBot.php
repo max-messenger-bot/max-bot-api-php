@@ -220,10 +220,12 @@ final class MaxBot
 
     /**
      * Запускает процесс обработки события из глобального контекста.
+     *
+     * @return bool `true`, если событие считается обработанным.
      */
-    public function handleFromGlobal(): void
+    public function handleFromGlobal(): bool
     {
-        $this->handleUpdate(self::makeUpdateFromString($this->readRequestContentFromGlobal()));
+        return $this->handleUpdate(self::makeUpdateFromString($this->readRequestContentFromGlobal()));
     }
 
     /**

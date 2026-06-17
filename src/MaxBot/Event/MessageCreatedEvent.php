@@ -40,7 +40,6 @@ final class MessageCreatedEvent extends BaseEvent
      *
      * Если проверка прошла успешно, Вы можете получить номер телефона следующим способом:
      * ```
-     * /** @var ContactAttachment $contact *\/
      * $contact = $event->getMessage()->getBody()->getAttachments()[0];
      * $phones = $contact->getPayload()->getPhones();
      * ```

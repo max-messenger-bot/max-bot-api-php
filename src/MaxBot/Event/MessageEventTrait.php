@@ -123,7 +123,8 @@ trait MessageEventTrait
      *
      * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
      * @param bool $asReply Требуется ли ответить с цитированием сообщения
-     * @param bool $disableLinkPreview Если `false`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
      */
     public function reply(
@@ -152,7 +153,8 @@ trait MessageEventTrait
      *
      * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
      * @param bool $forwardOrigMessage Требуется ли переслать оригинальное сообщение
-     * @param bool $disableLinkPreview Если `false`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
      */
     public function replyToUser(

@@ -22,7 +22,9 @@ trait UserEventTrait
      * Отправить сообщение лично в диалоге с пользователем.
      *
      * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
-     * @param bool $disableLinkPreview Если `false`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
+     *
      * @return SendMessageResult Информация о созданном сообщении.
      */
     public function sendToChat(NewMessageBody|string $message, bool $disableLinkPreview = false): SendMessageResult
@@ -34,7 +36,8 @@ trait UserEventTrait
      * Отправить сообщение в чат события.
      *
      * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
-     * @param bool $disableLinkPreview Если `false`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
      */
     public function sendToUser(NewMessageBody|string $message, bool $disableLinkPreview = false): SendMessageResult

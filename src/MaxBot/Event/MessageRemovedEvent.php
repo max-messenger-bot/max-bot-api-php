@@ -48,7 +48,8 @@ final class MessageRemovedEvent extends BaseEvent
      * Отправить сообщение пользователю удалившему сообщение.
      *
      * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
-     * @param bool $disableLinkPreview Если `false`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
+     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
      */
     public function sendMessage(NewMessageBody|string $message, bool $disableLinkPreview = false): SendMessageResult

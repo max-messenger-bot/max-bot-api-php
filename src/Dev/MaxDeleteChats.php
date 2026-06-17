@@ -68,6 +68,7 @@ final class MaxDeleteChats
         // Удаление чата
         echo '🔄 Удаление чата... ';
         try {
+            /** @psalm-suppress DeprecatedMethod */
             $client->deleteChat($selectedChat->getChatId());
             echo "✅ Чат удалён\n";
 
