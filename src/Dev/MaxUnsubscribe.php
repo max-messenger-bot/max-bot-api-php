@@ -8,7 +8,11 @@ use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
 use Throwable;
 
+use function fgets;
+use function preg_match;
 use function sprintf;
+use function strtolower;
+use function trim;
 
 /**
  * Консольная команда для удаления Webhook подписки Max Bot API

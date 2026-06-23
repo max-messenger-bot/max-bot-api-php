@@ -11,6 +11,10 @@ use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\MaxHttpException;
 use MaxMessenger\Bot\Model\Response\Error;
 use Mj4444\SimpleHttpClient\Contracts\HttpResponseInterface;
 use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\HttpException;
+use Throwable;
+
+use function json_decode;
+use function str_starts_with;
 
 /**
  * JSON HTTP-ответ.
@@ -28,6 +32,10 @@ final readonly class JsonResponse implements HttpResponseInterface
         public string $body,
     ) {}
 
+    /**
+     * Параметр `$expectedContentType` определён интерфейсом {@see HttpResponseInterface}, но в этой реализации
+     * не используется: ожидается только `application/json`.
+     */
     public function checkContentType(string|array|null $expectedContentType = null): void
     {
         if (!str_starts_with($this->contentType ?? '', 'application/json')) {
@@ -36,13 +44,21 @@ final readonly class JsonResponse implements HttpResponseInterface
         }
     }
 
+    /**
+     * Параметр `$allowedCode` определён интерфейсом {@see HttpResponseInterface}, но в этой реализации
+     * не используется: API Max считает успешным только код 200.
+     */
     public function checkHttpCode(int|array $allowedCode = 200): void
     {
         if ($this->getHttpCode() !== 200) {
-            $error = Error::newFromData((array) $this->getData());
+            try {
+                $error = Error::newFromData((array) $this->getData());
+            } catch (Throwable) {
+                $error = null;
+            }
 
             /** @psalm-var HttpResponseInterface $this Psalm bug */
-            $error->isValid()
+            $error !== null && $error->isValid()
                 ? MaxHttpException::throwMax($this, $error)
                 : HttpException::throw($this, [200]);
         }

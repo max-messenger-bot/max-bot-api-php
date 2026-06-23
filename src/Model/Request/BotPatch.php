@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Request;
 
 use function array_key_exists;
+use function array_values;
 
 final class BotPatch extends BaseRequestModel
 {

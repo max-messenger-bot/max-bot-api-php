@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
 
+use function str_contains;
+
 /**
  * Неверный запрос.
  */

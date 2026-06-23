@@ -8,6 +8,8 @@ use MaxMessenger\Bot\Exception\Validation\KeyboardException;
 use MaxMessenger\Bot\Model\Enum\Intent;
 
 use function array_key_exists;
+use function array_key_last;
+use function array_values;
 use function count;
 
 /**

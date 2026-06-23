@@ -1,9 +1,19 @@
+# Зависимости Composer
 /vendor/
+/composer.lock
+
+# Настройки IDE
 /.idea/
+
+# Кэши инструментов
+/.php-cs-fixer.cache
+
+# Локальные конфиги dev-инструментов
+/.polling-to-webhook.conf
+
+# Схемы API (храним только эталонную schema.yaml)
 /schemas/*
 !/schemas/schema.yaml
-/test/
-/composer.lock
-/TODO.md
-/.php-cs-fixer.cache
-/.polling-to-webhook.conf
+
+# Локальные dev-скрипты и наработки
+/dev/

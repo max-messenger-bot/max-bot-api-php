@@ -10,6 +10,7 @@ use MaxMessenger\Bot\Model\Response\BotInfo;
 use Throwable;
 
 use function count;
+use function fgets;
 use function sprintf;
 
 /**

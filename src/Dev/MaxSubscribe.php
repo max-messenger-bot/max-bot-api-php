@@ -10,10 +10,23 @@ use MaxMessenger\Bot\Model\Enum\UpdateType;
 use MaxMessenger\Bot\Model\Request\SubscriptionRequestBody;
 use Throwable;
 
+use function array_map;
 use function count;
+use function explode;
+use function fgets;
+use function filter_var;
+use function implode;
+use function min;
+use function parse_url;
+use function preg_match;
 use function printf;
+use function sort;
 use function sprintf;
+use function str_repeat;
+use function str_starts_with;
 use function strlen;
+use function strtolower;
+use function trim;
 
 /**
  * Консольная команда для настройки Webhook подписки Max Bot API
@@ -158,7 +171,7 @@ final class MaxSubscribe
     private static function requestSecret(): string
     {
         Utils::printDoubleLine(false, true);
-        echo "ШАГ 2: Кодовое слово (Secret)\n";
+        echo "ШАГ 4: Кодовое слово (Secret)\n";
         Utils::printDoubleLine(true);
 
         echo "Введите кодовое слово для проверки подлинности запросов\n";
@@ -393,11 +406,11 @@ final class MaxSubscribe
 
             return false;
         } catch (SimpleQueryError $e) {
-            echo sprintf('❌ Ошибка API: %s\n', $e->getMessage());
+            echo sprintf("❌ Ошибка API: %s\n", $e->getMessage());
 
             return false;
         } catch (Throwable $e) {
-            echo sprintf('❌ Ошибка: %s\n', $e->getMessage());
+            echo sprintf("❌ Ошибка: %s\n", $e->getMessage());
 
             return false;
         }

@@ -53,7 +53,7 @@ $result = $client->sendMessageToChat($chatId, 'Привет, чат!');
 Параметры:
 
 - `$chatId` (int) — ID чата
-- `$message` (NewMessageBody|RawModel|string) — тело сообщения
+- `$messageBody` (NewMessageBody|RawModel|string) — тело сообщения
 - `$disableLinkPreview` (bool) — отключение предпросмотра ссылок (по умолчанию `false`)
 
 ### sendMessageToUser
@@ -67,7 +67,7 @@ $result = $client->sendMessageToUser($userId, 'Привет!');
 Параметры:
 
 - `$userId` (int) — ID пользователя
-- `$message` (NewMessageBody|RawModel|string) — тело сообщения
+- `$messageBody` (NewMessageBody|RawModel|string) — тело сообщения
 - `$disableLinkPreview` (bool) — отключение предпросмотра ссылок (по умолчанию `false`)
 
 ### sendMessage
@@ -76,17 +76,17 @@ $result = $client->sendMessageToUser($userId, 'Привет!');
 
 ```php
 // Отправка пользователю
-$result = $client->sendMessage(userId: $userId, chatId: null, message: 'Привет!');
+$result = $client->sendMessage(userId: $userId, chatId: null, messageBody: 'Привет!');
 
 // Отправка в чат
-$result = $client->sendMessage(userId: null, chatId: $chatId, message: 'Привет, чат!');
+$result = $client->sendMessage(userId: null, chatId: $chatId, messageBody: 'Привет, чат!');
 ```
 
 Параметры:
 
 - `$userId` (int|null) — ID пользователя
 - `$chatId` (int|null) — ID чата
-- `$message` (NewMessageBody|RawModel|string) — тело сообщения
+- `$messageBody` (NewMessageBody|RawModel|string) — тело сообщения
 - `$disableLinkPreview` (bool) — отключение предпросмотра ссылок (по умолчанию `false`)
 
 > Один из параметров `$userId` или `$chatId` должен быть не-null. Оба одновременно — ошибка.
@@ -566,3 +566,17 @@ $chatId = $message->getRecipient()->getChatId();
 ```
 
 `SendMessageResult::getMessage()` возвращает объект `Message` со всей информацией о созданном сообщении.
+
+## Редактирование отправленного сообщения
+
+Метод `editMessage` принимает ID сообщения как строкой, так и объектом `Message` или `MessageBody`. Во втором случае ID
+сообщения (`mid`) будет извлечён автоматически, поэтому полученный из `SendMessageResult` объект можно передавать
+напрямую,
+не вызывая `getBody()->getMid()`:
+
+```php
+$result = $client->sendMessageToUser($userId, 'Привет!');
+
+// Объект `Message` передаётся напрямую — извлекать `mid` вручную не нужно
+$client->editMessage($result->getMessage(), 'Обновлённый текст');
+```

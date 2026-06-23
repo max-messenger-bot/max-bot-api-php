@@ -19,7 +19,8 @@ class UploadEndpoint extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return non-empty-string|null Видео- или аудио-токен для отправки сообщения (minLength: 1).
+     * @return non-empty-string|null Видео-токен или аудио-токен для отправки медиафайла во вложении к сообщению
+     *     (minLength: 1).
      */
     public function getToken(): ?string
     {
@@ -27,7 +28,7 @@ class UploadEndpoint extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string URL для загрузки файла. Срок жизни ссылки не ограничен (minLength: 1).
+     * @return non-empty-string URL для загрузки медиафайла. Срок жизни ссылки не ограничен (minLength: 1).
      */
     public function getUrl(): string
     {

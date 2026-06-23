@@ -11,11 +11,24 @@ use MaxMessenger\Bot\Model\Response\Chat;
 use MaxMessenger\Bot\Model\Response\Subscription;
 use Throwable;
 
+use function array_keys;
 use function count;
 use function dirname;
+use function explode;
+use function fgets;
+use function file_get_contents;
+use function mb_strlen;
+use function preg_match;
 use function printf;
 use function sprintf;
+use function str_ends_with;
+use function str_pad;
+use function str_repeat;
+use function str_replace;
+use function str_starts_with;
 use function strlen;
+use function substr;
+use function trim;
 
 /**
  * Утилиты для консольных скриптов
@@ -56,69 +69,6 @@ final class Utils
         }
 
         return self::selectTokenFromList($tokens);
-    }
-
-    /**
-     * Корень проекта, в который подключён пакет.
-     *
-     * При установке как зависимость путь пакета оканчивается на известный
-     * суффикс vendor/<vendor>/<package> — отбрасываем его строго на этом уровне.
-     * При запуске из самого пакета (standalone) — корень самого пакета.
-     */
-    public static function projectRoot(): string
-    {
-        $packageRoot = dirname(__DIR__, 2);
-        $vendorSuffix = '/vendor/max-messenger-bot/max-bot-api-php';
-
-        if (str_ends_with($packageRoot, $vendorSuffix)) {
-            return substr($packageRoot, 0, -strlen($vendorSuffix));
-        }
-
-        return $packageRoot;
-    }
-
-    /**
-     * Пути-кандидаты для поиска файла в порядке приоритета:
-     * корень проекта, в который подключён пакет, и его папка dev/.
-     *
-     * @return list<string>
-     */
-    public static function projectFileCandidates(string $fileName): array
-    {
-        $projectRoot = self::projectRoot();
-
-        return [
-            $projectRoot . '/' . $fileName,
-            $projectRoot . '/dev/' . $fileName,
-        ];
-    }
-
-    /**
-     * Подсказка, когда файл .tokens не найден ни в одном из мест
-     *
-     * @param list<string> $candidates
-     */
-    private static function printTokensFileNotFound(array $candidates): void
-    {
-        $example = dirname(__DIR__, 2) . '/dev/' . self::TOKENS_NAME . '.example';
-        $projectRoot = self::projectRoot();
-
-        echo "\n";
-        echo "ℹ️  Файл .tokens не найден\n";
-        echo "   Искал в:\n";
-        foreach ($candidates as $candidate) {
-            echo sprintf("     • %s\n", $candidate);
-        }
-        echo "\n";
-        echo "   Чтобы не вводить токен каждый раз, создайте его в корне проекта\n";
-        echo "   или в папке dev/ на основе примера:\n";
-        echo "\n";
-        echo sprintf("      cp %s %s\n", $example, $projectRoot . '/' . self::TOKENS_NAME);
-        echo "      # или\n";
-        echo sprintf("      cp %s %s\n", $example, $projectRoot . '/dev/' . self::TOKENS_NAME);
-        echo "\n";
-        echo "   Формат файла — одна запись на строку: token-name=access-token\n";
-        echo "\n";
     }
 
     /**
@@ -295,6 +245,41 @@ final class Utils
     }
 
     /**
+     * Пути-кандидаты для поиска файла в порядке приоритета:
+     * корень проекта, в который подключён пакет, и его папка dev/.
+     *
+     * @return list<string>
+     */
+    public static function projectFileCandidates(string $fileName): array
+    {
+        $projectRoot = self::projectRoot();
+
+        return [
+            $projectRoot . '/' . $fileName,
+            $projectRoot . '/dev/' . $fileName,
+        ];
+    }
+
+    /**
+     * Корень проекта, в который подключён пакет.
+     *
+     * При установке как зависимость путь пакета оканчивается на известный
+     * суффикс vendor/<vendor>/<package> — отбрасываем его строго на этом уровне.
+     * При запуске из самого пакета (standalone) — корень самого пакета.
+     */
+    public static function projectRoot(): string
+    {
+        $packageRoot = dirname(__DIR__, 2);
+        $vendorSuffix = '/vendor/max-messenger-bot/max-bot-api-php';
+
+        if (str_ends_with($packageRoot, $vendorSuffix)) {
+            return substr($packageRoot, 0, -strlen($vendorSuffix));
+        }
+
+        return $packageRoot;
+    }
+
+    /**
      * Очистка ввода от лишних символов
      *
      * @return non-empty-string
@@ -396,7 +381,7 @@ final class Utils
     private static function parseConfig(string $content): array
     {
         $values = [];
-        $lines = explode("\n", str_replace("\r\n", "\r", $content));
+        $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", $content));
 
         foreach ($lines as $line) {
             $line = trim($line);
@@ -421,6 +406,34 @@ final class Utils
         }
 
         return $values;
+    }
+
+    /**
+     * Подсказка, когда файл .tokens не найден ни в одном из мест
+     *
+     * @param list<string> $candidates
+     */
+    private static function printTokensFileNotFound(array $candidates): void
+    {
+        $example = dirname(__DIR__, 2) . '/dev/' . self::TOKENS_NAME . '.example';
+        $projectRoot = self::projectRoot();
+
+        echo "\n";
+        echo "ℹ️  Файл .tokens не найден\n";
+        echo "   Искал в:\n";
+        foreach ($candidates as $candidate) {
+            echo sprintf("     • %s\n", $candidate);
+        }
+        echo "\n";
+        echo "   Чтобы не вводить токен каждый раз, создайте его в корне проекта\n";
+        echo "   или в папке dev/ на основе примера:\n";
+        echo "\n";
+        echo sprintf("      cp %s %s\n", $example, $projectRoot . '/' . self::TOKENS_NAME);
+        echo "      # или\n";
+        echo sprintf("      cp %s %s\n", $example, $projectRoot . '/dev/' . self::TOKENS_NAME);
+        echo "\n";
+        echo "   Формат файла — одна запись на строку: token-name=access-token\n";
+        echo "\n";
     }
 
     /**

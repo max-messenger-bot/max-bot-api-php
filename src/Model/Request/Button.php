@@ -33,7 +33,7 @@ abstract class Button extends BaseRequestModel
      */
     public function __construct(ButtonType $type, ?string $text = null)
     {
-        $this->required[] = 'text';
+        $this->required = ['text'];
 
         $this->data['type'] = $type;
         if ($text !== null) {

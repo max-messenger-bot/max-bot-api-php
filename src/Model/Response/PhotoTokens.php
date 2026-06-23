@@ -18,19 +18,17 @@ class PhotoTokens extends BaseResponseModel
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
+    /** @var non-empty-array<string, PhotoToken>|false */
+    private array|false $photos = false;
 
     /**
      * @return non-empty-array<string, PhotoToken> Закодированная информация загруженных изображений.
      */
     public function getPhotos(): array
     {
-        $photos = $this->data['photos'];
-        foreach ($photos as &$photoData) {
-            $photoData = PhotoToken::newFromData($photoData);
-        }
-
-        /** @var non-empty-array<string, PhotoToken> */
-        return $photos;
+        return $this->photos === false
+            ? $this->photos = $this->preparePhotos()
+            : $this->photos;
     }
 
     public function isValid(): bool
@@ -39,5 +37,20 @@ class PhotoTokens extends BaseResponseModel
         return isset($this->data['photos'])
             && is_array($this->data['photos'])
             && $this->data['photos'] !== [];
+    }
+
+    /**
+     * @return non-empty-array<string, PhotoToken>
+     */
+    private function preparePhotos(): array
+    {
+        $photos = $this->data['photos'];
+        foreach ($photos as &$photoData) {
+            $photoData = PhotoToken::newFromData($photoData);
+        }
+        unset($photoData);
+
+        /** @var non-empty-array<string, PhotoToken> $photos */
+        return $photos;
     }
 }

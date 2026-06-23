@@ -8,6 +8,8 @@ use JsonException;
 use MaxMessenger\Bot\Exception\HttpClient\HttpRequest\JsonEncodeException;
 use Mj4444\SimpleHttpClient\Contracts\HttpRequest\BodyInterface;
 
+use function json_encode;
+
 /**
  * JSON-тело для HTTP-запросов.
  *

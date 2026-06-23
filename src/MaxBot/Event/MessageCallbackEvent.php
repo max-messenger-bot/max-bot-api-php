@@ -32,7 +32,7 @@ final class MessageCallbackEvent extends BaseEvent
 
         $answer = new CallbackAnswer($message, $notification);
 
-        $this->apiClient->answerOnCallback($this->getCallback()->getCallbackId(), $answer);
+        $this->apiClient->answerOnCallback($this->getCallback(), $answer);
     }
 
     /**
@@ -42,7 +42,7 @@ final class MessageCallbackEvent extends BaseEvent
     {
         $answer = new CallbackAnswer(null, $notification);
 
-        $this->apiClient->answerOnCallback($this->getCallback()->getCallbackId(), $answer);
+        $this->apiClient->answerOnCallback($this->getCallback(), $answer);
     }
 
     /**

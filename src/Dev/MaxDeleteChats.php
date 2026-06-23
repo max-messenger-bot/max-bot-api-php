@@ -10,8 +10,13 @@ use MaxMessenger\Bot\Model\Response\BotInfo;
 use MaxMessenger\Bot\Model\Response\Chat;
 use Throwable;
 
+use function array_keys;
+use function array_values;
 use function count;
+use function fgets;
+use function preg_match;
 use function sprintf;
+use function trim;
 
 /**
  * Консольная команда для просмотра списка чатов и удаления чатов Max Bot API
@@ -154,7 +159,7 @@ final class MaxDeleteChats
             // Предложение удалить чат или перейти к следующей странице
             echo "\n";
             echo 'Введите номер чата для удаления'
-                . ' (555 для удаления всех частов на странице или Enter для следующей страницы): ';
+                . ' (555 для удаления всех чатов на странице или Enter для следующей страницы): ';
             $input = trim((string) fgets(STDIN));
 
             if ($input === '') {

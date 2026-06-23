@@ -7,6 +7,7 @@ namespace MaxMessenger\Bot\Model\Request;
 use MaxMessenger\Bot\Model\Enum\UpdateType;
 
 use function array_key_exists;
+use function array_values;
 
 /**
  * Запрос на настройку подписки WebHook.

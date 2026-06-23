@@ -29,7 +29,7 @@ trait MessageEventTrait
      */
     public function deleteMessage(): void
     {
-        $this->apiClient->deleteMessage($this->requireMessage()->getBody()->getMid());
+        $this->apiClient->deleteMessage($this->requireMessage());
     }
 
     /**

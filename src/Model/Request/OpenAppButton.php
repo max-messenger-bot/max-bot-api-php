@@ -37,8 +37,6 @@ final class OpenAppButton extends Button
         ?int $contactId = null,
         ?string $payload = null,
     ) {
-        $this->required = ['text'];
-
         parent::__construct(ButtonType::OpenApp, $text);
 
         if ($webApp !== null) {

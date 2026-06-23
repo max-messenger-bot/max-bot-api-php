@@ -11,7 +11,7 @@ use function array_key_exists;
 /**
  * Запрос на прикрепление карточки контакта к сообщению.
  *
- * ДОЛЖЕН быть единственным вложением в сообщении.
+ * Должен быть единственным вложением в сообщении.
  */
 final class ContactAttachmentRequest extends AttachmentRequest
 {

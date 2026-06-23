@@ -18,6 +18,7 @@ use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\UnknownException;
 use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\UnsupportedMediaTypeException;
 use MaxMessenger\Bot\Model\Response\Error;
 use Mj4444\SimpleHttpClient\Contracts\HttpResponseInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 
 final class MaxHttpExceptionTest extends Unit
 {
@@ -244,7 +245,7 @@ final class MaxHttpExceptionTest extends Unit
     }
 
     /**
-     * @psalm-return HttpResponseInterface&\PHPUnit\Framework\MockObject\MockObject
+     * @psalm-return HttpResponseInterface&MockObject
      */
     private function createMockResponse(int $httpCode): HttpResponseInterface
     {

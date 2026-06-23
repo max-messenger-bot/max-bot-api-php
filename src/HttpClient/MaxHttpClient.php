@@ -10,16 +10,20 @@ use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
 use MaxMessenger\Bot\Exception\AccessTokenException;
 use MaxMessenger\Bot\Exception\HttpClient\HttpResponse\UnexpectedFormatException;
 use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\InternalHttpException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\ServiceUnavailableException;
 use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\TooManyRequestsException;
 use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
 use Mj4444\SimpleHttpClient\Contracts\HttpResponseInterface;
 use Mj4444\SimpleHttpClient\Exceptions\HttpClientErrorException;
 use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
 use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\InternalServerErrorException;
+use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\ServiceUnavailableException as ServiceUnavailableException2;
 use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\TooManyRequestsException as TooManyRequestsException2;
 use Mj4444\SimpleHttpClient\HttpRequest\HttpMethod;
 
+use function array_shift;
 use function is_array;
+use function usleep;
 
 /**
  * HTTP-клиент для API Max.
@@ -89,7 +93,15 @@ final class MaxHttpClient implements MaxHttpClientInterface
                 }
 
                 return $responseData;
-            } catch (HttpClientErrorException|TooManyRequestsException|TooManyRequestsException2|InternalHttpException|InternalServerErrorException $e) { // phpcs:ignore
+            } catch (
+                HttpClientErrorException
+                |TooManyRequestsException
+                |TooManyRequestsException2
+                |InternalHttpException
+                |InternalServerErrorException
+                |ServiceUnavailableException
+                |ServiceUnavailableException2 $e
+            ) {
                 if (!$retryAttempts) {
                     throw $e;
                 }

@@ -9,6 +9,9 @@ use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 use function is_array;
 use function is_string;
+use function json_decode;
+use function mb_strlen;
+use function str_starts_with;
 
 /**
  * Вспомогательный класс для обработки нажатий Callback-кнопок с JSON-payload.

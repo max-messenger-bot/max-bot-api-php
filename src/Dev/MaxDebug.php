@@ -10,6 +10,9 @@ use MaxMessenger\Bot\Model\Response\Update;
 use Throwable;
 
 use function count;
+use function date;
+use function json_encode;
+use function sleep;
 use function sprintf;
 
 /**

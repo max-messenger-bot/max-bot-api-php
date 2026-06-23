@@ -18,8 +18,6 @@ final class RequestContactButton extends Button
      */
     public function __construct(?string $text = null)
     {
-        $this->required = ['text'];
-
         parent::__construct(ButtonType::RequestContact, $text);
     }
 

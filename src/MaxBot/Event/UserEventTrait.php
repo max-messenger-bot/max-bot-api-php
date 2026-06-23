@@ -19,7 +19,7 @@ trait UserEventTrait
     abstract public function getUserId(): int;
 
     /**
-     * Отправить сообщение лично в диалоге с пользователем.
+     * Отправить сообщение в чат события.
      *
      * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
@@ -33,7 +33,7 @@ trait UserEventTrait
     }
 
     /**
-     * Отправить сообщение в чат события.
+     * Отправить сообщение лично в диалоге с пользователем.
      *
      * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.

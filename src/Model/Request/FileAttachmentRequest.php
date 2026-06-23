@@ -11,7 +11,7 @@ use function array_key_exists;
 /**
  * Запрос на прикрепление файла к сообщению.
  *
- * ДОЛЖЕН быть единственным вложением в сообщении.
+ * Должен быть единственным вложением в сообщении.
  */
 final class FileAttachmentRequest extends AttachmentRequest
 {

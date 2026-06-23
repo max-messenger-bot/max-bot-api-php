@@ -47,9 +47,9 @@ final class ChatButton extends Button
         ?string $startPayload = null,
         ?int $uuid = null,
     ) {
-        $this->required = ['chat_title'];
-
         parent::__construct(ButtonType::Chat, $text);
+
+        $this->required[] = 'chat_title';
 
         if ($chatTitle !== null) {
             $this->setChatTitle($chatTitle);

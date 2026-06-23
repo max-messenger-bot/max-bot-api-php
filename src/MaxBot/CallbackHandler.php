@@ -7,6 +7,10 @@ namespace MaxMessenger\Bot\MaxBot;
 use Closure;
 use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
+use function explode;
+use function mb_strlen;
+use function str_starts_with;
+
 /**
  * Вспомогательный класс для обработки нажатий Callback-кнопок.
  *

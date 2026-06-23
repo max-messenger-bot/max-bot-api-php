@@ -8,6 +8,7 @@ use Codeception\Test\Unit;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\MessageEventTrait;
 use MaxMessenger\Bot\Model\Enum\SenderAction;
 use MaxMessenger\Bot\Model\Response\SendMessageResult;
 use MaxMessenger\Bot\Model\Response\Update;
@@ -15,7 +16,7 @@ use MaxMessenger\Bot\Tests\Support\Fake\FakeMaxApiConfig;
 use MaxMessenger\Bot\Tests\Support\Fake\FakeMaxHttpClient;
 
 /**
- * Сетевые методы трейта {@see \MaxMessenger\Bot\MaxBot\Event\MessageEventTrait} через фейковый HTTP-клиент.
+ * Сетевые методы трейта {@see MessageEventTrait} через фейковый HTTP-клиент.
  */
 final class MessageEventTraitTest extends Unit
 {

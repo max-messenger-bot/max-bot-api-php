@@ -85,7 +85,7 @@ class Update extends BaseResponseModel
     public static function newFromData(array $data): static
     {
         if (!array_key_exists('update_type', $data) || !array_key_exists('timestamp', $data)) {
-            throw new RequiredFieldException(array_key_exists('update_type', $data) ? 'timestamp' : 'update_type"');
+            throw new RequiredFieldException(array_key_exists('update_type', $data) ? 'timestamp' : 'update_type');
         }
 
         if (static::class !== self::class) {

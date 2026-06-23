@@ -10,6 +10,7 @@ use MaxMessenger\Bot\Model\Response\Message;
 use MaxMessenger\Bot\Model\Response\MessageBody;
 
 use function array_key_exists;
+use function array_values;
 use function is_string;
 
 /**
@@ -172,6 +173,23 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
+     * Добавляет строку к тексту сообщения.
+     *
+     * @param string $appendedText Добавляемый текст (maxLength: 4000).
+     * @return $this
+     */
+    public function addLine(string $appendedText): self
+    {
+        $text = $this->data['text'] ?? '';
+
+        $text = $text === ''
+            ? $appendedText
+            : "$text\n$appendedText";
+
+        return $this->setText($text);
+    }
+
+    /**
      * Прикрепляет координаты локации к сообщению.
      *
      * @param float $latitude Широта.
@@ -212,6 +230,17 @@ final class NewMessageBody extends BaseRequestModel
         $this->data['attachments'][] = new StickerAttachmentRequest(new StickerAttachmentRequestPayload($code));
 
         return $this;
+    }
+
+    /**
+     * Добавляет текст к сообщению.
+     *
+     * @param string $appendedText Добавляемый текст (maxLength: 4000).
+     * @return $this
+     */
+    public function addText(string $appendedText): self
+    {
+        return $this->setText(($this->data['text'] ?? '') . $appendedText);
     }
 
     /**
@@ -415,34 +444,6 @@ final class NewMessageBody extends BaseRequestModel
         $this->data['text'] = $text;
 
         return $this;
-    }
-
-    /**
-     * Добавляет строку к тексту сообщения.
-     *
-     * @param string $appendedText Добавляемый текст (maxLength: 4000).
-     * @return $this
-     */
-    public function addLine(string $appendedText): self
-    {
-        $text = $this->data['text'] ?? '';
-
-        $text = $text === ''
-            ? $appendedText
-            : "$text\n$appendedText";
-
-        return $this->setText($text);
-    }
-
-    /**
-     * Добавляет текст к сообщению.
-     *
-     * @param string $appendedText Добавляемый текст (maxLength: 4000).
-     * @return $this
-     */
-    public function addText(string $appendedText): self
-    {
-        return $this->setText(($this->data['text'] ?? '') . $appendedText);
     }
 
     /**

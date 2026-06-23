@@ -13,9 +13,9 @@ use function sprintf;
  */
 final class MaximumException extends ValidationException
 {
-    public function __construct(string $argumentName, int $value, int $minimum)
+    public function __construct(string $argumentName, int $value, int $maximum)
     {
-        $part1 = sprintf('a number less than or equal to %d', $minimum);
+        $part1 = sprintf('a number less than or equal to %d', $maximum);
 
         parent::__construct(sprintf('Argument "%s" expects %s, but %s was passed.', $argumentName, $part1, $value));
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MaxMessenger\Bot\Exception\MaxBot\Event;
 
 use MaxMessenger\Bot\Exception\MaxApiLogicException;

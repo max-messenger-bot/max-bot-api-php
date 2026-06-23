@@ -6,6 +6,10 @@ namespace MaxMessenger\Bot\Model\Response;
 
 use MaxMessenger\Bot\MaxApiClient;
 
+use function preg_match_all;
+use function preg_replace;
+use function str_replace;
+
 class ContactAttachmentPayload extends BaseResponseModel
 {
     /**

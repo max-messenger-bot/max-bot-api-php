@@ -9,8 +9,16 @@ use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Model\Response\Update;
 use Throwable;
 
+use function basename;
+use function date;
 use function dirname;
+use function fclose;
+use function fwrite;
 use function is_resource;
+use function json_encode;
+use function proc_close;
+use function proc_open;
+use function sleep;
 use function sprintf;
 use function strlen;
 

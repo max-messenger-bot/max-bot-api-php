@@ -8,6 +8,9 @@ use Codeception\Test\Unit;
 use MaxMessenger\Bot\Exception\HttpClient\HttpRequest\JsonEncodeException;
 use MaxMessenger\Bot\HttpClient\Body\JsonBody;
 
+use function fclose;
+use function fopen;
+
 final class JsonBodyTest extends Unit
 {
     public function testGetBodySimple(): void

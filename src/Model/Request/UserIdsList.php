@@ -7,6 +7,9 @@ namespace MaxMessenger\Bot\Model\Request;
 use MaxMessenger\Bot\Exception\Validation\MaxItemsException;
 
 use function array_key_exists;
+use function array_map;
+use function array_unique;
+use function array_values;
 use function count;
 use function in_array;
 
@@ -47,6 +50,12 @@ final class UserIdsList extends BaseRequestModel
      */
     public function addUserId(int $userId): self
     {
+        if (!array_key_exists('user_ids', $this->data)) {
+            $this->data['user_ids'] = [$userId];
+
+            return $this;
+        }
+
         if (!in_array($userId, $this->data['user_ids'], true)) {
             if (count($this->data['user_ids']) >= 100) {
                 throw new MaxItemsException('user_ids', 101, 100);
@@ -87,17 +96,6 @@ final class UserIdsList extends BaseRequestModel
     public static function new(?array $userIds = null): self
     {
         return new self($userIds);
-    }
-
-    /**
-     * @param int $userId Идентификатор пользователя.
-     * @return $this
-     */
-    public function removeUserId(int $userId): self
-    {
-        $this->data['user_ids'] = array_values(array_diff($this->data['user_ids'], [$userId]));
-
-        return $this;
     }
 
     /**

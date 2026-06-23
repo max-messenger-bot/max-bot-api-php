@@ -11,7 +11,7 @@ use function array_key_exists;
 /**
  * Запрос на прикрепление стикера.
  *
- * ДОЛЖЕН быть единственным вложением в сообщении.
+ * Должен быть единственным вложением в сообщении.
  */
 final class StickerAttachmentRequest extends AttachmentRequest
 {

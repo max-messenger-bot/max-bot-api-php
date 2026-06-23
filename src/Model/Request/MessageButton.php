@@ -19,8 +19,6 @@ final class MessageButton extends Button
      */
     public function __construct(?string $text = null)
     {
-        $this->required = ['text'];
-
         parent::__construct(ButtonType::Message, $text);
     }
 

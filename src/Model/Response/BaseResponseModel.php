@@ -10,6 +10,10 @@ use MaxMessenger\Bot\Contract\ModelInterface;
 use MaxMessenger\Bot\Exception\ActionProhibited;
 use Traversable;
 
+use function array_values;
+use function intdiv;
+use function sprintf;
+
 abstract class BaseResponseModel implements ModelInterface
 {
     final private function __construct(
@@ -148,8 +152,11 @@ abstract class BaseResponseModel implements ModelInterface
             return DateTimeImmutable::createFromTimestamp($timestamp / 1000);
         }
 
-        /** @var DateTimeImmutable */
-        return DateTimeImmutable::createFromFormat('U.u', number_format($timestamp / 1000, 1, '.', ''));
+        /** @psalm-suppress FalsableReturnStatement */
+        return DateTimeImmutable::createFromFormat(
+            'U.u',
+            sprintf('%d.%06d', intdiv($timestamp, 1000), ($timestamp % 1000) * 1000),
+        );
     }
 
     protected static function makeNullableDateTime(?int $timestamp): ?DateTimeImmutable

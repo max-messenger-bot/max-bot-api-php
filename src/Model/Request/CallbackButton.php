@@ -11,6 +11,7 @@ use MaxMessenger\Bot\Model\Enum\Intent;
 
 use function array_key_exists;
 use function is_array;
+use function json_encode;
 
 /**
  * Callback-кнопка.
@@ -35,9 +36,9 @@ final class CallbackButton extends Button
      */
     public function __construct(?string $text = null, string|array|null $payload = null, ?Intent $intent = null)
     {
-        $this->required = ['payload'];
-
         parent::__construct(ButtonType::Callback, $text);
+
+        $this->required[] = 'payload';
 
         if ($payload !== null) {
             $this->setPayload($payload);

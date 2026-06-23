@@ -8,6 +8,8 @@ use LogicException;
 use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
 use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
 
+use function array_key_last;
+
 /**
  * Фейковый HTTP-клиент для герметичных тестов: запоминает выполненные запросы
  * и возвращает заранее заданный ответ вместо обращения к сети.

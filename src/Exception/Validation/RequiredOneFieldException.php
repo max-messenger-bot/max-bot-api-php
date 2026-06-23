@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Exception\Validation;
 
+use function implode;
 use function sprintf;
 
 /**

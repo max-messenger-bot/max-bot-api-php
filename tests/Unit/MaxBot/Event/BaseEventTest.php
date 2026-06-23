@@ -16,6 +16,8 @@ use MaxMessenger\Bot\Model\Response\Update;
 use RuntimeException;
 use Throwable;
 
+use function time;
+
 final class BaseEventTest extends Unit
 {
     private MaxApiClient $apiClient;

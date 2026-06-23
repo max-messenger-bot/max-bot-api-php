@@ -8,6 +8,12 @@ use Closure;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 use MaxMessenger\Bot\Model\Enum\ChatType;
 
+use function explode;
+use function mb_strlen;
+use function mb_substr;
+use function str_starts_with;
+use function substr;
+
 /**
  * Вспомогательный класс для обработки команд.
  *

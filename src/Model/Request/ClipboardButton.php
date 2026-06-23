@@ -29,9 +29,9 @@ final class ClipboardButton extends Button
      */
     public function __construct(?string $text = null, ?string $payload = null)
     {
-        $this->required = ['payload'];
-
         parent::__construct(ButtonType::Clipboard, $text);
+
+        $this->required[] = 'payload';
 
         if ($payload !== null) {
             $this->setPayload($payload);

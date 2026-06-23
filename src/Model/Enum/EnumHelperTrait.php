@@ -6,6 +6,9 @@ namespace MaxMessenger\Bot\Model\Enum;
 
 use BackedEnum;
 
+use function array_filter;
+use function array_values;
+
 /**
  * Трейт с вспомогательными методами для перечислений.
  *

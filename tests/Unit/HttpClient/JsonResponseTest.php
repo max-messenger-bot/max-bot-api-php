@@ -15,6 +15,8 @@ use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\HttpException;
 use Mj4444\SimpleHttpClient\HttpRequest\HttpMethod;
 use SensitiveParameterValue;
 
+use function json_encode;
+
 final class JsonResponseTest extends Unit
 {
     private const TEST_TOKEN = 'Bearer test-token-123';

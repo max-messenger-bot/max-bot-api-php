@@ -38,8 +38,14 @@ use SensitiveParameterValue;
 use Throwable;
 
 use function array_key_exists;
+use function array_unshift;
+use function count;
+use function file_get_contents;
+use function hash_equals;
 use function is_array;
 use function is_string;
+use function json_decode;
+use function str_contains;
 use function strlen;
 
 final class MaxBot
@@ -180,7 +186,7 @@ final class MaxBot
             return true;
         }
 
-        return $list && self::handleEventUseHandlerList($event, $this->finalHandlers, HandlerListType::Final);
+        return self::handleEventUseHandlerList($event, $this->finalHandlers, HandlerListType::Final);
     }
 
     /**
@@ -195,8 +201,12 @@ final class MaxBot
         BaseEvent $event,
         array $handlers,
         HandlerListType $handlerListType = HandlerListType::Custom,
-        bool $defaultIsHandled = null,
+        ?bool $defaultIsHandled = null,
     ): bool {
+        if (count($handlers) === 0) {
+            return false;
+        }
+
         $saveListType = $event->currentHandlerListType;
 
         foreach ($handlers as $handler) {
@@ -540,7 +550,7 @@ final class MaxBot
 
         $secret = $this->secret?->getValue();
         /** @psalm-suppress RiskyTruthyFalsyComparison */
-        if ($secret && ($_SERVER['HTTP_X_MAX_BOT_API_SECRET'] ?? '') !== $secret) {
+        if ($secret && !hash_equals($secret, $_SERVER['HTTP_X_MAX_BOT_API_SECRET'] ?? '')) {
             throw new InvalidSecretException();
         }
 

@@ -12,6 +12,7 @@ use Mj4444\SimpleHttpClient\HttpRequest\Body\NoBody;
 use Mj4444\SimpleHttpClient\HttpRequest\HttpMethod;
 use SensitiveParameterValue;
 
+use function http_build_query;
 use function in_array;
 use function is_string;
 

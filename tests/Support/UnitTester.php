@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Tests\Support;
 
+use Codeception\Actor;
+
 /**
  * Inherited Methods
  * @method void wantTo($text)
@@ -19,7 +21,7 @@ namespace MaxMessenger\Bot\Tests\Support;
  *
  * @SuppressWarnings(PHPMD)
 */
-class UnitTester extends \Codeception\Actor
+class UnitTester extends Actor
 {
     use _generated\UnitTesterActions;
 

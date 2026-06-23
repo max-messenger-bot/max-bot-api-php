@@ -28,6 +28,8 @@ use MaxMessenger\Bot\MaxBot\Event\UserRemovedFromChatEvent;
 use MaxMessenger\Bot\Model\Response\Update;
 use Throwable;
 
+use function time;
+
 final class BaseEventNewTest extends Unit
 {
     private MaxApiClient $apiClient;

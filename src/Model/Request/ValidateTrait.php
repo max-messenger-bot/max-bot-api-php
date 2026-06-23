@@ -15,6 +15,8 @@ use MaxMessenger\Bot\Exception\Validation\MinLengthException;
 use MaxMessenger\Bot\Exception\Validation\MustBeLessException;
 
 use function count;
+use function mb_strlen;
+use function preg_match;
 
 trait ValidateTrait
 {

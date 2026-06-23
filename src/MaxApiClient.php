@@ -29,6 +29,7 @@ use MaxMessenger\Bot\Model\Request\SubscriptionRequestBody;
 use MaxMessenger\Bot\Model\Request\UserIdsList;
 use MaxMessenger\Bot\Model\Request\ValidateTrait;
 use MaxMessenger\Bot\Model\Response\BotInfo;
+use MaxMessenger\Bot\Model\Response\Callback;
 use MaxMessenger\Bot\Model\Response\Chat;
 use MaxMessenger\Bot\Model\Response\ChatList;
 use MaxMessenger\Bot\Model\Response\ChatMember;
@@ -37,6 +38,7 @@ use MaxMessenger\Bot\Model\Response\ContactAttachmentPayload;
 use MaxMessenger\Bot\Model\Response\GetPinnedMessageResult;
 use MaxMessenger\Bot\Model\Response\GetSubscriptionsResult;
 use MaxMessenger\Bot\Model\Response\Message;
+use MaxMessenger\Bot\Model\Response\MessageBody;
 use MaxMessenger\Bot\Model\Response\MessageList;
 use MaxMessenger\Bot\Model\Response\ModifyMembersResult;
 use MaxMessenger\Bot\Model\Response\SendMessageResult;
@@ -47,8 +49,15 @@ use MaxMessenger\Bot\Model\Response\VideoAttachmentDetails;
 use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
 use SensitiveParameter;
 
+use function array_filter;
+use function array_shift;
+use function array_unique;
+use function hash_equals;
+use function hash_hmac;
+use function implode;
 use function is_array;
 use function is_string;
+use function usleep;
 
 /**
  * API Max клиент.
@@ -89,8 +98,7 @@ final class MaxApiClient
      *
      * @param int $chatId ID группового чата или канала.
      * @param UserIdsList|RawModel|non-empty-array<int> $userIds Список ID пользователей для добавления
-     *     в групповой чат или канал.
-     *     При использованнии массива, смотрите ограничения в {@see UserIdsList}.
+     *     в групповой чат или канал. При использованнии массива, смотрите ограничения в {@see UserIdsList}.
      * @return ModifyMembersResult Результат запроса на изменение списка участников чата.
      * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members
      */
@@ -111,15 +119,18 @@ final class MaxApiClient
      * Этот метод используется для отправки ответа после того, как пользователь нажал на кнопку.
      * Ответом может быть обновленное сообщение и/или одноразовое уведомление для пользователя.
      *
-     * @param non-empty-string $callbackId Идентификатор кнопки, на которую нажал пользователь
-     *                                     (minLength: 1, pattern: '^[\x21-\x7E]+$').
-     *                                     Бот получает идентификатор как часть `Update` с типом `message_callback`.
-     *                                     Пример получения идентификатора: `$update->getCallback()->getCallbackId()`.
+     * @param non-empty-string|Callback $callbackId Идентификатор кнопки, на которую нажал пользователь (minLength: 1,
+     *     pattern: '^[\x21-\x7E]+$'). Бот получает идентификатор как часть `Update` с типом `message_callback`.
+     *     Пример получения идентификатора: `$update->getCallback()->getCallbackId()`.
      * @param CallbackAnswer|RawModel|NewMessageBody $answer Ответ на callback: обновленное сообщение и/или уведомление.
      * @link https://dev.max.ru/docs-api/methods/POST/answers
      */
-    public function answerOnCallback(string $callbackId, NewMessageBody|RawModel|CallbackAnswer $answer): void
+    public function answerOnCallback(string|Callback $callbackId, NewMessageBody|RawModel|CallbackAnswer $answer): void
     {
+        if ($callbackId instanceof Callback) {
+            $callbackId = $callbackId->getCallbackId();
+        }
+
         self::validateString('callbackId', $callbackId, minLength: 1, pattern: '/^[\x21-\x7E]+$/');
 
         if ($answer instanceof NewMessageBody) {
@@ -172,11 +183,18 @@ final class MaxApiClient
      *
      * Удаляет сообщение в диалоге или чате, если бот имеет разрешение на удаление сообщений.
      *
-     * @param non-empty-string $messageId ID удаляемого сообщения (minLength: 1, pattern: '^mid\.[\x21-\x7E]+$').
+     * @param non-empty-string|Message|MessageBody $messageId ID удаляемого сообщения
+     *     (minLength: 1, pattern: '^mid\.[\x21-\x7E]+$').
      * @link https://dev.max.ru/docs-api/methods/DELETE/messages
      */
-    public function deleteMessage(string $messageId): void
+    public function deleteMessage(string|Message|MessageBody $messageId): void
     {
+        if ($messageId instanceof Message) {
+            $messageId = $messageId->getBody()->getMid();
+        } elseif ($messageId instanceof MessageBody) {
+            $messageId = $messageId->getMid();
+        }
+
         self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[\x21-\x7E]+$/');
 
         $data = $this->httpClient->delete('/messages', ['message_id' => $messageId]);
@@ -215,19 +233,29 @@ final class MaxApiClient
      *   - остальные сообщения редактируются, если они отправлены менее 7 суток назад.
      * - В групповых чатах и каналах любые сообщения редактируются независимо от срока давности
      *
-     * @param non-empty-string $messageId ID редактируемого сообщения (minLength: 1, pattern: '^mid\.[\x21-\x7E]+$').
-     * @param NewMessageBody|RawModel|non-empty-string $message Тело нового сообщения.
+     * @param non-empty-string|Message|MessageBody $messageId ID редактируемого сообщения
+     *     (minLength: 1, pattern: '^mid\.[\x21-\x7E]+$'). Также можно передать объект `Message` или
+     *     `MessageBody` — ID сообщения будет извлечён из него автоматически.
+     * @param NewMessageBody|RawModel|non-empty-string $messageBody Тело нового сообщения.
      * @link https://dev.max.ru/docs-api/methods/PUT/messages
      */
-    public function editMessage(string $messageId, NewMessageBody|RawModel|string $message): void
-    {
-        self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[\x21-\x7E]+$/');
-
-        if (is_string($message)) {
-            $message = new NewMessageBody($message);
+    public function editMessage(
+        string|Message|MessageBody $messageId,
+        NewMessageBody|RawModel|string $messageBody,
+    ): void {
+        if ($messageId instanceof Message) {
+            $messageId = $messageId->getBody()->getMid();
+        } elseif ($messageId instanceof MessageBody) {
+            $messageId = $messageId->getMid();
         }
 
-        $data = $this->httpClient->put('/messages', $message->jsonSerialize(), ['message_id' => $messageId]);
+        self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[\x21-\x7E]+$/');
+
+        if (is_string($messageBody)) {
+            $messageBody = new NewMessageBody($messageBody);
+        }
+
+        $data = $this->httpClient->put('/messages', $messageBody->jsonSerialize(), ['message_id' => $messageId]);
 
         $this->checkSimpleQueryResult($data);
     }
@@ -289,13 +317,13 @@ final class MaxApiClient
      * Возвращает информацию о канале по его публичной ссылке. Метод доступен только для каналов —
      * получить информацию о чате по публичной ссылке не получится.
      *
-     * @param non-empty-string $chatLink Публичная ссылка на канал (minLength: 1, pattern: '@?[a-zA-Z]+[\w-]*').
+     * @param non-empty-string $chatLink Публичная ссылка на канал (minLength: 1, pattern: '^@?[a-zA-Z]+[\w-]*$').
      * @return Chat Информация о канале.
      * @link https://dev.max.ru/docs-api/methods/GET/chats/-chatLink-
      */
     public function getChatByLink(string $chatLink): Chat
     {
-        self::validateString('chatLink', $chatLink, minLength: 1, pattern: '/@?[a-zA-Z]+[\w-]*/');
+        self::validateString('chatLink', $chatLink, minLength: 1, pattern: '/^@?[a-zA-Z]+[\w-]*$/');
 
         $data = $this->httpClient->get("/chats/$chatLink");
 
@@ -351,7 +379,7 @@ final class MaxApiClient
      *
      * @param int $chatId ID группового чата или канала.
      * @param int[]|null $userIds Список ID пользователей, чьё членство нужно получить (minItems: 1, uniqueItems: true).
-     *                            Когда этот аргумент передан, аргументы `count` и `marker` игнорируются.
+     *     Когда этот аргумент передан, аргументы `count` и `marker` игнорируются.
      * @param int|null $marker Указатель на следующую страницу данных.
      * @param int<1, 100> $count Максимальное количество участников в ответе (minimum: 1, maximum: 100).
      * @return ChatMembersList Возвращает список участников и указатель на следующую страницу данных.
@@ -407,7 +435,7 @@ final class MaxApiClient
      * Возвращает сообщение по его ID.
      *
      * @param non-empty-string $messageId ID сообщения (`mid`), чтобы получить одно сообщение в чате
-     *                                    (pattern: '^mid\.[\x21-\x7E]+$').
+     *     (pattern: '^mid\.[\x21-\x7E]+$').
      * @return Message Возвращает одно сообщение.
      * @link https://dev.max.ru/docs-api/methods/GET/messages/-messageId-
      */
@@ -431,9 +459,9 @@ final class MaxApiClient
      * - `message_ids` — Список ID сообщений (`mid`). Можно указать один идентификатор или несколько
      *
      * @param array<non-empty-string>|null $messageIds Список ID сообщений, которые нужно получить (uniqueItems: true).
-     *                                                 Обязательный параметр, если не указан `chatId`.
+     *     Обязательный параметр, если не указан `chatId`.
      * @param int|null $chatId ID чата, чтобы получить сообщения из определённого чата.
-     *                         Обязательный параметр, если не указан `messageIds`.
+     *     Обязательный параметр, если не указан `messageIds`.
      * @param int|null $from Время, до которого будут запрошены все сообщения с начала чата (в формате Unix timestamp).
      * @param int|null $to Время, начиная с которого будут запрошены все сообщения до конца чата
      *     (в формате Unix timestamp).
@@ -573,7 +601,7 @@ final class MaxApiClient
      * @param int<1, 1000> $limit Максимальное количество событий для получения (minimum: 1, maximum: 1000).
      * @param int<0, 90> $timeout Тайм-аут в секундах для долгого опроса (minimum: 0, maximum: 90).
      * @param int|null $marker Маркер для получения событий с конкретной позиции.
-     *                         Для получения всех ранее непрочитанных событий, передайте `null`.
+     *     Для получения всех ранее непрочитанных событий, передайте `null`.
      * @param array<UpdateType|string>|null $types Список типов событий, которые вы хотите получить (uniqueItems: true).
      * @return UpdateList Список событий.
      * @link https://dev.max.ru/docs-api/methods/GET/updates
@@ -585,7 +613,7 @@ final class MaxApiClient
         ?array $types = null,
     ): UpdateList {
         $params = [
-            'limit'   => $limit,
+            'limit' => $limit,
             'timeout' => $timeout,
         ];
 
@@ -603,11 +631,26 @@ final class MaxApiClient
     }
 
     /**
-     * Получает URL для загрузки файлов.
+     * Получает URL для загрузки медиафайлов.
      *
-     * Возвращает URL для последующей загрузки файла.
+     * Возвращает URL для последующей загрузки медиафайла.
      *
-     * @param UploadType $type Тип загружаемого файла.
+     * Медиафайл может быть одного из типов:
+     *
+     * - `image` — изображения (JPG, JPEG, PNG, GIF, TIFF, BMP, HEIC).
+     * - `video` — видеофайлы (MP4, MOV, MKV, WEBM).
+     * - `audio` — аудиофайлы (MP3, WAV, M4A и другие).
+     * - `file` — файлы в распространённых форматах (например, TXT, DOC и другие).
+     *
+     * Ограничения при загрузке медиафайлов:
+     *
+     * - Максимальный размер одного медиафайла, который можно загрузить, зависит от его типа:
+     *   - 250 МБ — для видео.
+     *   - 4 ГБ — для файлов.
+     * - По URL-ссылке, которая вернётся в ответ на запрос, можно загрузить только один файл. Если вы хотите загрузить
+     *   ещё файл, отправьте запрос повторно и используйте новую URL-ссылку
+     *
+     * @param UploadType $type Тип загружаемого медиафайла.
      * @return UploadEndpoint Возвращает URL для загрузки вложения.
      * @link https://dev.max.ru/docs-api/methods/POST/uploads
      */
@@ -686,6 +729,37 @@ final class MaxApiClient
      * списком прав. Полный список доступных прав администратора и условия их назначения описаны
      * в классе `ChatAdminPermission`.
      *
+     * **Описание доступных прав администратора**:
+     *
+     * - `read_all_messages` — право читать все сообщения в канале или групповом чате. Без этого права не получится
+     *   управлять сообщениями: закреплять (`pin_message`), редактировать и удалять посты в каналах (`edit` и `delete`)
+     *   и групповых чатах (`write`). Это право важно при назначении ботов: без него бот не будет получать события
+     *   группового чата или канала. Управление `read_all_messages` в интерфейсе мессенджера доступно только для ботов
+     *   в групповых чатах.
+     * - `edit` — право редактировать посты в каналах (для групповых чатов недоступно). Право можно назначить, только
+     *   если уже есть право `read_all_messages` или вместе с ним. Ранее вместо `edit` в API использовалось
+     *   `edit_message` — в ответе могут возвращаться оба значения, однако при назначении новых прав администраторов
+     *   используйте `edit`. Управление `edit` также дублируется в интерфейсе мессенджера.
+     * - `delete` — право удалять посты (для групповых чатов недоступно). Право можно назначить, только если уже есть
+     *   право `read_all_messages` или вместе с ним. Ранее вместо `delete` в API использовалось `delete_message` — в
+     *   ответе могут возвращаться оба значения, однако при назначении новых прав администраторов используйте `delete`.
+     *   Управление `delete` также дублируется в интерфейсе мессенджера.
+     * - `write` — право редактировать и удалять сообщения в групповых чатах, а также писать посты в каналах. Право
+     *   можно назначить, только если уже есть право `read_all_messages` или вместе с ним. Ранее вместо `write` в API
+     *   использовалось `post_edit_delete_message` — в ответе могут возвращаться оба значения, однако при назначении
+     *   новых прав администраторам используйте `write`. Управление `write` также дублируется в интерфейсе мессенджера.
+     * - `pin_message` — право закреплять сообщение. Право можно назначить, только если уже есть право
+     *   `read_all_messages` или вместе с ним.
+     * - `change_chat_info` — право изменять информацию о канале или групповом чате.
+     * - `add_remove_members` — право добавлять и удалять участников группового чата или подписчиков канала. Управление
+     *   `add_remove_members` также дублируется в интерфейсе мессенджера.
+     * - `add_admins` — право добавлять и удалять администраторов группового чата или канала. Управление `add_admins`
+     *   дублируется в интерфейсе мессенджера.
+     * - `edit_link` — право изменять ссылку на групповой чат (для каналов недоступно). Управление `edit_link` также
+     *   дублируется в интерфейсе мессенджера.
+     * - `can_call` — право звонить в групповом чате (для каналов недоступно). Право проставляется автоматически при
+     *   назначении администратором. Управление `can_call` в интерфейсе мессенджера не дублируется.
+     *
      * @param int $chatId ID группового чата или канала.
      * @param ChatAdminsList|RawModel|ChatAdmin[] $admins Список администраторов.
      * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members/admins
@@ -709,16 +783,15 @@ final class MaxApiClient
      *
      * @param int $chatId ID группового чата или канала.
      * @param int $userId ID пользователя, которого нужно удалить из группового чата или канала.
-     * @param bool $block Если передать `true`, пользователь будет заблокирован в чате.
-     *                    Применяется только для чатов с публичной или приватной ссылкой.
-     *                    Игнорируется в остальных случаях.
+     * @param bool $block Если передать `true`, пользователь будет заблокирован в чате. Применяется
+     *     только для чатов с публичной или приватной ссылкой. Игнорируется в остальных случаях.
      * @link https://dev.max.ru/docs-api/methods/DELETE/chats/-chatId-/members
      */
     public function removeMember(int $chatId, int $userId, bool $block = false): void
     {
         $data = $this->httpClient->delete("/chats/$chatId/members", [
             'user_id' => $userId,
-            'block'   => $block ? 'true' : 'false',
+            'block' => $block ? 'true' : 'false',
         ]);
 
         $this->checkSimpleQueryResult($data);
@@ -751,7 +824,7 @@ final class MaxApiClient
      *
      * @param int|null $userId Если вы хотите отправить сообщение пользователю, укажите его ID.
      * @param int|null $chatId Если сообщение отправляется в чат, укажите его ID.
-     * @param NewMessageBody|RawModel|non-empty-string $message Тело нового сообщения.
+     * @param NewMessageBody|RawModel|non-empty-string $messageBody Тело нового сообщения.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
      *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
@@ -760,12 +833,12 @@ final class MaxApiClient
     public function sendMessage(
         ?int $userId,
         ?int $chatId,
-        NewMessageBody|RawModel|string $message,
+        NewMessageBody|RawModel|string $messageBody,
         bool $disableLinkPreview = false,
     ): SendMessageResult {
         $params = [];
         if ($userId !== null && $chatId !== null) {
-            throw new RequiredArgumentsException('At least one argument (userId, chatId) must be non-null.');
+            throw new RequiredArgumentsException('Only one of the arguments (userId, chatId) must be non-null.');
         }
         if ($chatId !== null) {
             $params['chat_id'] = $chatId;
@@ -778,14 +851,14 @@ final class MaxApiClient
             $params['disable_link_preview'] = 'true';
         }
 
-        if (is_string($message)) {
-            $message = new NewMessageBody($message);
+        if (is_string($messageBody)) {
+            $messageBody = new NewMessageBody($messageBody);
         }
 
         $retryAttempts = $this->retryAttempts ?? $this->config->getRetryAttempts();
         do {
             try {
-                $data = $this->httpClient->post('/messages', $message->jsonSerialize(), $params);
+                $data = $this->httpClient->post('/messages', $messageBody->jsonSerialize(), $params);
 
                 return SendMessageResult::newFromData($data);
             } catch (BadRequestException $e) {
@@ -806,17 +879,17 @@ final class MaxApiClient
      * Отправляет сообщение в чат. В результате метода возвращается идентификатор нового сообщения.
      *
      * @param int $chatId ID чата.
-     * @param NewMessageBody|RawModel|non-empty-string $message Тело нового сообщения.
+     * @param NewMessageBody|RawModel|non-empty-string $messageBody Тело нового сообщения.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
      *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
      */
     public function sendMessageToChat(
         int $chatId,
-        NewMessageBody|RawModel|string $message,
+        NewMessageBody|RawModel|string $messageBody,
         bool $disableLinkPreview = false,
     ): SendMessageResult {
-        return $this->sendMessage(null, $chatId, $message, $disableLinkPreview);
+        return $this->sendMessage(null, $chatId, $messageBody, $disableLinkPreview);
     }
 
     /**
@@ -825,17 +898,17 @@ final class MaxApiClient
      * Отправляет сообщение в диалог. В результате метода возвращается идентификатор нового сообщения.
      *
      * @param int $userId ID пользователя.
-     * @param NewMessageBody|RawModel|non-empty-string $message Тело нового сообщения.
+     * @param NewMessageBody|RawModel|non-empty-string $messageBody Тело нового сообщения.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
      *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
      */
     public function sendMessageToUser(
         int $userId,
-        NewMessageBody|RawModel|string $message,
+        NewMessageBody|RawModel|string $messageBody,
         bool $disableLinkPreview = false,
     ): SendMessageResult {
-        return $this->sendMessage($userId, null, $message, $disableLinkPreview);
+        return $this->sendMessage($userId, null, $messageBody, $disableLinkPreview);
     }
 
     /**
@@ -922,7 +995,7 @@ final class MaxApiClient
 
         $validHash = hash_hmac('sha256', $vcfInfo, $accessToken);
 
-        return hash_equals($hash, $validHash);
+        return hash_equals($validHash, $hash);
     }
 
     private function checkSimpleQueryResult(array $data): void

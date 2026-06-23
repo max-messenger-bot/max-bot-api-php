@@ -9,7 +9,6 @@ class MediaAttachmentPayload extends AttachmentPayload
     /**
      * @var array{
      *     id: int,
-     *     url: non-empty-string,
      *     token: non-empty-string
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
@@ -28,13 +27,5 @@ class MediaAttachmentPayload extends AttachmentPayload
     public function getToken(): string
     {
         return $this->data['token'];
-    }
-
-    /**
-     * @return non-empty-string
-     */
-    public function getUrl(): string
-    {
-        return $this->data['url'];
     }
 }

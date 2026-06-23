@@ -29,9 +29,9 @@ final class LinkButton extends Button
      */
     public function __construct(?string $text = null, ?string $url = null)
     {
-        $this->required = ['text', 'url'];
-
         parent::__construct(ButtonType::Link, $text);
+
+        $this->required[] = 'url';
 
         if ($url !== null) {
             $this->setUrl($url);

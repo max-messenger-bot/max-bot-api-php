@@ -7,11 +7,12 @@ namespace MaxMessenger\Bot\Tests\Support\Fake;
 use LogicException;
 use MaxMessenger\Bot\Contract\MaxApiConfigInterface;
 use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
+use MaxMessenger\Bot\MaxApiClient;
 use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
 use SensitiveParameterValue;
 
 /**
- * Конфигурация, подставляющая фейковый {@see MaxHttpClientInterface} в {@see \MaxMessenger\Bot\MaxApiClient}.
+ * Конфигурация, подставляющая фейковый {@see MaxHttpClientInterface} в {@see MaxApiClient}.
  */
 final class FakeMaxApiConfig implements MaxApiConfigInterface
 {

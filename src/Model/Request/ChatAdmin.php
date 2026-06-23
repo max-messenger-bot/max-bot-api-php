@@ -7,6 +7,8 @@ namespace MaxMessenger\Bot\Model\Request;
 use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
 
 use function array_key_exists;
+use function array_unique;
+use function array_values;
 
 /**
  * Администратор чата с правами доступа.
