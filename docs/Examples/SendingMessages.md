@@ -138,7 +138,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Authorization: ' . $accessToken,
     'Content-Type: application/json'
 ]);
-curl_setopt($ch, CURLOPT_URL, 'https://platform-api.max.ru/messages?user_id=' . $userId);
+curl_setopt($ch, CURLOPT_URL, 'https://platform-api2.max.ru/messages?user_id=' . $userId);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
     'text' => 'Это сообщение с кнопкой-ссылкой',
@@ -176,11 +176,11 @@ if ($httpCode !== 200 || !str_contains($response, '"mid":"')) {
 Замените:
 
 ```php
-curl_setopt($ch, CURLOPT_URL, 'https://platform-api.max.ru/messages?user_id=' . $userId);
+curl_setopt($ch, CURLOPT_URL, 'https://platform-api2.max.ru/messages?user_id=' . $userId);
 ```
 
 на:
 
 ```php
-curl_setopt($ch, CURLOPT_URL, 'https://platform-api.max.ru/messages?chat_id=' . $chatId);
+curl_setopt($ch, CURLOPT_URL, 'https://platform-api2.max.ru/messages?chat_id=' . $chatId);
 ```

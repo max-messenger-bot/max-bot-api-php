@@ -36,7 +36,7 @@ final class MaxApiConfigTest extends Unit
     {
         $config = new MaxApiConfig();
 
-        self::assertSame('https://platform-api.max.ru', $config->getBaseUrl());
+        self::assertSame('https://platform-api2.max.ru', $config->getBaseUrl());
     }
 
     public function testConstructWithoutAccessToken(): void

@@ -30,7 +30,7 @@ $client = new MaxApiClient('your-access-token');
 // Или с конфигурацией
 $config = new MaxApiConfig(
     accessToken: 'your-access-token',
-    baseUrl: 'https://platform-api.max.ru'
+    baseUrl: 'https://platform-api2.max.ru'
 );
 $client = new MaxApiClient($config);
 
@@ -103,6 +103,8 @@ $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 ---
 
 ### deleteChat
+
+> **Устарело.** Метод помечен как устаревший в API Max.
 
 Удаляет групповой чат для всех участников.
 
@@ -224,6 +226,9 @@ $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 ---
 
 ### getChats
+
+> **Устарело.** Начиная с июня 2026 этот метод больше не поддерживается, и API не предоставляет готовой
+> возможности для получения списка групповых чатов и каналов, в которые добавлен бот.
 
 Получает список всех групповых чатов. Возвращает список групповых чатов, в которых участвовал бот, информацию о каждом
 чате и маркер для перехода к следующей странице списка.

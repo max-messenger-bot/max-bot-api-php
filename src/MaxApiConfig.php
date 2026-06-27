@@ -39,7 +39,7 @@ final class MaxApiConfig implements MaxApiConfigInterface
         #[SensitiveParameter]
         ?string $accessToken = null,
         public ?HttpClientInterface $httpClient = null,
-        public string $baseUrl = 'https://platform-api.max.ru',
+        public string $baseUrl = 'https://platform-api2.max.ru',
     ) {
         $this->setAccessToken($accessToken);
     }
@@ -102,7 +102,7 @@ final class MaxApiConfig implements MaxApiConfigInterface
     }
 
     /**
-     * @param non-empty-string $baseUrl Base URL of API Max (example: `https://platform-api.max.ru`).
+     * @param non-empty-string $baseUrl Base URL of API Max (example: `https://platform-api2.max.ru`).
      * @return $this
      */
     public function setBaseUrl(string $baseUrl): self

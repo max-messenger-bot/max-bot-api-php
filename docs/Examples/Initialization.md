@@ -27,7 +27,7 @@ use Mj4444\SimpleHttpClient\CurlHttpClient;
 $apiConfig = new MaxApiConfig(
     accessToken: 'your-access-token',
     httpClient: new CurlHttpClient(),
-    baseUrl: 'https://platform-api.max.ru'
+    baseUrl: 'https://platform-api2.max.ru'
 );
 $apiClient = new MaxApiClient($apiConfig);
 ```
@@ -64,7 +64,7 @@ use Mj4444\SimpleHttpClient\CurlHttpClient;
 $apiConfig = new MaxApiConfig(
     accessToken: 'your-access-token',
     httpClient: new CurlHttpClient(),
-    baseUrl: 'https://platform-api.max.ru'
+    baseUrl: 'https://platform-api2.max.ru'
 );
 $apiConfig->setRetryAttempts([1000, 2000, 4000, 8000, 15000]);
 $bot = new MaxBot($apiConfig, 'your-secret');

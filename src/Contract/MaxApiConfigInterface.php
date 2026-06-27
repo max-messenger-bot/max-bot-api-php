@@ -20,7 +20,7 @@ interface MaxApiConfigInterface
     public function getAccessToken(): ?SensitiveParameterValue;
 
     /**
-     * @return non-empty-string Base URL of API Max (example: `https://platform-api.max.ru`).
+     * @return non-empty-string Base URL of API Max (example: `https://platform-api2.max.ru`).
      */
     public function getBaseUrl(): string;
 
