@@ -19,8 +19,8 @@ class UploadEndpoint extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return non-empty-string|null Видео-токен или аудио-токен для отправки медиафайла во вложении к сообщению
-     *     (minLength: 1).
+     * @return non-empty-string|null Токен для отправки медиафайла во вложении к сообщению с помощью
+     *     {@see MaxApiClient::sendMessage()} или {@see MaxApiClient::editMessage()} (minLength: 1).
      */
     public function getToken(): ?string
     {
