@@ -10,7 +10,6 @@ use MaxMessenger\Bot\Contract\ModelInterface;
 use MaxMessenger\Bot\Exception\ActionProhibited;
 use Traversable;
 
-use function array_values;
 use function intdiv;
 use function sprintf;
 
@@ -71,12 +70,12 @@ abstract class BaseResponseModel implements ModelInterface
      */
     public static function newList2DFromData(array $data): array
     {
-        foreach ($data as &$value) {
-            $value = static::newListFromData($value);
+        $result = [];
+        foreach ($data as $value) {
+            $result[] = static::newListFromData($value);
         }
 
-        /** @var array<list<static>> $data */
-        return array_values($data);
+        return $result;
     }
 
     /**
@@ -86,12 +85,12 @@ abstract class BaseResponseModel implements ModelInterface
      */
     public static function newListFromData(array $data): array
     {
-        foreach ($data as &$value) {
-            $value = static::newFromData($value);
+        $result = [];
+        foreach ($data as $value) {
+            $result[] = static::newFromData($value);
         }
 
-        /** @var static[] $data */
-        return array_values($data);
+        return $result;
     }
 
     /**

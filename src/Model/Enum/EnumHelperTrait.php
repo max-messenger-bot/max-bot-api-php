@@ -6,9 +6,6 @@ namespace MaxMessenger\Bot\Model\Enum;
 
 use BackedEnum;
 
-use function array_filter;
-use function array_values;
-
 /**
  * Трейт с вспомогательными методами для перечислений.
  *
@@ -22,12 +19,15 @@ trait EnumHelperTrait
      */
     public static function tryFromList(array $values): array
     {
-        foreach ($values as &$value) {
-            $value = static::tryFrom($value);
+        $result = [];
+        foreach ($values as $value) {
+            $enum = static::tryFrom($value);
+            if ($enum !== null) {
+                $result[] = $enum;
+            }
         }
 
-        /** @var array<static|null> $values */
-        return array_values(array_filter($values));
+        return $result;
     }
 
     /**

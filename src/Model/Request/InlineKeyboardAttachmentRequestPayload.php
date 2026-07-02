@@ -247,12 +247,12 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
         self::validateArray('buttons', $buttons, minItems: 1, maxItems: self::MAX_ROWS);
         self::validateArray2D('buttons', $buttons, minItems: 1, maxItems: self::MAX_BUTTONS_IN_ROW);
 
-        foreach ($buttons as &$button) {
-            $button = array_values($button);
+        $rows = [];
+        foreach ($buttons as $button) {
+            $rows[] = array_values($button);
         }
-        /** @var non-empty-array<non-empty-list<Button>> $buttons */
 
-        $this->data['buttons'] = array_values($buttons);
+        $this->data['buttons'] = $rows;
 
         return $this;
     }

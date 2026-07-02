@@ -44,13 +44,11 @@ class PhotoTokens extends BaseResponseModel
      */
     private function preparePhotos(): array
     {
-        $photos = $this->data['photos'];
-        foreach ($photos as &$photoData) {
-            $photoData = PhotoToken::newFromData($photoData);
+        $photos = [];
+        foreach ($this->data['photos'] as $key => $photoData) {
+            $photos[$key] = PhotoToken::newFromData($photoData);
         }
-        unset($photoData);
 
-        /** @var non-empty-array<string, PhotoToken> $photos */
         return $photos;
     }
 }

@@ -1012,17 +1012,15 @@ final class MaxApiClient
 
     /**
      * @param array<BackedEnum|string|int> $arr
-     * @return array<string|int>
+     * @return list<string|int>
      */
     private function convertEnumsToStrings(array $arr): array
     {
-        foreach ($arr as &$item) {
-            if ($item instanceof BackedEnum) {
-                $item = $item->value;
-            }
+        $result = [];
+        foreach ($arr as $item) {
+            $result[] = $item instanceof BackedEnum ? $item->value : $item;
         }
 
-        /** @psalm-var array<string|int> */
-        return $arr;
+        return $result;
     }
 }
