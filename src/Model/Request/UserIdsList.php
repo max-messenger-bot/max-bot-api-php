@@ -14,7 +14,7 @@ use function count;
 use function in_array;
 
 /**
- * Список ID пользователей для добавления в групповой чат или канал.
+ * Список ID пользователей для добавления в групповой чат.
  *
  * Не более 100 элементов.
  */
@@ -33,7 +33,7 @@ final class UserIdsList extends BaseRequestModel
 
     /**
      * @param non-empty-array<int>|null $userIds Массив ID пользователей, которых вы хотите добавить
-     *     в групповой чат или канал (minItems: 1, maxItems: 100).
+     *     в групповой чат (minItems: 1, maxItems: 100).
      */
     public function __construct(?array $userIds = null)
     {
@@ -82,7 +82,7 @@ final class UserIdsList extends BaseRequestModel
 
     /**
      * @param non-empty-array<int> $userIds Массив ID пользователей, которых вы хотите добавить
-     *     в групповой чат или канал (minItems: 1, maxItems: 100).
+     *     в групповой чат (minItems: 1, maxItems: 100).
      */
     public static function make(array $userIds): self
     {
@@ -91,7 +91,7 @@ final class UserIdsList extends BaseRequestModel
 
     /**
      * @param non-empty-array<int>|null $userIds Массив ID пользователей, которых вы хотите добавить
-     *     в групповой чат или канал (maxItems: 100).
+     *     в групповой чат (maxItems: 100).
      */
     public static function new(?array $userIds = null): self
     {
@@ -100,7 +100,7 @@ final class UserIdsList extends BaseRequestModel
 
     /**
      * @param non-empty-array<int> $userIds Массив ID пользователей, которых вы хотите добавить
-     *     в групповой чат или канал (minItems: 1, maxItems: 100).
+     *     в групповой чат (minItems: 1, maxItems: 100).
      * @return $this
      */
     public function setUserIds(array $userIds): self
@@ -112,7 +112,7 @@ final class UserIdsList extends BaseRequestModel
 
     /**
      * @param non-empty-array<int> $userIds Массив ID пользователей, которых вы хотите добавить
-     *     в групповой чат или канал (minItems: 1, maxItems: 100).
+     *     в групповой чат (minItems: 1, maxItems: 100).
      * @return non-empty-list<int>
      */
     protected static function prepareUserIds(array $userIds): array

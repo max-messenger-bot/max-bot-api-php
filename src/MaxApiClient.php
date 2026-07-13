@@ -91,14 +91,16 @@ final class MaxApiClient
     }
 
     /**
-     * Добавляет участников в групповой чат или канал.
+     * Добавляет участников в групповой чат.
      *
      * Бот, чей токен `access_token` используется для авторизации, должен быть администратором этого
-     * чата или канала с правом `add_remove_members`.
+     * чата с правом `add_remove_members`.
      *
-     * @param int $chatId ID группового чата или канала.
+     * Добавить подписчиков в канал с помощью этого метода нельзя.
+     *
+     * @param int $chatId ID группового чата.
      * @param UserIdsList|RawModel|non-empty-array<int> $userIds Список ID пользователей для добавления
-     *     в групповой чат или канал. При использованнии массива, смотрите ограничения в {@see UserIdsList}.
+     *     в групповой чат. При использованнии массива, смотрите ограничения в {@see UserIdsList}.
      * @return ModifyMembersResult Результат запроса на изменение списка участников чата.
      * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members
      */
@@ -320,6 +322,7 @@ final class MaxApiClient
      * @param non-empty-string $chatLink Публичная ссылка на канал (minLength: 1, pattern: '^@?[a-zA-Z]+[\w-]*$').
      * @return Chat Информация о канале.
      * @link https://dev.max.ru/docs-api/methods/GET/chats/-chatLink-
+     * @deprecated С 10 июля 2026 г. метод удалён из официальной схемы API и больше не поддерживается.
      */
     public function getChatByLink(string $chatLink): Chat
     {
@@ -753,7 +756,8 @@ final class MaxApiClient
      * - `pin_message` — право закреплять сообщение. Право можно назначить, только если уже есть право
      *   `read_all_messages` или вместе с ним.
      * - `change_chat_info` — право изменять информацию о канале или групповом чате.
-     * - `add_remove_members` — право добавлять и удалять участников группового чата или подписчиков канала. Управление
+     * - `add_remove_members` — право добавлять и удалять участников группового чата или подписчиков канала. Для
+     *   пользователей право доступно и в чатах, и в каналах, для ботов — только в чатах. Управление
      *   `add_remove_members` также дублируется в интерфейсе мессенджера.
      * - `add_admins` — право добавлять и удалять администраторов группового чата или канала. Управление `add_admins`
      *   дублируется в интерфейсе мессенджера.
