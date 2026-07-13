@@ -101,6 +101,25 @@ composer require max-messenger-bot/max-bot-api-php
 
 - `mj4444/simple-http-client` ^0.2 — HTTP-клиент для выполнения запросов
 
+## Сертификаты (TLS)
+
+Сертификат API Max (`platform-api2.max.ru`) выпущен удостоверяющим центром Минцифры России, корня которого нет
+в системном хранилище доверенных на большинстве систем. Если проверка сертификата не проходит, включите
+поставляемый с пакетом CA-бандл Минцифры:
+
+```php
+use MaxMessenger\Bot\MaxApiClient;
+use MaxMessenger\Bot\MaxApiConfig;
+
+$apiConfig = new MaxApiConfig('your-access-token');
+$apiConfig->useRussianTrustedCaCertificates();
+$apiClient = new MaxApiClient($apiConfig);
+```
+
+Также можно указать свой CA-бандл через `setCaCertificatePath()` или каталог сертификатов через
+`setCaCertificateDir()`, либо отключить проверку для локальной отладки через `setVerifySslCertificate(false)`
+(небезопасно). Подробнее — в разделе [Примеры инициализации](docs/Examples/Initialization.md).
+
 ## Примеры
 
 Больше примеров смотрите в документации в разделе [примеры](docs/Examples/README.md).

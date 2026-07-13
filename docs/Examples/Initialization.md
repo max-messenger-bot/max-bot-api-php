@@ -32,6 +32,42 @@ $apiConfig = new MaxApiConfig(
 $apiClient = new MaxApiClient($apiConfig);
 ```
 
+#### Настройка TLS: доверенный CA или отключение проверки
+
+Сертификат API Max выпущен удостоверяющим центром Минцифры, которого нет в системном хранилище
+доверенных корней на большинстве систем. Чтобы проверка проходила, включите поставляемый с пакетом
+CA-бандл Минцифры:
+
+```php
+use MaxMessenger\Bot\MaxApiConfig;
+
+$apiConfig = new MaxApiConfig('your-access-token');
+$apiConfig->useRussianTrustedCaCertificates();
+```
+
+Либо укажите свой CA-бандл или каталог с сертификатами:
+
+```php
+use MaxMessenger\Bot\MaxApiConfig;
+
+$apiConfig = new MaxApiConfig('your-access-token');
+$apiConfig->setCaCertificatePath('/path/to/ca-bundle.pem');
+// либо каталог с сертификатами:
+// $apiConfig->setCaCertificateDir('/path/to/certs');
+```
+
+Проверку сертификата можно отключить. Это небезопасно и предназначено только для локальной отладки:
+
+```php
+use MaxMessenger\Bot\MaxApiConfig;
+
+$apiConfig = new MaxApiConfig('your-access-token');
+$apiConfig->setVerifySslCertificate(false);
+```
+
+> Настройки TLS применяются только к встроенному HTTP-клиенту. Если вы передаёте собственный
+> `httpClient`, настраивайте TLS непосредственно в нём.
+
 #### Добавление логгера исключений
 
 ```php

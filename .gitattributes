@@ -9,3 +9,5 @@
 /psalm.xml export-ignore
 /schemas export-ignore
 /tests export-ignore
+
+/resources/certs/*.pem -text

@@ -10,8 +10,32 @@ use Mj4444\SimpleHttpClient\CurlHttpClient;
 use SensitiveParameter;
 use SensitiveParameterValue;
 
+use function dirname;
+
+use const CURLOPT_CAINFO;
+use const CURLOPT_CAPATH;
+use const CURLOPT_SSL_VERIFYHOST;
+use const CURLOPT_SSL_VERIFYPEER;
+
 final class MaxApiConfig implements MaxApiConfigInterface
 {
+    /**
+     * Path to a directory holding custom CA certificates used to verify the server (curl `CAPATH`).
+     *
+     * Applies only to the default HTTP client. If you inject your own `httpClient`, configure TLS there.
+     *
+     * @var non-empty-string|null
+     */
+    public ?string $caCertificateDir = null;
+    /**
+     * Path to a custom CA certificate bundle used to verify the server (curl `CAINFO`).
+     *
+     * Use it to trust a private root CA — for example, the Минцифры root certificate that API Max relies on.
+     * Applies only to the default HTTP client. If you inject your own `httpClient`, configure TLS there.
+     *
+     * @var non-empty-string|null
+     */
+    public ?string $caCertificatePath = null;
     /**
      * @var non-negative-int The number of **milliseconds** to wait while trying to connect.
      *     Use `0` to wait indefinitely.
@@ -26,6 +50,15 @@ final class MaxApiConfig implements MaxApiConfigInterface
      *     Use `0` to wait indefinitely.
      */
     public int $timeout = 10000;
+    /**
+     * Whether to verify the server's TLS certificate.
+     *
+     * Set to `false` to disable verification. This is insecure and intended only for local testing —
+     * do not use it in production. Applies only to the default HTTP client.
+     *
+     * @var bool
+     */
+    public bool $verifySslCertificate = true;
     /**
      * @var SensitiveParameterValue<non-empty-string>|null
      */
@@ -55,6 +88,22 @@ final class MaxApiConfig implements MaxApiConfigInterface
     }
 
     /**
+     * @return non-empty-string|null Path to a directory holding custom CA certificates (curl `CAPATH`).
+     */
+    public function getCaCertificateDir(): ?string
+    {
+        return $this->caCertificateDir;
+    }
+
+    /**
+     * @return non-empty-string|null Path to a custom CA certificate bundle (curl `CAINFO`).
+     */
+    public function getCaCertificatePath(): ?string
+    {
+        return $this->caCertificatePath;
+    }
+
+    /**
      * @return non-negative-int The number of **milliseconds** to wait while trying to connect.
      *     Use `0` to wait indefinitely.
      */
@@ -65,10 +114,7 @@ final class MaxApiConfig implements MaxApiConfigInterface
 
     public function getHttpClient(): HttpClientInterface
     {
-        return $this->httpClient ??= (new CurlHttpClient())
-            ->setConnectTimeout($this->connectTimeout)
-            ->setTimeout($this->timeout)
-            ->setUserAgent('mj4444-MaxMessenger-Bot');
+        return $this->httpClient ??= $this->makeHttpClient();
     }
 
     public function getMaxHttpClient(): null
@@ -90,6 +136,37 @@ final class MaxApiConfig implements MaxApiConfigInterface
         return $this->timeout;
     }
 
+    public function getVerifySslCertificate(): bool
+    {
+        return $this->verifySslCertificate;
+    }
+
+    /**
+     * Builds the default HTTP client and applies the configured timeouts and TLS options.
+     */
+    private function makeHttpClient(): CurlHttpClient
+    {
+        $httpClient = (new CurlHttpClient())
+            ->setConnectTimeout($this->connectTimeout)
+            ->setTimeout($this->timeout)
+            ->setUserAgent('mj4444-MaxMessenger-Bot');
+
+        if (!$this->verifySslCertificate) {
+            $httpClient->setOption(CURLOPT_SSL_VERIFYPEER, false)
+                ->setOption(CURLOPT_SSL_VERIFYHOST, 0);
+        }
+
+        if ($this->caCertificatePath !== null) {
+            $httpClient->setOption(CURLOPT_CAINFO, $this->caCertificatePath);
+        }
+
+        if ($this->caCertificateDir !== null) {
+            $httpClient->setOption(CURLOPT_CAPATH, $this->caCertificateDir);
+        }
+
+        return $httpClient;
+    }
+
     /**
      * @param non-empty-string|null $accessToken API Max access token.
      * @return $this
@@ -108,6 +185,37 @@ final class MaxApiConfig implements MaxApiConfigInterface
     public function setBaseUrl(string $baseUrl): self
     {
         $this->baseUrl = $baseUrl;
+
+        return $this;
+    }
+
+    /**
+     * Sets a directory holding custom CA certificates used to verify the server (curl `CAPATH`).
+     *
+     * Applies only to the default HTTP client.
+     *
+     * @param non-empty-string|null $caCertificateDir Path to the CA certificates directory.
+     * @return $this
+     */
+    public function setCaCertificateDir(?string $caCertificateDir): self
+    {
+        $this->caCertificateDir = $caCertificateDir;
+
+        return $this;
+    }
+
+    /**
+     * Sets a custom CA certificate bundle used to verify the server (curl `CAINFO`).
+     *
+     * Use it to trust a private root CA — for example, the Минцифры root certificate that API Max relies on.
+     * Applies only to the default HTTP client.
+     *
+     * @param non-empty-string|null $caCertificatePath Path to the CA certificate bundle file.
+     * @return $this
+     */
+    public function setCaCertificatePath(?string $caCertificatePath): self
+    {
+        $this->caCertificatePath = $caCertificatePath;
 
         return $this;
     }
@@ -158,6 +266,37 @@ final class MaxApiConfig implements MaxApiConfigInterface
     public function setTimeout(int $timeout): self
     {
         $this->timeout = $timeout;
+
+        return $this;
+    }
+
+    /**
+     * Enables or disables verification of the server's TLS certificate.
+     *
+     * Disabling verification is insecure and intended only for local testing — do not use it in production.
+     * Applies only to the default HTTP client.
+     *
+     * @param bool $verifySslCertificate `false` to disable certificate verification.
+     * @return $this
+     */
+    public function setVerifySslCertificate(bool $verifySslCertificate): self
+    {
+        $this->verifySslCertificate = $verifySslCertificate;
+
+        return $this;
+    }
+
+    /**
+     * Trusts the Russian Trusted CA certificates (Минцифры) bundled with the package.
+     *
+     * Points {@see caCertificatePath} at the CA bundle shipped in `resources/certs`. Use it when
+     * API Max serves a certificate issued by the Минцифры CA that is missing from the system trust store.
+     *
+     * @return $this
+     */
+    public function useRussianTrustedCaCertificates(): self
+    {
+        $this->caCertificatePath = dirname(__DIR__) . '/resources/certs/russian_trusted_ca_bundle.pem';
 
         return $this;
     }
