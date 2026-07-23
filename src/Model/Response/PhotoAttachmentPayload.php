@@ -33,7 +33,8 @@ class PhotoAttachmentPayload extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string URL изображения (minLength: 1).
+     * @return non-empty-string URL изображения (minLength: 1). Время жизни ссылки ограниченно. Срок
+     *     истечения указан в параметре `expires` — если он истёк, ссылку необходимо запросить повторно.
      */
     public function getUrl(): string
     {

@@ -385,8 +385,7 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 | `getUserId()`                                        | `int`               | ID пользователя, нажавшего кнопку            |
 | `getChatId()`                                        | `int`               | ID чата                                      |
 | `getUserLocale()`                                    | `string\|null`      | Язык пользователя (IETF BCP 47)              |
-| `answer($message, $notification = null)`             | `void`              | Ответить на callback с обновлением сообщения |
-| `answerNotification($notification)`                  | `void`              | Отправить только уведомление                 |
+| `answer($message)`                                   | `void`              | Ответить на callback с обновлением сообщения |
 | `deleteMessage()`                                    | `void`              | Удалить сообщение                            |
 | `forwardToChat($chatId)`                             | `SendMessageResult` | Переслать сообщение в указанный чат          |
 | `forwardToUser($userId)`                             | `SendMessageResult` | Переслать сообщение в диалог с пользователем |

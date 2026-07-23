@@ -249,17 +249,4 @@ $callbackHandler->onAction('buy', function (MessageCallbackEvent $event): bool {
 });
 ```
 
-Вы также можете отправить только одноразовое уведомление, не изменяя сообщение:
-
-```php
-$callbackHandler->onAction('buy', function (MessageCallbackEvent $event): bool {
-    // Обработка покупки...
-
-    // Отправка только уведомления
-    $event->answerNotification('✅ Товар добавлен в корзину!');
-
-    return true; // Отмечаем событие как обработанное
-});
-```
-
 Подробнее о методах ответа на Callback и статусах событий читайте в разделе [Обработка событий](ProcessingEvents.md).

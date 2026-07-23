@@ -22,7 +22,8 @@ final class MessageCallbackEvent extends BaseEvent
 
     /**
      * @param NewMessageBody|non-empty-string $message
-     * @param non-empty-string|null $notification
+     * @param non-empty-string|null $notification Устарело: с 21 июля 2026 г. поле удалено из официальной
+     *     схемы API — на сервер не передаётся и игнорируется.
      */
     public function answer(NewMessageBody|string $message, ?string $notification = null): void
     {
@@ -37,13 +38,11 @@ final class MessageCallbackEvent extends BaseEvent
 
     /**
      * @param non-empty-string $notification
+     * @deprecated С 21 июля 2026 г. поле notification удалено из официальной схемы API — метод ничего
+     *     не делает.
+     * @psalm-suppress UnusedParam Параметр сохранён для обратной совместимости сигнатуры.
      */
-    public function answerNotification(string $notification): void
-    {
-        $answer = new CallbackAnswer(null, $notification);
-
-        $this->apiClient->answerOnCallback($this->getCallback(), $answer);
-    }
+    public function answerNotification(string $notification): void {}
 
     /**
      * @return Callback Объект, отправленный боту, когда пользователь нажал кнопку.

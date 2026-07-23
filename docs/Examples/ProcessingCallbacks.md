@@ -140,7 +140,7 @@ $callbackHandler->onAction('buy', function (MessageCallbackEvent $event): bool {
     $quantity = $payload['quantity'] ?? 1;
 
     if ($productId === null) {
-        $event->answerNotification('❌ Ошибка: не указан товар');
+        $event->answer('❌ Ошибка: не указан товар');
         
         return true; // Отмечаем событие как обработанное
     }
@@ -177,7 +177,7 @@ $callbackHandler->onAction('select', function (MessageCallbackEvent $event): boo
     if ($item !== null) {
         $event->answer("Выбрано: $item");
     } else {
-        $event->answerNotification('❌ Ничего не выбрано');
+        $event->answer('❌ Ничего не выбрано');
     }
 
     return true; // Отмечаем событие как обработанное
@@ -206,27 +206,6 @@ $callbackHandler->onAction('vote', function (MessageCallbackEvent $event): bool 
     );
     
     $event->answer($responseMessage);
-
-    return true; // Отмечаем событие как обработанное
-});
-```
-
-### Отправка только уведомления
-
-Использование `answerNotification()` для одноразового уведомления:
-
-```php
-use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
-
-$callbackHandler = $bot->addCallbackHandler(actionSeparator: ':');
-
-$callbackHandler->onAction('download', function (MessageCallbackEvent $event): bool {
-    $fileId = $event->userData['__payload'];
-    
-    // Начинаем загрузку файла...
-    
-    // Отправляем только уведомление (не изменяя исходное сообщение)
-    $event->answerNotification('📥 Загрузка начата...');
 
     return true; // Отмечаем событие как обработанное
 });
@@ -351,7 +330,7 @@ $callbackHandler->onAction('home', function (MessageCallbackEvent $event): bool 
 $callbackHandler->onAction('toggle_notifications', function (MessageCallbackEvent $event): bool {
     // Переключаем уведомления (здесь можно добавить реальную логику)
     
-    $event->answerNotification('🔔 Уведомления переключены');
+    $event->answer('🔔 Уведомления переключены');
 
     return true; // Отмечаем событие как обработанное
 });

@@ -114,8 +114,7 @@ $event->apiClient->sendMessageToChat($chatId, 'Привет');
     - **MessageCallbackEvent**
     - **MessageCreatedEvent**
     - **MessageEditedEvent**
-- `$event->answer($message, $notification = null)`,
-  `$event->answerNotification($notification)`
+- `$event->answer($message)`
     - **MessageCallbackEvent**
 - `$event->deleteMessage();`
     - **MessageCallbackEvent**

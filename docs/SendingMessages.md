@@ -426,11 +426,8 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event) {
 use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 $bot->onMessageCallback(function (MessageCallbackEvent $event) {
-    // Ответ с обновлённым сообщением и/или уведомлением
+    // Ответ с обновлённым сообщением
     $event->answer('Текст ответа');
-    
-    // Только уведомление
-    $event->answerNotification('Всплывающее уведомление');
 });
 ```
 

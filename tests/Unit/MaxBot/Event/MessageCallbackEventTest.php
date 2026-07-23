@@ -32,13 +32,10 @@ final class MessageCallbackEventTest extends Unit
     public function testAnswerNotification(): void
     {
         $http = new FakeMaxHttpClient();
+        /** @psalm-suppress DeprecatedMethod Проверяем, что устаревший метод больше не делает запрос. */
         $this->createEventWithHttp($http)->answerNotification('Уведомление');
 
-        $call = $http->lastCall();
-        self::assertNotNull($call);
-        self::assertSame('post', $call['method']);
-        self::assertSame('/answers', $call['path']);
-        self::assertSame(['callback_id' => 'cb.1'], $call['query']);
+        self::assertNull($http->lastCall());
     }
 
     public function testGetCallback(): void

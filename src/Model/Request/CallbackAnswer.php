@@ -11,34 +11,30 @@ use function array_key_exists;
  */
 final class CallbackAnswer extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
 
     /**
      * @var array{
-     *     message?: NewMessageBody,
-     *     notification?: non-empty-string
+     *     message: NewMessageBody
      * }
-     * @psalm-suppress NonInvariantDocblockPropertyType
+     * @psalm-suppress NonInvariantDocblockPropertyType, InvalidPropertyAssignmentValue
      */
     protected array $data = [];
 
     /**
-     * @param NewMessageBody|null $message Заполните это, если хотите изменить текущее сообщение.
-     * @param non-empty-string|null $notification Заполните это, если хотите просто отправить одноразовое
-     *     уведомление пользователю (minLength: 1).
+     * @param NewMessageBody|null $message Данные для обновления текущего сообщения.
+     * @param non-empty-string|null $notification Устарело: с 21 июля 2026 г. поле удалено из официальной
+     *     схемы API — на сервер не передаётся и игнорируется.
+     * @psalm-suppress UnusedParam Параметр сохранён для обратной совместимости сигнатуры.
      */
     public function __construct(
         ?NewMessageBody $message = null,
         ?string $notification = null,
     ) {
-        $this->requiredOnce = ['message', 'notification'];
+        $this->required = ['message'];
 
         if ($message !== null) {
             $this->setMessage($message);
-        }
-        if ($notification !== null) {
-            $this->setNotification($notification);
         }
     }
 
@@ -48,11 +44,12 @@ final class CallbackAnswer extends BaseRequestModel
     }
 
     /**
-     * @return non-empty-string|null
+     * @return null Всегда `null`.
+     * @deprecated С 21 июля 2026 г. поле удалено из официальной схемы API — на сервер не передаётся.
      */
-    public function getNotification(): ?string
+    public function getNotification(): null
     {
-        return $this->data['notification'] ?? null;
+        return null;
     }
 
     public function issetMessage(): bool
@@ -60,15 +57,19 @@ final class CallbackAnswer extends BaseRequestModel
         return array_key_exists('message', $this->data);
     }
 
-    public function issetNotification(): bool
+    /**
+     * @return false Всегда `false`.
+     * @deprecated С 21 июля 2026 г. поле удалено из официальной схемы API — на сервер не передаётся.
+     */
+    public function issetNotification(): false
     {
-        return array_key_exists('notification', $this->data);
+        return false;
     }
 
     /**
-     * @param NewMessageBody|null $message Заполните это, если хотите изменить текущее сообщение.
-     * @param non-empty-string|null $notification Заполните это, если хотите просто отправить одноразовое
-     *     уведомление пользователю (minLength: 1).
+     * @param NewMessageBody|null $message Данные для обновления текущего сообщения.
+     * @param non-empty-string|null $notification Устарело: с 21 июля 2026 г. поле удалено из официальной
+     *     схемы API — на сервер не передаётся и игнорируется.
      */
     public static function make(
         ?NewMessageBody $message = null,
@@ -78,9 +79,9 @@ final class CallbackAnswer extends BaseRequestModel
     }
 
     /**
-     * @param NewMessageBody|null $message Заполните это, если хотите изменить текущее сообщение.
-     * @param non-empty-string|null $notification Заполните это, если хотите просто отправить одноразовое
-     *     уведомление пользователю (minLength: 1).
+     * @param NewMessageBody|null $message Данные для обновления текущего сообщения.
+     * @param non-empty-string|null $notification Устарело: с 21 июля 2026 г. поле удалено из официальной
+     *     схемы API — на сервер не передаётся и игнорируется.
      */
     public static function new(
         ?NewMessageBody $message = null,
@@ -90,7 +91,7 @@ final class CallbackAnswer extends BaseRequestModel
     }
 
     /**
-     * @param NewMessageBody $message Заполните это, если хотите изменить текущее сообщение.
+     * @param NewMessageBody $message Данные для обновления текущего сообщения.
      * @return $this
      */
     public function setMessage(NewMessageBody $message): self
@@ -101,16 +102,14 @@ final class CallbackAnswer extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $notification Заполните это, если хотите просто отправить одноразовое
-     *     уведомление пользователю (minLength: 1).
+     * @param non-empty-string $notification Устарело: с 21 июля 2026 г. поле удалено из официальной
+     *     схемы API — на сервер не передаётся и игнорируется (minLength: 1).
      * @return $this
+     * @deprecated С 21 июля 2026 г. поле удалено из официальной схемы API — метод ничего не делает.
+     * @psalm-suppress UnusedParam Параметр сохранён для обратной совместимости сигнатуры.
      */
     public function setNotification(string $notification): self
     {
-        self::validateString('notification', $notification, minLength: 1);
-
-        $this->data['notification'] = $notification;
-
         return $this;
     }
 
@@ -126,11 +125,10 @@ final class CallbackAnswer extends BaseRequestModel
 
     /**
      * @return $this
+     * @deprecated С 21 июля 2026 г. поле удалено из официальной схемы API — метод ничего не делает.
      */
     public function unsetNotification(): self
     {
-        unset($this->data['notification']);
-
         return $this;
     }
 }
