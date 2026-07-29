@@ -87,6 +87,23 @@ $commandHandler->onCommands(function (MessageCreatedEvent $event): bool {
 });
 ```
 
+### Публикация списка команд бота
+
+Список команд, который пользователь видит в меню мессенджера, задаётся через API-клиент:
+
+```php
+use MaxMessenger\Bot\Model\Request\BotCommand;
+use MaxMessenger\Bot\Model\Request\BotCommandsPatch;
+
+$apiClient = $bot->getApiClient();
+
+$apiClient->editMyCommands(BotCommandsPatch::make([
+    new BotCommand('start', 'Начать работу с ботом'),
+    new BotCommand('help', 'Показать помощь'),
+    new BotCommand('info', 'Информация о боте'),
+]));
+```
+
 ## Работа с аргументами команд
 
 ### Использование разделителя команд

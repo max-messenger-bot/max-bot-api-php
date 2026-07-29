@@ -17,6 +17,7 @@ use MaxMessenger\Bot\Model\Enum\SenderAction;
 use MaxMessenger\Bot\Model\Enum\UpdateType;
 use MaxMessenger\Bot\Model\Enum\UploadType;
 use MaxMessenger\Bot\Model\Request\ActionRequestBody;
+use MaxMessenger\Bot\Model\Request\BotCommandsPatch;
 use MaxMessenger\Bot\Model\Request\BotPatch;
 use MaxMessenger\Bot\Model\Request\CallbackAnswer;
 use MaxMessenger\Bot\Model\Request\ChatAdmin;
@@ -28,6 +29,7 @@ use MaxMessenger\Bot\Model\Request\RawModel;
 use MaxMessenger\Bot\Model\Request\SubscriptionRequestBody;
 use MaxMessenger\Bot\Model\Request\UserIdsList;
 use MaxMessenger\Bot\Model\Request\ValidateTrait;
+use MaxMessenger\Bot\Model\Response\BotCommandsInfo;
 use MaxMessenger\Bot\Model\Response\BotInfo;
 use MaxMessenger\Bot\Model\Response\Callback;
 use MaxMessenger\Bot\Model\Response\Chat;
@@ -192,6 +194,9 @@ final class MaxApiClient
      * - В диалоге — только сообщения, отправленные самим ботом.
      * - В групповом чате — любые сообщения.
      *
+     * Можно удалять не более двух сообщений в секунду в одном диалоге, групповом чате или канале.
+     * При превышении этого лимита сообщения следует ставить в очередь или делать задержку перед удалением.
+     *
      * @param non-empty-string|Message|MessageBody $messageId ID удаляемого сообщения
      *     (minLength: 1, pattern: '^mid\.[\x21-\x7E]+$').
      * @link https://dev.max.ru/docs-api/methods/DELETE/messages
@@ -273,12 +278,30 @@ final class MaxApiClient
     }
 
     /**
+     * Редактирует команды бота.
+     *
+     * Добавляет, изменяет или удаляет команды бота. Чтобы удалить команды, передайте пустой массив `commands`.
+     *
+     * @param BotCommandsPatch|RawModel $commands Данные для обновления команд бота (maxItems: 32).
+     *     Чтобы удалить все команды, передайте пустой список команд.
+     * @return BotCommandsInfo Информация о командах бота.
+     * @link https://dev.max.ru/docs-api/methods/PATCH/me/commands
+     */
+    public function editMyCommands(BotCommandsPatch|RawModel $commands): BotCommandsInfo
+    {
+        $data = $this->httpClient->patch('/me/commands', $commands->jsonSerialize());
+
+        return BotCommandsInfo::newFromData($data);
+    }
+
+    /**
      * Редактирует информацию о боте.
      *
      * Редактирует информацию о текущем боте. Позволяет обновить имя, описание, команды и аватар бота.
      *
      * @param BotPatch|RawModel $botPatch Данные для редактирования информации о боте.
      * @return BotInfo Изменённая информация о боте.
+     * @link https://dev.max.ru/docs-api/methods/PATCH/me
      */
     public function editMyInfo(BotPatch|RawModel $botPatch): BotInfo
     {

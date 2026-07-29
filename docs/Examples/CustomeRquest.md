@@ -10,6 +10,10 @@ $response = $apiClient->getHttpClient()->get('/me');
 
 ### Обновление списка команд бота
 
+> **Примечание:** для обновления команд есть штатные методы `MaxApiClient::editMyCommands()`
+> и `MaxApiClient::editMyInfo()` — смотрите раздел [API-клиент](../ApiClient.md).
+> Пример ниже показывает, как то же самое сделать произвольным запросом.
+
 ```php
 $body = [
     'commands' => [
@@ -18,7 +22,7 @@ $body = [
     ],
 ];
 
-$response = $apiClient->getHttpClient()->patch('/me', (object)$body);
+$response = $apiClient->getHttpClient()->patch('/me/commands', (object)$body);
 ```
 
 ### Подписка на обновления

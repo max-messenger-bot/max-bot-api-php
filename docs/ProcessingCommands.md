@@ -17,6 +17,34 @@
 - [Примеры обработки команд](Examples/ProcessingCommands.md)
 - [Примеры обработки событий бота](Examples/ProcessingEvents.md)
 - [Обработка событий бота](ProcessingEvents.md)
+- [API-клиент](ApiClient.md)
+
+## Публикация списка команд бота
+
+Чтобы **команды** бота отображались в меню мессенджера, их список нужно передать на сервер. Для этого используйте метод
+`MaxApiClient::editMyCommands()` и класс `BotCommandsPatch`.
+
+```php
+use MaxMessenger\Bot\MaxApiClient;
+use MaxMessenger\Bot\Model\Request\BotCommand;
+use MaxMessenger\Bot\Model\Request\BotCommandsPatch;
+
+$apiClient = new MaxApiClient('your-access-token');
+
+$apiClient->editMyCommands(BotCommandsPatch::make([
+    new BotCommand('start', 'Начать работу с ботом'),
+    new BotCommand('help', 'Получить справку'),
+]));
+```
+
+Метод заменяет весь список команд целиком: команды, которых нет в переданном списке, будут удалены. Чтобы удалить все
+команды, передайте пустой список: `BotCommandsPatch::make([])`.
+
+Список команд можно обновить и вместе с остальной информацией о боте — методом `MaxApiClient::editMyInfo()`
+и классом `BotPatch`.
+
+Публикация списка команд никак не связана с их обработкой: сервер только показывает команды пользователю в меню,
+а обрабатывает их Ваш бот.
 
 ## Получение CommandHandler через MaxBot
 

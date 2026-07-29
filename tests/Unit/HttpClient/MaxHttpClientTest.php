@@ -85,6 +85,19 @@ final class MaxHttpClientTest extends Unit
         self::assertSame(['result' => 'ok'], $result);
     }
 
+    public function testDoRequestReturnsEmptyArrayForEmptyObjectResponse(): void
+    {
+        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+            return $this->createJsonResponse($request, 200, '{}');
+        });
+        $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
+
+        $client = new MaxHttpClient($config);
+        $result = $client->get('/test/get');
+
+        self::assertSame([], $result);
+    }
+
     public function testDoRequestReturnsValidResponseWithNestedEmptyArray(): void
     {
         $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
@@ -98,23 +111,6 @@ final class MaxHttpClientTest extends Unit
         self::assertIsArray($result);
         self::assertArrayHasKey('data', $result);
         self::assertSame([], $result['data']);
-    }
-
-    public function testDoRequestThrowsUnexpectedFormatExceptionForEmptyResponse(): void
-    {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
-            return $this->createJsonResponse($request, 200, '{}');
-        });
-        $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
-
-        $client = new MaxHttpClient($config);
-
-        try {
-            $client->get('/test/get');
-            self::fail('Expected exception was not thrown');
-        } catch (UnexpectedFormatException $e) {
-            self::assertStringContainsString('Unexpected Response Format', $e->getMessage());
-        }
     }
 
     public function testDoRequestThrowsUnexpectedFormatExceptionForNonArrayResponse(): void

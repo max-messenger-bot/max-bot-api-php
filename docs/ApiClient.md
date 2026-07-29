@@ -13,7 +13,7 @@
 - **Работа с сообщениями** — отправка, редактирование, удаление сообщений, получение истории сообщений
 - **Callback-ответы** — отправка ответов на интерактивные кнопки
 - **События** — получение событий через Long Polling, управление WebHook-подписками
-- **Информация о боте** — получение и редактирование информации о боте
+- **Информация о боте** — получение и редактирование информации о боте, управление списком команд бота
 - **Действия бота** — отправка индикаторов действий (например, "печатает")
 - **Загрузка файлов** — получение URL для загрузки медиафайлов, информация о видео
 
@@ -104,8 +104,7 @@ $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 | `$chatId` | `int` | ID чата.                    |
 | `$userId` | `int` | Идентификатор пользователя. |
 
-**Документация API:
-** [DELETE /chats/-chatId-/members/admins/-userId-](https://dev.max.ru/docs-api/methods/DELETE/chats/-chatId-/members/admins/-userId-)
+**Документация API:** [DELETE /chats/-chatId-/members/admins/-userId-](https://dev.max.ru/docs-api/methods/DELETE/chats/-chatId-/members/admins/-userId-)
 
 ---
 
@@ -132,6 +131,9 @@ $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 - В канале — любые сообщения.
 - В диалоге — только сообщения, отправленные самим ботом.
 - В групповом чате — любые сообщения.
+
+Можно удалять не более двух сообщений в секунду в одном диалоге, групповом чате или канале.
+При превышении этого лимита сообщения следует ставить в очередь или делать задержку перед удалением.
 
 **Параметры:**
 
@@ -186,6 +188,39 @@ $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 
 ---
 
+### editMyCommands
+
+Добавляет, изменяет или удаляет команды бота. Чтобы удалить команды, передайте пустой массив `commands`.
+
+Метод заменяет весь список команд целиком: команды, которых нет в переданном списке, будут удалены.
+
+**Параметры:**
+
+| Параметр    | Тип                          | Описание                                          |
+|-------------|------------------------------|---------------------------------------------------|
+| `$commands` | `BotCommandsPatch\|RawModel` | Данные для обновления команд бота (maxItems: 32). |
+
+**Возвращает:** `BotCommandsInfo` — Информация о командах бота.
+
+**Пример:**
+
+```php
+use MaxMessenger\Bot\Model\Request\BotCommand;
+use MaxMessenger\Bot\Model\Request\BotCommandsPatch;
+
+$commandsInfo = $apiClient->editMyCommands(BotCommandsPatch::make([
+    new BotCommand('start', 'Начать работу с ботом'),
+    new BotCommand('help', 'Получить справку'),
+]));
+
+// Удаление всех команд бота
+$apiClient->editMyCommands(BotCommandsPatch::make([]));
+```
+
+**Документация API:** [PATCH /me/commands](https://dev.max.ru/docs-api/methods/PATCH/me/commands)
+
+---
+
 ### editMyInfo
 
 Редактирует информацию о текущем боте. Позволяет обновить имя, описание, команды и аватар бота.
@@ -215,8 +250,7 @@ $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 
 **Возвращает:** `ChatMembersList` — Список администраторов.
 
-**Документация API:
-** [GET /chats/-chatId-/members/admins](https://dev.max.ru/docs-api/methods/GET/chats/-chatId-/members/admins)
+**Документация API:** [GET /chats/-chatId-/members/admins](https://dev.max.ru/docs-api/methods/GET/chats/-chatId-/members/admins)
 
 ---
 
@@ -316,8 +350,7 @@ HTTP-клиент для прямых запросов к Max Messenger API. Д�
 
 **Возвращает:** `ChatMember` — Текущая информация о членстве бота.
 
-**Документация API:
-** [GET /chats/-chatId-/members/me](https://dev.max.ru/docs-api/methods/GET/chats/-chatId-/members/me)
+**Документация API:** [GET /chats/-chatId-/members/me](https://dev.max.ru/docs-api/methods/GET/chats/-chatId-/members/me)
 
 ---
 
@@ -499,8 +532,7 @@ HTTP-клиент для прямых запросов к Max Messenger API. Д�
 |-----------|-------|----------|
 | `$chatId` | `int` | ID чата. |
 
-**Документация API:
-** [DELETE /chats/-chatId-/members/me](https://dev.max.ru/docs-api/methods/DELETE/chats/-chatId-/members/me)
+**Документация API:** [DELETE /chats/-chatId-/members/me](https://dev.max.ru/docs-api/methods/DELETE/chats/-chatId-/members/me)
 
 ---
 
@@ -546,8 +578,7 @@ HTTP-клиент для прямых запросов к Max Messenger API. Д�
 | `$userId` | `int`  | Идентификатор пользователя для удаления из чата.                                                                                                                                            |
 | `$block`  | `bool` | Если установлено в `true`, пользователь будет заблокирован в чате. Применяется только для чатов с публичной или приватной ссылкой. Игнорируется в остальных случаях. По умолчанию: `false`. |
 
-**Документация API:
-** [DELETE /chats/-chatId-/members](https://dev.max.ru/docs-api/methods/DELETE/chats/-chatId-/members)
+**Документация API:** [DELETE /chats/-chatId-/members](https://dev.max.ru/docs-api/methods/DELETE/chats/-chatId-/members)
 
 ---
 

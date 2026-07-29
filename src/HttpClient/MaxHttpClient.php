@@ -87,7 +87,7 @@ final class MaxHttpClient implements MaxHttpClientInterface
 
                 $responseData = $response->getData();
 
-                if (!is_array($responseData) || empty($responseData)) {
+                if (!is_array($responseData)) {
                     /** @psalm-var HttpResponseInterface $response Psalm bug */
                     throw new UnexpectedFormatException($response);
                 }
