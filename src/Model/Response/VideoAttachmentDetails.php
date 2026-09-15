@@ -48,7 +48,7 @@ class VideoAttachmentDetails extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Токен видео-вложения (minLength: 1).
+     * @return non-empty-string Токен видео-вложения.
      */
     public function getToken(): string
     {

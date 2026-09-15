@@ -26,8 +26,9 @@ $body = $bot->readRequestContentFromGlobal();
 // Декодируем JSON-запрос
 $update = json_decode($body, true, 16, JSON_THROW_ON_ERROR);
 
-// Проверяем тип события
-if ($update['update_type'] === 'message_created') {
+// Проверяем тип события и наличие сообщения: событие может прийти без него,
+// если относится к объекту, который не поддерживается MAX API
+if ($update['update_type'] === 'message_created' && isset($update['message'])) {
     // Пишем ответ
     $chatId = $update['message']['recipient']['chat_id'];
     $mid = $update['message']['body']['mid'];
@@ -59,11 +60,16 @@ $update = MaxBot::makeUpdateFromString($body);
 
 // Проверяем тип события
 if ($update instanceof MessageCreatedUpdate) {
-    // Пишем ответ
-    $chatId = $update->getMessage()->getRecipient()->getChatId();
-    $mid = $update->getMessage()->getBody()->getMid();
-    $message = NewMessageBody::make('Ваше сообщение получено')->setReplyLink($mid);
-    $bot->apiClient->sendMessageToChat($chatId, $message);
+    // Сообщения может не быть, если событие относится к объекту, который не поддерживается MAX API
+    $receivedMessage = $update->getMessage();
+
+    if ($receivedMessage !== null) {
+        // Пишем ответ
+        $chatId = $receivedMessage->getRecipient()->getChatId();
+        $mid = $receivedMessage->getBody()->getMid();
+        $message = NewMessageBody::make('Ваше сообщение получено')->setReplyLink($mid);
+        $bot->apiClient->sendMessageToChat($chatId, $message);
+    }
 }
 ```
 
@@ -81,11 +87,30 @@ $body = $bot->readRequestContentFromGlobal();
 // Декодируем JSON-запрос и получаем из него Event
 $event = $bot->makeEvent(MaxBot::makeUpdateFromString($body));
 
-// Проверяем тип события
-if ($event instanceof MessageCreatedEvent) {
+// Проверяем тип события и наличие сообщения: событие может прийти без него,
+// если относится к объекту, который не поддерживается MAX API
+if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
     // Пишем ответ
     $event->reply('Ваше сообщение получено', true);
 }
+```
+
+**Та же функциональность с использованием бота:**
+
+```php
+use MaxMessenger\Bot\MaxBot;
+use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
+
+$bot = new MaxBot('your-access-token', 'your-secret');
+
+// Добавляем обработчик нужного типа события
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
+    // Пишем ответ. Если сообщения в событии нет, обработчик прервётся сам
+    $event->reply('Ваше сообщение получено', true);
+});
+
+// Проверяем запрос, читаем его из глобального контекста и запускаем обработку
+$bot->handleFromGlobal();
 ```
 
 **Регистрация обработчика используя php:**

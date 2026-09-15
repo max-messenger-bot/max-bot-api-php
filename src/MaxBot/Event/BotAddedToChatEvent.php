@@ -8,10 +8,15 @@ use MaxMessenger\Bot\Model\Response\BotAddedToChatUpdate;
 use MaxMessenger\Bot\Model\Response\User;
 
 /**
+ * Событие добавления бота в чат или канал.
+ *
  * @property-read BotAddedToChatUpdate $update
+ * @psalm-suppress DeprecatedTrait {@see UserEventTrait} подключён для совместимости.
  */
 final class BotAddedToChatEvent extends BaseEvent
 {
+    use SendMessageToChatTrait;
+    use SendMessageToUserTrait;
     use UserEventTrait;
 
     /**

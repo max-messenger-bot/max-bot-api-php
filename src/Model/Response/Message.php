@@ -7,7 +7,11 @@ namespace MaxMessenger\Bot\Model\Response;
 use DateTimeImmutable;
 
 /**
- * Сообщение в чате.
+ * Сообщение в чате или пост в канале.
+ *
+ * Содержит общую информацию о сообщении в чате или посте в канале: данные об отправителе и получателе,
+ * время создания сообщения, содержимое (текст и вложения), контекст связи с другими сообщениями
+ * (ответ или пересылка), а также публичную ссылку и статистику для постов в каналах.
  *
  * @link https://dev.max.ru/docs-api/objects/Message
  */
@@ -17,7 +21,7 @@ class Message extends BaseResponseModel
      * @var array{
      *     sender?: array,
      *     recipient: array,
-     *     timestamp: int,
+     *     timestamp: non-negative-int,
      *     link?: array,
      *     body: array,
      *     stat?: array,
@@ -53,7 +57,7 @@ class Message extends BaseResponseModel
     }
 
     /**
-     * @return Recipient Получатель сообщения. Может быть пользователем или чатом.
+     * @return Recipient Получатель сообщения: пользователь или бот (для диалога), чат или канал.
      */
     public function getRecipient(): Recipient
     {
@@ -63,7 +67,7 @@ class Message extends BaseResponseModel
     }
 
     /**
-     * @return User|null Пользователь, отправивший сообщение.
+     * @return User|null Отправитель сообщения: пользователь или бот.
      *     Может быть `null`, если сообщение было опубликовано от имени канала.
      */
     public function getSender(): ?User
@@ -74,7 +78,7 @@ class Message extends BaseResponseModel
     }
 
     /**
-     * @return MessageStat|null Статистика сообщения. Возвращается только для постов в каналах.
+     * @return MessageStat|null Статистика просмотров постов и репостов — возвращается только для каналов.
      */
     public function getStat(): ?MessageStat
     {
@@ -100,7 +104,7 @@ class Message extends BaseResponseModel
     }
 
     /**
-     * @return int Время создания сообщения (Unix-время в миллисекундах).
+     * @return non-negative-int Время создания сообщения (Unix-время в миллисекундах).
      */
     public function getTimestampRaw(): int
     {
@@ -108,7 +112,7 @@ class Message extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null Публичная ссылка на пост в канале (minLength: 1).
+     * @return non-empty-string|null Публичная ссылка на пост в канале.
      *     Отсутствует для диалогов и групповых чатов.
      */
     public function getUrl(): ?string

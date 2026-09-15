@@ -8,23 +8,25 @@ use Codeception\Test\Unit;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
-use MaxMessenger\Bot\MaxBot\Event\UserEventTrait;
+use MaxMessenger\Bot\MaxBot\Event\SendMessageToChatTrait;
+use MaxMessenger\Bot\MaxBot\Event\SendMessageToUserTrait;
 use MaxMessenger\Bot\Model\Response\SendMessageResult;
 use MaxMessenger\Bot\Model\Response\Update;
 use MaxMessenger\Bot\Tests\Support\Fake\FakeMaxApiConfig;
 use MaxMessenger\Bot\Tests\Support\Fake\FakeMaxHttpClient;
 
 /**
- * Сетевые методы трейта {@see UserEventTrait} через фейковый HTTP-клиент.
+ * Сетевые методы трейтов {@see SendMessageToChatTrait} и {@see SendMessageToUserTrait}
+ * через фейковый HTTP-клиент.
  *
- * Трейт подключается, в частности, к {@see BotStartedEvent}.
+ * Трейты подключаются, в частности, к {@see BotStartedEvent}.
  */
 final class UserEventTraitTest extends Unit
 {
-    public function testSendToChat(): void
+    public function testSendMessageToChat(): void
     {
         $http = new FakeMaxHttpClient();
-        $result = $this->createEvent($http)->sendToChat('Привет');
+        $result = $this->createEvent($http)->sendMessageToChat('Привет');
 
         self::assertInstanceOf(SendMessageResult::class, $result);
         $call = $http->lastCall();
@@ -34,16 +36,40 @@ final class UserEventTraitTest extends Unit
         self::assertSame(['chat_id' => 100], $call['query']);
     }
 
-    public function testSendToUser(): void
+    public function testSendMessageToUser(): void
     {
         $http = new FakeMaxHttpClient();
-        $result = $this->createEvent($http)->sendToUser('Привет');
+        $result = $this->createEvent($http)->sendMessageToUser('Привет');
 
         self::assertInstanceOf(SendMessageResult::class, $result);
         $call = $http->lastCall();
         self::assertNotNull($call);
         self::assertSame('post', $call['method']);
         self::assertSame('/messages', $call['path']);
+        self::assertSame(['user_id' => 200], $call['query']);
+    }
+
+    public function testSendToChatDelegatesToSendMessageToChat(): void
+    {
+        $http = new FakeMaxHttpClient();
+        /** @psalm-suppress DeprecatedMethod Проверяем сохранённый для совместимости устаревший метод. */
+        $result = $this->createEvent($http)->sendToChat('Привет');
+
+        self::assertInstanceOf(SendMessageResult::class, $result);
+        $call = $http->lastCall();
+        self::assertNotNull($call);
+        self::assertSame(['chat_id' => 100], $call['query']);
+    }
+
+    public function testSendToUserDelegatesToSendMessageToUser(): void
+    {
+        $http = new FakeMaxHttpClient();
+        /** @psalm-suppress DeprecatedMethod Проверяем сохранённый для совместимости устаревший метод. */
+        $result = $this->createEvent($http)->sendToUser('Привет');
+
+        self::assertInstanceOf(SendMessageResult::class, $result);
+        $call = $http->lastCall();
+        self::assertNotNull($call);
         self::assertSame(['user_id' => 200], $call['query']);
     }
 

@@ -15,7 +15,7 @@ class StickerAttachmentPayload extends AttachmentPayload
     protected readonly array $data;
 
     /**
-     * @return non-empty-string ID стикера (minLength: 1).
+     * @return non-empty-string ID стикера.
      */
     public function getCode(): string
     {

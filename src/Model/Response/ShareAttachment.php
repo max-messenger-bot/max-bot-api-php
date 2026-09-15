@@ -19,7 +19,7 @@ class ShareAttachment extends Attachment
     private ShareAttachmentPayload|false $payload = false;
 
     /**
-     * @return non-empty-string|null Описание предпросмотра ссылки (minLength: 1).
+     * @return non-empty-string|null Описание предпросмотра ссылки.
      */
     public function getDescription(): ?string
     {
@@ -27,7 +27,7 @@ class ShareAttachment extends Attachment
     }
 
     /**
-     * @return non-empty-string|null Изображение предпросмотра ссылки (minLength: 1).
+     * @return non-empty-string|null Изображение предпросмотра ссылки.
      */
     public function getImageUrl(): ?string
     {
@@ -42,7 +42,7 @@ class ShareAttachment extends Attachment
     }
 
     /**
-     * @return non-empty-string|null Заголовок предпросмотра ссылки (minLength: 1).
+     * @return non-empty-string|null Заголовок предпросмотра ссылки.
      */
     public function getTitle(): ?string
     {

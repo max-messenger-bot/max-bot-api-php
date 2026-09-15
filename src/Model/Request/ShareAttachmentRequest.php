@@ -9,7 +9,7 @@ use MaxMessenger\Bot\Model\Enum\AttachmentRequestType;
 use function array_key_exists;
 
 /**
- * Запрос на прикрепление предпросмотра медиафайла по-внешнему URL.
+ * Запрос на прикрепление предпросмотра контента по внешнему URL.
  */
 final class ShareAttachmentRequest extends AttachmentRequest
 {

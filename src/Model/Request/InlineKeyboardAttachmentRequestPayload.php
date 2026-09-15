@@ -37,7 +37,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     private bool $newRow = false;
 
     /**
-     * @param non-empty-array<non-empty-array<Button>>|null $buttons Двумерный массив кнопок (minItems: 1).
+     * @param non-empty-array<non-empty-array<Button>>|null $buttons Двумерный массив кнопок.
      */
     public function __construct(?array $buttons = null)
     {
@@ -76,9 +76,12 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     /**
      * Добавить Callback-кнопку.
      *
-     * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
-     * @param non-empty-string|array $payload Токен кнопки (minLength: 1, maxLength: 1024).
+     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
+     * @param non-empty-string|array $payload Токен кнопки (maxLength: 1024).
      * @param Intent|null $intent Намерение кнопки. Влияет на представление в клиентах.
+     *     Устарело: С 24 июля 2026 г. поле удалено из официальной схемы API.
+     *     Сервер принимает намерение кнопки, но игнорирует его и не возвращает в ответе.
+     * @psalm-suppress DeprecatedClass Поддержка устаревшего {@see Intent} сохранена для совместимости.
      */
     public function addCallbackButton(string $text, string|array $payload, ?Intent $intent = null): self
     {
@@ -90,11 +93,11 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     /**
      * Добавить кнопку создания чата.
      *
-     * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
-     * @param non-empty-string $chatTitle Название чата, который будет создан (minLength: 1, maxLength: 200).
-     * @param non-empty-string|null $chatDescription Описание чата (minLength: 1, maxLength: 400).
+     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
+     * @param non-empty-string $chatTitle Название чата, который будет создан (maxLength: 200).
+     * @param non-empty-string|null $chatDescription Описание чата (maxLength: 400).
      * @param non-empty-string|null $startPayload Стартовая полезная нагрузка будет отправлена боту,
-     *     как только чат будет создан (minLength: 1, maxLength: 512).
+     *     как только чат будет создан (maxLength: 512).
      * @param int|null $uuid Уникальный ID кнопки среди всех кнопок чата на клавиатуре.
      * @deprecated
      */
@@ -114,9 +117,9 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     /**
      * Добавить кнопку буфера обмена.
      *
-     * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string $payload Текст, который копируется в буфер обмена после нажатия на кнопку
-     *     (minLength: 1, maxLength: 1024).
+     *     (maxLength: 1024).
      */
     public function addClipboardButton(string $text, string $payload): self
     {
@@ -128,7 +131,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     /**
      * Добавить Кнопку-ссылку.
      *
-     * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string $url URL кнопки (minLength: 4, maxLength: 2048).
      */
     public function addLinkButton(string $text, string $url): self
@@ -141,8 +144,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     /**
      * Добавить кнопку сообщения.
      *
-     * @param non-empty-string $text Текст кнопки, который будет отправлен в чат от лица пользователя
-     *     (minLength: 1, maxLength: 128).
+     * @param non-empty-string $text Текст кнопки, который будет отправлен в чат от лица пользователя (maxLength: 128).
      */
     public function addMessageButton(string $text): self
     {
@@ -154,12 +156,11 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     /**
      * Добавить кнопку запуска мини-приложения.
      *
-     * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
      *     чьё мини-приложение надо запустить (minLength: 5).
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData`
-     *     мини-приложения (minLength: 1).
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения.
      */
     public function addOpenAppButton(
         string $text,
@@ -175,7 +176,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     /**
      * Добавить кнопку запроса контакта.
      *
-     * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      */
     public function addRequestContactButton(string $text): self
     {
@@ -187,8 +188,9 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     /**
      * Добавить кнопку запроса геолокации.
      *
-     * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      * @param bool $quick Если `true`, отправляет местоположение без запроса подтверждения пользователя.
+     *     Если `false`, возвращает модальное окно с дополнительным уточнением об отправке местоположения.
      */
     public function addRequestGeoLocationButton(string $text, bool $quick = false): self
     {
@@ -211,7 +213,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-array<non-empty-array<Button>> $buttons Двумерный массив кнопок (minItems: 1).
+     * @param non-empty-array<non-empty-array<Button>> $buttons Двумерный массив кнопок.
      */
     public static function make(array $buttons): self
     {
@@ -219,7 +221,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-array<non-empty-array<Button>>|null $buttons Двумерный массив кнопок (minItems: 1).
+     * @param non-empty-array<non-empty-array<Button>>|null $buttons Двумерный массив кнопок.
      */
     public static function new(?array $buttons = null): self
     {
@@ -239,7 +241,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-array<non-empty-array<Button>> $buttons Двумерный массив кнопок (minItems: 1).
+     * @param non-empty-array<non-empty-array<Button>> $buttons Двумерный массив кнопок.
      * @return $this
      */
     public function setButtons(array $buttons): self

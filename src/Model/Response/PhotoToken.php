@@ -18,7 +18,7 @@ class PhotoToken extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return non-empty-string Закодированная информация загруженного изображения (minLength: 1).
+     * @return non-empty-string Закодированная информация загруженного изображения.
      */
     public function getToken(): string
     {

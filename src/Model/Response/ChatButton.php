@@ -27,7 +27,7 @@ class ChatButton extends Button
     protected readonly array $data;
 
     /**
-     * @return non-empty-string|null Описание чата (minLength: 1, maxLength: 400).
+     * @return non-empty-string|null Описание чата (maxLength: 400).
      */
     public function getChatDescription(): ?string
     {
@@ -35,7 +35,7 @@ class ChatButton extends Button
     }
 
     /**
-     * @return non-empty-string Название чата, который будет создан (minLength: 1, maxLength: 200).
+     * @return non-empty-string Название чата, который будет создан (maxLength: 200).
      */
     public function getChatTitle(): string
     {
@@ -44,7 +44,7 @@ class ChatButton extends Button
 
     /**
      * @return non-empty-string|null Стартовая полезная нагрузка будет отправлена боту,
-     *     как только чат будет создан (minLength: 1, maxLength: 512).
+     *     как только чат будет создан (maxLength: 512).
      */
     public function getStartPayload(): ?string
     {

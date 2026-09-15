@@ -6,6 +6,9 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Вы получите это событие, как только пользователь отредактирует сообщение.
+ *
+ * Событие может относиться к объекту, который не поддерживается MAX API.
+ * В этом случае {@see getMessage()} вернёт `null`.
  */
 class MessageEditedUpdate extends Update
 {
@@ -20,6 +23,7 @@ class MessageEditedUpdate extends Update
 
     /**
      * @return Message|null Отредактированное сообщение.
+     *     `null`, если событие относится к объекту, который не поддерживается MAX API.
      */
     public function getMessage(): ?Message
     {

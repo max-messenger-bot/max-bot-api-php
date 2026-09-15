@@ -24,12 +24,11 @@ final class BotPatch extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $firstName Отображаемое имя пользователя или название бота
-     *     (minLength: 1, maxLength: 59).
-     * @param non-empty-string|null $lastName Отображаемое второе имя бота (minLength: 1, maxLength: 64).
-     * @param non-empty-string|null $description Описание бота (minLength: 1, maxLength: 16000).
-     * @param BotCommand[]|null $commands Команды, поддерживаемые ботом. Чтобы удалить все команды,
-     *     передайте пустой список (maxItems: 32).
+     * @param non-empty-string|null $firstName Отображаемое имя пользователя или название бота (maxLength: 59).
+     * @param non-empty-string|null $lastName Отображаемое второе имя бота (maxLength: 64).
+     * @param non-empty-string|null $description Описание бота (maxLength: 16000).
+     * @param BotCommand[]|null $commands Команды, поддерживаемые ботом (maxItems: 32).
+     *     Чтобы удалить все команды, передайте пустой список.
      * @param PhotoAttachmentRequestPayload|null $photo Запрос на установку фото бота.
      */
     public function __construct(
@@ -122,12 +121,11 @@ final class BotPatch extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $firstName Отображаемое имя пользователя или название бота
-     *     (minLength: 1, maxLength: 59).
-     * @param non-empty-string|null $lastName Отображаемое второе имя бота (minLength: 1, maxLength: 64).
-     * @param non-empty-string|null $description Описание бота (minLength: 1, maxLength: 16000).
-     * @param BotCommand[]|null $commands Команды, поддерживаемые ботом. Чтобы удалить все команды,
-     *     передайте пустой список (maxItems: 32).
+     * @param non-empty-string|null $firstName Отображаемое имя пользователя или название бота (maxLength: 59).
+     * @param non-empty-string|null $lastName Отображаемое второе имя бота (maxLength: 64).
+     * @param non-empty-string|null $description Описание бота (maxLength: 16000).
+     * @param BotCommand[]|null $commands Команды, поддерживаемые ботом (maxItems: 32).
+     *     Чтобы удалить все команды, передайте пустой список.
      * @param PhotoAttachmentRequestPayload|null $photo Запрос на установку фото бота.
      */
     public static function make(
@@ -141,12 +139,11 @@ final class BotPatch extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $firstName Отображаемое имя пользователя или название бота
-     *     (minLength: 1, maxLength: 59).
-     * @param non-empty-string|null $lastName Отображаемое второе имя бота (minLength: 1, maxLength: 64).
-     * @param non-empty-string|null $description Описание бота (minLength: 1, maxLength: 16000).
-     * @param BotCommand[]|null $commands Команды, поддерживаемые ботом. Чтобы удалить все команды,
-     *     передайте пустой список (maxItems: 32).
+     * @param non-empty-string|null $firstName Отображаемое имя пользователя или название бота (maxLength: 59).
+     * @param non-empty-string|null $lastName Отображаемое второе имя бота (maxLength: 64).
+     * @param non-empty-string|null $description Описание бота (maxLength: 16000).
+     * @param BotCommand[]|null $commands Команды, поддерживаемые ботом (maxItems: 32).
+     *     Чтобы удалить все команды, передайте пустой список.
      * @param PhotoAttachmentRequestPayload|null $photo Запрос на установку фото бота.
      */
     public static function new(
@@ -160,8 +157,8 @@ final class BotPatch extends BaseRequestModel
     }
 
     /**
-     * @param BotCommand[] $commands Команды, поддерживаемые ботом. Чтобы удалить все команды,
-     *     передайте пустой список (maxItems: 32).
+     * @param BotCommand[] $commands Команды, поддерживаемые ботом (maxItems: 32).
+     *     Чтобы удалить все команды, передайте пустой список.
      * @return $this
      */
     public function setCommands(array $commands): self
@@ -174,7 +171,7 @@ final class BotPatch extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $description Описание бота (minLength: 1, maxLength: 16000).
+     * @param non-empty-string $description Описание бота (maxLength: 16000).
      * @return $this
      */
     public function setDescription(string $description): self
@@ -187,7 +184,7 @@ final class BotPatch extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $firstName Отображаемое имя пользователя или название бота (minLength: 1, maxLength: 59).
+     * @param non-empty-string $firstName Отображаемое имя пользователя или название бота (maxLength: 59).
      * @return $this
      */
     public function setFirstName(string $firstName): self
@@ -200,7 +197,7 @@ final class BotPatch extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $lastName Отображаемое второе имя бота (minLength: 1, maxLength: 64).
+     * @param non-empty-string $lastName Отображаемое второе имя бота (maxLength: 64).
      * @return $this
      */
     public function setLastName(string $lastName): self

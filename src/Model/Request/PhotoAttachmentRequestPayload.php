@@ -7,9 +7,13 @@ namespace MaxMessenger\Bot\Model\Request;
 use function array_key_exists;
 
 /**
- * Запрос на прикрепление изображения.
+ * Данные для прикрепления изображения.
  *
  * Все поля являются взаимоисключающими.
+ *
+ * Вместе с изображениями можно прикрепить видеофайлы ({@see VideoAttachmentRequest}) и одно вложение
+ * с кнопками ({@see InlineKeyboardAttachmentRequest}). Общее количество вложений не должно превышать 12.
+ * Подробнее — {@link https://dev.max.ru/docs-api#Примеры%20с%20видео,%20изображением,%20файлом в примерах}.
  */
 final class PhotoAttachmentRequestPayload extends BaseRequestModel
 {
@@ -26,8 +30,8 @@ final class PhotoAttachmentRequestPayload extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $url Любой внешний URL изображения, которое вы хотите прикрепить (minLength: 1).
-     * @param non-empty-string|null $token Токен существующего вложения (minLength: 1).
+     * @param non-empty-string|null $url Любой внешний URL изображения, которое вы хотите прикрепить.
+     * @param non-empty-string|null $token Токен существующего вложения.
      */
     public function __construct(?string $url = null, ?string $token = null)
     {
@@ -67,8 +71,8 @@ final class PhotoAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $url Любой внешний URL изображения, которое вы хотите прикрепить (minLength: 1).
-     * @param non-empty-string|null $token Токен существующего вложения (minLength: 1).
+     * @param non-empty-string|null $url Любой внешний URL изображения, которое вы хотите прикрепить.
+     * @param non-empty-string|null $token Токен существующего вложения.
      */
     public static function make(?string $url = null, ?string $token = null): self
     {
@@ -76,8 +80,8 @@ final class PhotoAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $url Любой внешний URL изображения, которое вы хотите прикрепить (minLength: 1).
-     * @param non-empty-string|null $token Токен существующего вложения (minLength: 1).
+     * @param non-empty-string|null $url Любой внешний URL изображения, которое вы хотите прикрепить.
+     * @param non-empty-string|null $token Токен существующего вложения.
      */
     public static function new(?string $url = null, ?string $token = null): self
     {
@@ -85,7 +89,7 @@ final class PhotoAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $token Токен существующего вложения (minLength: 1).
+     * @param non-empty-string $token Токен существующего вложения.
      */
     public static function newWithToken(string $token): self
     {
@@ -93,7 +97,7 @@ final class PhotoAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $url Любой внешний URL изображения, которое вы хотите прикрепить (minLength: 1).
+     * @param non-empty-string $url Любой внешний URL изображения, которое вы хотите прикрепить.
      */
     public static function newWithUrl(string $url): self
     {
@@ -101,7 +105,7 @@ final class PhotoAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $token Токен существующего вложения (minLength: 1).
+     * @param non-empty-string $token Токен существующего вложения.
      * @return $this
      */
     public function setToken(string $token): self
@@ -115,7 +119,7 @@ final class PhotoAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $url Любой внешний URL изображения, которое вы хотите прикрепить (minLength: 1).
+     * @param non-empty-string $url Любой внешний URL изображения, которое вы хотите прикрепить.
      * @return $this
      */
     public function setUrl(string $url): self

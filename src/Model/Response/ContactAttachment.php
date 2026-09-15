@@ -15,6 +15,9 @@ class ContactAttachment extends Attachment
     protected readonly array $data;
     private ContactAttachmentPayload|false $payload = false;
 
+    /**
+     * @return ContactAttachmentPayload Результат загрузки данных контакта в сообщение.
+     */
     public function getPayload(): ContactAttachmentPayload
     {
         return $this->payload === false

@@ -44,7 +44,7 @@ class MessageCallbackUpdate extends Update
     }
 
     /**
-     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47 (minLength: 1).
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47.
      */
     public function getUserLocale(): ?string
     {

@@ -20,10 +20,10 @@ class ChatMember extends UserWithPhoto
 {
     /**
      * @var array{
-     *     last_access_time: int,
+     *     last_access_time: non-negative-int,
      *     is_owner: bool,
      *     is_admin: bool,
-     *     join_time: int,
+     *     join_time: non-negative-int,
      *     permissions?: list<non-empty-string>,
      *     alias?: string
      * }
@@ -43,7 +43,7 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return DateTimeImmutable Дата присоединения к чату в формате Unix-time.
+     * @return DateTimeImmutable Дата присоединения к чату.
      */
     public function getJoinTime(): DateTimeImmutable
     {
@@ -51,7 +51,7 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return int Дата присоединения к чату в формате Unix-time.
+     * @return non-negative-int Дата присоединения к чату (Unix-время в миллисекундах).
      */
     public function getJoinTimeRaw(): int
     {
@@ -68,7 +68,7 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return int Время последней активности пользователя в чате.
+     * @return non-negative-int Время последней активности пользователя в чате.
      *     Может быть устаревшим для суперчатов (равно времени вступления).
      */
     public function getLastAccessTimeRaw(): int

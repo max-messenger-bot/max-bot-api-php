@@ -34,7 +34,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
      *     `X-Max-Bot-Api-Secret` в каждом запросе Webhook (minLength: 5, maxLength: 256).
      *     Разрешены только символы `A-Z`, `a-z`, `0-9`, `_` и `-`.
      * @param UpdateType[]|null $update_types Список типов событий, которые хочет получать ваш бот.
-     * @param non-empty-string|null $version Версия API (minLength: 1, pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
+     * @param non-empty-string|null $version Версия API (pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
      *     Влияет на представление модели.
      */
     public function __construct(
@@ -117,7 +117,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
      *     `X-Max-Bot-Api-Secret` в каждом запросе Webhook (minLength: 5, maxLength: 256).
      *     Разрешены только символы `A-Z`, `a-z`, `0-9`, `_` и `-`.
      * @param UpdateType[]|null $update_types Список типов событий, которые хочет получать ваш бот.
-     * @param non-empty-string|null $version Версия API (minLength: 1, pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
+     * @param non-empty-string|null $version Версия API (pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
      *     Влияет на представление модели.
      */
     public static function make(
@@ -135,7 +135,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
      *     `X-Max-Bot-Api-Secret` в каждом запросе Webhook (minLength: 5, maxLength: 256).
      *     Разрешены только символы `A-Z`, `a-z`, `0-9`, `_` и `-`.
      * @param UpdateType[]|null $update_types Список типов событий, которые хочет получать ваш бот.
-     * @param non-empty-string|null $version Версия API (minLength: 1, pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
+     * @param non-empty-string|null $version Версия API (pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
      *     Влияет на представление модели.
      */
     public static function new(
@@ -187,7 +187,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $version Версия API (minLength: 1, pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
+     * @param non-empty-string $version Версия API (pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
      *     Влияет на представление модели.
      * @return $this
      */

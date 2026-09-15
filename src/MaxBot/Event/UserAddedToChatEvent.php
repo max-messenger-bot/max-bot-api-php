@@ -8,12 +8,20 @@ use MaxMessenger\Bot\Model\Response\User;
 use MaxMessenger\Bot\Model\Response\UserAddedToChatUpdate;
 
 /**
+ * Событие добавления пользователя в чат или канал.
+ *
+ * Приходит, когда пользователя добавили или он перешёл по ссылке.
+ *
+ * На свои действия бот события не получает.
+ *
  * @property-read UserAddedToChatUpdate $update
+ * @psalm-suppress DeprecatedTrait {@see UserEventTrait} подключён для совместимости.
  */
 final class UserAddedToChatEvent extends BaseEvent
 {
+    use SendMessageToChatTrait;
+    use SendMessageToUserTrait;
     use UserEventTrait;
-
 
     /**
      * @return int ID чата, где произошло событие.

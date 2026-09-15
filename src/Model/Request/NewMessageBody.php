@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\BadRequestException;
+use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Model\Enum\MessageLinkType;
 use MaxMessenger\Bot\Model\Enum\TextFormat;
 use MaxMessenger\Bot\Model\Response\Message;
@@ -15,6 +17,12 @@ use function is_string;
 
 /**
  * Новое тело сообщения.
+ *
+ * Объект используется при отправке нового сообщения в чат или канал, редактировании существующего сообщения или поста,
+ * а также при callback-отправке сообщения пользователю, нажавшему кнопку в чате или канале.
+ *
+ * Параметры объекта содержат текст и способ его форматирования, вложения, ссылку на связанное
+ * сообщение (ответ или пересылка) и настройку PUSH-уведомлений для участников чата.
  *
  * @link https://dev.max.ru/docs-api/objects/NewMessageBody
  */
@@ -37,11 +45,15 @@ final class NewMessageBody extends BaseRequestModel
 
     /**
      * @param string|null $text Текст сообщения (maxLength: 4000).
-     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если в этом поле при обновлении сообщения
-     *     передан пустой список, все вложения будут удалены.
-     * @param NewMessageLink|null $link Ссылка на сообщение.
-     * @param bool $notify Если false, участники чата не будут уведомлены (по умолчанию `true`).
-     * @param TextFormat|null $format Если установлен, текст сообщения будет форматирован данным способом.
+     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если поле не передано или равно `null`,
+     *     изменений не произойдёт. Если массив пуст, все вложения будут удалены.
+     * @param NewMessageLink|null $link Ссылка на сообщение в чате или пост в канале.
+     *     Ссылки на комментарии к постам в каналах не поддерживаются.
+     * @param bool $notify Если `false`, участники чата не получат push-уведомления (по умолчанию `true`).
+     *     Для каналов нужно передавать `true` или не указывать параметр: каналы не подразумевают
+     *     отправку постов без push-уведомлений.
+     * @param TextFormat|null $format Разметка текста сообщения. Подробнее —
+     *     {@link https://dev.max.ru/docs-api#Форматирование%20текста%20в%20сообщениях в разделе «Форматирование»}.
      */
     public function __construct(
         ?string $text = null,
@@ -85,7 +97,8 @@ final class NewMessageBody extends BaseRequestModel
      *
      * Должно быть единственным вложением в сообщении.
      *
-     * @param non-empty-string $token Токен — уникальный ID загруженного медиафайла (minLength: 1).
+     * @param non-empty-string $token Токен вложения — уникальный ID загруженного медиа: изображения, аудио,
+     *     видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
      * @return $this
      */
     public function addAudioAttachment(string $token): self
@@ -115,7 +128,8 @@ final class NewMessageBody extends BaseRequestModel
      *
      * Должен быть единственным вложением в сообщении.
      *
-     * @param non-empty-string $token Токен — уникальный ID загруженного медиафайла (minLength: 1).
+     * @param non-empty-string $token Токен вложения — уникальный ID загруженного медиа: изображения, аудио,
+     *     видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
      * @return $this
      */
     public function addFileAttachment(string $token): self
@@ -128,7 +142,7 @@ final class NewMessageBody extends BaseRequestModel
     /**
      * Прикрепляет изображение к сообщению.
      *
-     * @param non-empty-string $token Токен существующего вложения (minLength: 1).
+     * @param non-empty-string $token Токен существующего вложения.
      * @return $this
      */
     public function addImageAttachment(string $token): self
@@ -160,7 +174,7 @@ final class NewMessageBody extends BaseRequestModel
      * до 210 кнопок, сгруппированных в 30 рядов — до 7 кнопок в каждом (до 3, если это кнопки типа `link`, `open_app`,
      * `request_geo_location` или `request_contact`).
      *
-     * @param non-empty-array<non-empty-array<Button>> $buttons Двумерный массив кнопок (minItems: 1).
+     * @param non-empty-array<non-empty-array<Button>> $buttons Двумерный массив кнопок.
      * @return $this
      */
     public function addInlineKeyboardAttachment(array $buttons): self
@@ -206,8 +220,8 @@ final class NewMessageBody extends BaseRequestModel
     /**
      * Прикрепляет предпросмотр медиафайла по внешнему URL.
      *
-     * @param non-empty-string $url URL, прикрепленный к сообщению в качестве предпросмотра медиа (minLength: 1).
-     * @param non-empty-string|null $token Токен вложения (minLength: 1).
+     * @param non-empty-string $url URL, прикрепленный к сообщению в качестве предпросмотра медиа.
+     * @param non-empty-string|null $token Токен вложения.
      * @return $this
      */
     public function addShareAttachment(string $url, ?string $token = null): self
@@ -222,7 +236,7 @@ final class NewMessageBody extends BaseRequestModel
      *
      * Должен быть единственным вложением в сообщении.
      *
-     * @param non-empty-string $code Код стикера (minLength: 1).
+     * @param non-empty-string $code Код стикера.
      * @return $this
      */
     public function addStickerAttachment(string $code): self
@@ -246,7 +260,7 @@ final class NewMessageBody extends BaseRequestModel
     /**
      * Прикрепляет изображение к сообщению.
      *
-     * @param non-empty-string $url Любой внешний URL изображения, которое вы хотите прикрепить (minLength: 1)
+     * @param non-empty-string $url Любой внешний URL изображения, которое вы хотите прикрепить
      * @return $this
      */
     public function addUrlImageAttachment(string $url): self
@@ -259,7 +273,8 @@ final class NewMessageBody extends BaseRequestModel
     /**
      * Прикрепляет видео к сообщению.
      *
-     * @param non-empty-string $token Токен — уникальный ID загруженного медиафайла (minLength: 1).
+     * @param non-empty-string $token Токен вложения — уникальный ID загруженного медиа: изображения, аудио,
+     *     видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
      * @return $this
      */
     public function addVideoAttachment(string $token): self
@@ -328,11 +343,15 @@ final class NewMessageBody extends BaseRequestModel
 
     /**
      * @param string|null $text Текст сообщения (maxLength: 4000).
-     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если в этом поле при обновлении сообщения
-     *     передан пустой список, все вложения будут удалены.
-     * @param NewMessageLink|null $link Ссылка на сообщение.
-     * @param bool $notify Если false, участники чата не будут уведомлены (по умолчанию `true`).
-     * @param TextFormat|null $format Если установлен, текст сообщения будет форматирован данным способом.
+     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если поле не передано или равно `null`,
+     *     изменений не произойдёт. Если массив пуст, все вложения будут удалены.
+     * @param NewMessageLink|null $link Ссылка на сообщение в чате или пост в канале.
+     *     Ссылки на комментарии к постам в каналах не поддерживаются.
+     * @param bool $notify Если `false`, участники чата не получат push-уведомления (по умолчанию `true`).
+     *     Для каналов нужно передавать `true` или не указывать параметр: каналы не подразумевают
+     *     отправку постов без push-уведомлений.
+     * @param TextFormat|null $format Разметка текста сообщения. Подробнее —
+     *     {@link https://dev.max.ru/docs-api#Форматирование%20текста%20в%20сообщениях в разделе «Форматирование»}.
      */
     public static function make(
         ?string $text = null,
@@ -346,11 +365,15 @@ final class NewMessageBody extends BaseRequestModel
 
     /**
      * @param string|null $text Текст сообщения (maxLength: 4000).
-     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если в этом поле при обновлении сообщения
-     *     передан пустой список, все вложения будут удалены.
-     * @param NewMessageLink|null $link Ссылка на сообщение.
-     * @param bool $notify Если false, участники чата не будут уведомлены (по умолчанию `true`).
-     * @param TextFormat|null $format Если установлен, текст сообщения будет форматирован данным способом.
+     * @param AttachmentRequest[]|null $attachments Вложения сообщения. Если поле не передано или равно `null`,
+     *     изменений не произойдёт. Если массив пуст, все вложения будут удалены.
+     * @param NewMessageLink|null $link Ссылка на сообщение в чате или пост в канале.
+     *     Ссылки на комментарии к постам в каналах не поддерживаются.
+     * @param bool $notify Если `false`, участники чата не получат push-уведомления (по умолчанию `true`).
+     *     Для каналов нужно передавать `true` или не указывать параметр: каналы не подразумевают
+     *     отправку постов без push-уведомлений.
+     * @param TextFormat|null $format Разметка текста сообщения. Подробнее —
+     *     {@link https://dev.max.ru/docs-api#Форматирование%20текста%20в%20сообщениях в разделе «Форматирование»}.
      */
     public static function new(
         ?string $text = null,
@@ -363,8 +386,7 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param AttachmentRequest[] $attachments Вложения сообщения. Если в этом поле при обновлении сообщения
-     *     передан пустой список, все вложения будут удалены.
+     * @param AttachmentRequest[] $attachments Вложения сообщения. Если массив пуст, все вложения будут удалены.
      * @return $this
      */
     public function setAttachments(array $attachments): self
@@ -375,7 +397,8 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param TextFormat $format Если установлен, текст сообщения будет форматирован данным способом.
+     * @param TextFormat $format Разметка текста сообщения. Подробнее —
+     *     {@link https://dev.max.ru/docs-api#Форматирование%20текста%20в%20сообщениях в разделе «Форматирование»}.
      * @return $this
      */
     public function setFormat(TextFormat $format): self
@@ -399,7 +422,8 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param NewMessageLink $link Ссылка на сообщение.
+     * @param NewMessageLink $link Ссылка на сообщение в чате или пост в канале.
+     *     Ссылки на комментарии к постам в каналах не поддерживаются.
      * @return $this
      */
     public function setLink(NewMessageLink $link): self
@@ -410,7 +434,10 @@ final class NewMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param bool $notify Если false, участники чата не будут уведомлены (по умолчанию `true`).
+     * @param bool $notify Если `false`, участники чата не получат push-уведомления (по умолчанию `true`).
+     *     Для каналов нужно передавать `true` или не указывать параметр: каналы не подразумевают
+     *     отправку постов без push-уведомлений. При отправке в канал с `false` Вы получите ошибку
+     *     {@see BadRequestException} с сообщением `errors.send-message.channel-notify`.
      * @return $this
      */
     public function setNotify(bool $notify): self

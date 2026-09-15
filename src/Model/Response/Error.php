@@ -22,7 +22,7 @@ class Error extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return non-empty-string Код ошибки (minLength: 1).
+     * @return non-empty-string Код ошибки.
      */
     public function getCode(): string
     {

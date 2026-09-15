@@ -23,7 +23,7 @@ final class RequestGeoLocationButton extends Button
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
      * @param bool $quick Если `true`, отправляет местоположение без запроса подтверждения пользователя.
      */
     public function __construct(?string $text = null, bool $quick = false)
@@ -39,7 +39,7 @@ final class RequestGeoLocationButton extends Button
     }
 
     /**
-     * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      * @param bool $quick Если `true`, отправляет местоположение без запроса подтверждения пользователя.
      */
     public static function make(string $text, bool $quick = false): self
@@ -48,7 +48,7 @@ final class RequestGeoLocationButton extends Button
     }
 
     /**
-     * @param non-empty-string|null $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
      * @param bool $quick Если `true`, отправляет местоположение без запроса подтверждения пользователя.
      */
     public static function new(?string $text = null, bool $quick = false): self

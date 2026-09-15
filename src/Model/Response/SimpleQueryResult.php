@@ -19,7 +19,7 @@ class SimpleQueryResult extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return string|null Объяснительное сообщение, если результат не был успешным.
+     * @return string|null Сообщение об ошибке.
      */
     public function getMessage(): ?string
     {

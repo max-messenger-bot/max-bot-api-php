@@ -9,14 +9,19 @@ use MaxMessenger\Bot\Model\Response\DialogMutedUpdate;
 use MaxMessenger\Bot\Model\Response\User;
 
 /**
+ * Событие отключения уведомлений в диалоге, чате или канале.
+ *
  * @property-read DialogMutedUpdate $update
+ * @psalm-suppress DeprecatedTrait {@see UserEventTrait} подключён для совместимости.
  */
 final class DialogMutedEvent extends BaseEvent
 {
+    use SendMessageToChatTrait;
+    use SendMessageToUserTrait;
     use UserEventTrait;
 
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int ID диалога, чата или канала, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -24,7 +29,7 @@ final class DialogMutedEvent extends BaseEvent
     }
 
     /**
-     * @return DateTimeImmutable Время, до наступления которого диалог был отключён.
+     * @return DateTimeImmutable Время, до наступления которого уведомления в диалоге, чате или канале были отключены.
      */
     public function getMutedUntil(): DateTimeImmutable
     {
@@ -32,7 +37,8 @@ final class DialogMutedEvent extends BaseEvent
     }
 
     /**
-     * @return int Время, до наступления которого диалог был отключён (Unix-time).
+     * @return non-negative-int Время, до наступления которого уведомления в диалоге, чате или канале
+     *     были отключены (Unix-время в миллисекундах).
      */
     public function getMutedUntilRaw(): int
     {

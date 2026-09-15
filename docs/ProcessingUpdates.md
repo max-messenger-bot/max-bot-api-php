@@ -58,6 +58,10 @@ php max-debug.php
 В отличие от прямой обработки в цикле **Long Polling**, скрипт-обработчик запускается заново для каждого события —
 поэтому после правки кода обработчика не нужно перезапускать скрипт.
 
+Обработчиком может быть и фронт-контроллер фреймворка: окружения достаточно для создания объекта запроса
+из глобального контекста (`Illuminate\Http\Request::capture()`,
+`Symfony\Component\HttpFoundation\Request::createFromGlobals()`).
+
 Конфигурация задаётся в файле `.polling-to-webhook.conf` (см. пример `dev/.polling-to-webhook.conf.example`).
 Скрипт ищет его в корне проекта, который подключает пакет, и в папке `dev/` этого проекта — поэтому он работает
 и при установке пакета как зависимости. Подробнее см. [Tools.md](Tools.md#polling-to-webhook).
@@ -104,8 +108,36 @@ Webhook-endpoint должен возвращать HTTP 200 в течение 30
 
 Параметр **secret** позволяет убедиться, что Webhook-запросы приходят от MAX, а не от третьей стороны.
 
-Если **secret** настроен, метод `MaxBot::makeUpdateFromGlobal()` автоматически проверит его в запросе.
-Это необязательный параметр, но его настоятельно рекомендуется указывать.
+Если **secret** настроен, методы `MaxBot::readRequestContentFromGlobal()` и `MaxBot::readRequestContent()`
+(а значит и `MaxBot::handleFromGlobal()` с `MaxBot::handleFromRequest()`) автоматически проверят его
+в заголовке `X-Max-Bot-Api-Secret`. Это необязательный параметр, но его настоятельно рекомендуется указывать.
+
+#### Запрос из PSR-7
+
+Если приложение работает с объектом запроса (`Psr\Http\Message\ServerRequestInterface`),
+вместо чтения глобального контекста используйте `handleFromRequest()`:
+
+```php
+use MaxMessenger\Bot\MaxBot;
+
+$bot = new MaxBot('your-access-token', 'your-secret');
+
+// Добавление обработчиков
+
+$bot->handleFromRequest($request);
+```
+
+Тело запроса без обработки события отдаёт `readRequestContent()` — аналог `readRequestContentFromGlobal()`:
+
+```php
+$body = $bot->readRequestContent($request);
+```
+
+Оба метода выполняют те же проверки, что и версии для глобального контекста: метод `POST`,
+тип содержимого `application/json`, наличие и совпадение `Content-Length`, а также секрет.
+
+Пакет `psr/http-message` не входит в зависимости SDK — установите его (обычно он уже есть вместе
+с вашим HTTP-фреймворком), если используете эти методы.
 
 ## Обработка обновлений
 
@@ -128,6 +160,8 @@ Webhook-endpoint должен возвращать HTTP 200 в течение 30
     - **MaxBot::handleFromGlobal()** — Запускает процесс обработки **обновления** полученного из обрабатываемого
       запроса.
     - **MaxBot::readRequestContentFromGlobal()** — Читает содержимое запроса из глобального контекста.
+    - **MaxBot::handleFromRequest()** — Запускает процесс обработки **обновления**, полученного из PSR-7 запроса.
+    - **MaxBot::readRequestContent()** — Читает содержимое PSR-7 запроса.
     - **MaxBot::makeUpdateFromString()** — Создаёт объект **обновления** из JSON-стоки.
 - Методы для **Long Polling**:
     - **MaxBot::handleFromServer** — Получает **обновления** с сервера через API и запускает процесс их обработки.
@@ -154,7 +188,7 @@ Webhook-endpoint должен возвращать HTTP 200 в течение 30
   Объект **события** реализует вспомогательные функции для работы с обновлениями.
   Через объект **событие** можно получить объект **обновления**.
 - **Событие** может быть обработано:
-    - Обработчиками бота (методы `MaxBot::handleFromGlobal()`, `MaxBot::handleFromServer`, `MaxBot::handleUpdate()`,
-      `MaxBot::handleEvent()`).
+    - Обработчиками бота (методы `MaxBot::handleFromGlobal()`, `MaxBot::handleFromRequest()`,
+      `MaxBot::handleFromServer`, `MaxBot::handleUpdate()`, `MaxBot::handleEvent()`).
     - Своим списком обработчиков (метод `MaxBot::handleEventUseHandlerList()`).
     - Своим обработчиком (метод `BaseEvent::handle()`).

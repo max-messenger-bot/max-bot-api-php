@@ -22,7 +22,7 @@ class UserWithPhoto extends User
     protected readonly array $data;
 
     /**
-     * @return non-empty-string|null URL аватара пользователя или бота в уменьшенном размере (minLength: 1).
+     * @return non-empty-string|null URL аватара пользователя или бота в уменьшенном размере.
      */
     public function getAvatarUrl(): ?string
     {
@@ -30,7 +30,7 @@ class UserWithPhoto extends User
     }
 
     /**
-     * @return non-empty-string|null Описание пользователя или бота (minLength: 1, maxLength: 16000).
+     * @return non-empty-string|null Описание пользователя или бота (maxLength: 16000).
      *     В случае с пользователем может принимать значение `null`, если описание не заполнено.
      */
     public function getDescription(): ?string
@@ -39,7 +39,7 @@ class UserWithPhoto extends User
     }
 
     /**
-     * @return non-empty-string|null URL аватара пользователя или бота в полном размере (minLength: 1).
+     * @return non-empty-string|null URL аватара пользователя или бота в полном размере.
      */
     public function getFullAvatarUrl(): ?string
     {

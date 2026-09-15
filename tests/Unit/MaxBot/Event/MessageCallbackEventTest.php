@@ -38,6 +38,17 @@ final class MessageCallbackEventTest extends Unit
         self::assertNull($http->lastCall());
     }
 
+    public function testAnswerWithDisableLinkPreview(): void
+    {
+        $http = new FakeMaxHttpClient();
+        $this->createEventWithHttp($http)->answer('Готово', disableLinkPreview: true);
+
+        $call = $http->lastCall();
+        self::assertNotNull($call);
+        self::assertSame('/answers', $call['path']);
+        self::assertSame(['callback_id' => 'cb.1', 'disable_link_preview' => 'true'], $call['query']);
+    }
+
     public function testGetCallback(): void
     {
         $callback = $this->createEvent()->getCallback();
@@ -72,6 +83,11 @@ final class MessageCallbackEventTest extends Unit
     public function testGetUserLocale(): void
     {
         self::assertSame('ru-RU', $this->createEvent(userLocale: 'ru-RU')->getUserLocale());
+    }
+
+    public function testHasMessage(): void
+    {
+        self::assertTrue($this->createEvent()->hasMessage());
     }
 
     public function testNoUserLocale(): void

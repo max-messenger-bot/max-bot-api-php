@@ -24,7 +24,7 @@ final class LinkButton extends Button
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string|null $url URL кнопки (minLength: 4, maxLength: 2048).
      */
     public function __construct(?string $text = null, ?string $url = null)
@@ -52,7 +52,7 @@ final class LinkButton extends Button
     }
 
     /**
-     * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string $url URL кнопки (minLength: 4, maxLength: 2048).
      */
     public static function make(string $text, string $url): self
@@ -61,7 +61,7 @@ final class LinkButton extends Button
     }
 
     /**
-     * @param non-empty-string|null $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string|null $url URL кнопки (minLength: 4, maxLength: 2048).
      */
     public static function new(?string $text = null, ?string $url = null): self

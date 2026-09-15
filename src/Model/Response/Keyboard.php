@@ -22,7 +22,7 @@ class Keyboard extends BaseResponseModel
     private array|false $buttons = false;
 
     /**
-     * @return non-empty-list<non-empty-list<Button>> Двумерный массив кнопок (minItems: 1).
+     * @return non-empty-list<non-empty-list<Button>> Двумерный массив кнопок.
      */
     public function getButtons(): array
     {

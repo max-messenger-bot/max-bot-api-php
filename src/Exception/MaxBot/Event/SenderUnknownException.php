@@ -7,9 +7,9 @@ namespace MaxMessenger\Bot\Exception\MaxBot\Event;
 use MaxMessenger\Bot\Exception\MaxApiLogicException;
 
 /**
- * The sender is unknown.
+ * Отправитель неизвестен.
  *
- * Exception thrown when the sender of an event cannot be identified.
+ * Исключение выбрасывается, когда отправителя сообщения или комментария определить нельзя (отправлено от имени канала).
  */
 final class SenderUnknownException extends MaxApiLogicException
 {

@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+use MaxMessenger\Bot\MaxApiClient;
+
 /**
- * Пагинированный список сообщений.
+ * Массив сообщений.
+ *
+ * Маркер следующей страницы API не возвращает: для перебора сдвигайте границы промежутка времени
+ * `from` и `to` в {@see MaxApiClient::getMessages()}.
  */
 class MessageList extends BaseResponseModel
 {

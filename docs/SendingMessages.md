@@ -29,12 +29,14 @@
     - [Типы кнопок](#типы-кнопок)
 - [Отправка из обработчиков событий](#отправка-из-обработчиков-событий)
     - [Методы reply](#методы-reply)
-    - [Методы sendToChat / sendToUser](#методы-sendtochat--sendtouser)
+    - [Методы sendMessageToChat / sendMessageToUser](#методы-sendmessagetochat--sendmessagetouser)
     - [Методы forwardToChat / forwardToUser](#методы-forwardtochat--forwardtouser)
 - [Уведомления и оповещения](#уведомления-и-оповещения)
 - [Ограничения частоты](#ограничения-частоты)
 - [Обработка ошибок](#обработка-ошибок)
 - [Ответ метода](#ответ-метода)
+- [Редактирование отправленного сообщения](#редактирование-отправленного-сообщения)
+- [Комментарии к постам в канале](#комментарии-к-постам-в-канале)
 
 ## Основные методы
 
@@ -373,10 +375,10 @@ $client->sendMessageToUser($userId, $message);
 | Класс                      | Где использовать | Описание                                            |
 |----------------------------|------------------|-----------------------------------------------------|
 | `CallbackButton`           | Inline           | Отправляет callback боту с payload                  |
-| `LinkButton`               | Inline           | Открывает URL                                       |
-| `MessageButton`            | Inline           | Отправляет текст кнопки в чат от имени пользователя |
 | `ChatButton`               | Inline           | Создаёт новый чат                                   |
 | `ClipboardButton`          | Inline           | Копирует текст в буфер обмена                       |
+| `LinkButton`               | Inline           | Открывает URL                                       |
+| `MessageButton`            | Inline           | Отправляет текст кнопки в чат от имени пользователя |
 | `OpenAppButton`            | Inline           | Запускает мини-приложение                           |
 | `RequestContactButton`     | Inline           | Запрашивает контакт пользователя                    |
 | `RequestGeoLocationButton` | Inline           | Запрашивает геолокацию                              |
@@ -431,20 +433,22 @@ $bot->onMessageCallback(function (MessageCallbackEvent $event) {
 });
 ```
 
-### Методы sendToChat / sendToUser
+### Методы sendMessageToChat / sendMessageToUser
 
 Доступны в событиях, где можно отправить сообщение:
 
 ```php
 // Ответ пользователю
-$event->sendToUser('Привет!');
+$event->sendMessageToUser('Привет!');
 
 // Ответ в чат
-$event->sendToChat('Всем привет!');
+$event->sendMessageToChat('Всем привет!');
 
 // Отключение превью ссылок
-$event->sendToUser('https://example.com', disableLinkPreview: true);
+$event->sendMessageToUser('https://example.com', disableLinkPreview: true);
 ```
+
+Методы `sendToChat()` и `sendToUser()` устарели и будут удалены в следующих версиях.
 
 ### Методы forwardToChat / forwardToUser
 
@@ -471,6 +475,9 @@ $message = NewMessageBody::new()
     ->setText('Тихое сообщение')
     ->setNotify(false);
 ```
+
+В канал сообщение с `setNotify(false)` отправить нельзя — сервер отвечает ошибкой
+`errors.send-message.channel-notify`. Для постов в каналах оставляйте значение по умолчанию.
 
 ### Действия бота
 
@@ -503,12 +510,18 @@ use MaxMessenger\Bot\Model\Enum\SenderAction;
 
 $bot->onMessageCreated(function (MessageCreatedEvent $event) {
     // Помечаем сообщение как прочитанное
-    $event->sendAction(SenderAction::MarkSeen);
+    $event->sendActionToChat(SenderAction::MarkSeen);
     
     // Затем отвечаем
     $event->reply('Сообщение прочитано');
 });
 ```
+
+Метод `sendActionToChat()` есть у событий, после которых бот может написать в тот же чат или диалог
+(трейд `SendMessageToChatTrait`; метод `sendAction()` устарел и будет удалён в следующих версиях).
+Его нет у событий, после которых отправка невозможна или бессмысленна: `BotStoppedEvent`, `BotRemovedFromChatEvent`,
+`DialogRemovedEvent`, события комментариев и `UnknownEvent`. В этих случаях используйте API-клиент напрямую:
+`$event->apiClient->sendAction()`. Подробнее — в разделе [Обработка событий бота](ProcessingEvents.md).
 
 Или через объект:
 
@@ -576,8 +589,7 @@ $chatId = $message->getRecipient()->getChatId();
 
 Метод `editMessage` принимает ID сообщения как строкой, так и объектом `Message` или `MessageBody`. Во втором случае ID
 сообщения (`mid`) будет извлечён автоматически, поэтому полученный из `SendMessageResult` объект можно передавать
-напрямую,
-не вызывая `getBody()->getMid()`:
+напрямую, не вызывая `getBody()->getMid()`:
 
 ```php
 $result = $client->sendMessageToUser($userId, 'Привет!');
@@ -585,3 +597,45 @@ $result = $client->sendMessageToUser($userId, 'Привет!');
 // Объект `Message` передаётся напрямую — извлекать `mid` вручную не нужно
 $client->editMessage($result->getMessage(), 'Обновлённый текст');
 ```
+
+## Комментарии к постам в канале
+
+Комментарии — отдельная группа методов. Они не поддерживают вложения и пересылку,
+а текст комментария обязателен и не может быть пустой строкой.
+
+Чтобы работать с комментариями, в настройках канала должны быть включены комментарии, а бот должен быть администратором
+канала: с правом `read_all_messages` для чтения, дополнительно с `write` для отправки и с `delete` для удаления.
+
+```php
+use MaxMessenger\Bot\Model\Request\NewCommentBody;
+
+// Отправка комментария к посту
+$result = $client->sendComment($postId, 'Комментарий бота');
+$comment = $result->getMessage();
+
+// Ответ на другой комментарий
+$client->sendComment($postId, (new NewCommentBody('Отвечаю'))->setReplyLink($comment));
+
+// Последние 50 комментариев к посту
+foreach ($client->getComments($postId)->getMessages() as $item) {
+    echo $item->getText(), "\n";
+}
+
+// Конкретные комментарии по их ID
+$client->getComments($postId, [$comment->getBody()->getMid()]);
+
+// Комментарии за промежуток времени (Unix-время в миллисекундах)
+$client->getComments($postId, before: $comment->getTimestampRaw(), count: 10);
+
+// Один комментарий по ID
+$client->getCommentById($postId, $comment);
+
+// Удаление комментария
+$client->deleteComment($postId, $comment);
+```
+
+Все методы принимают ID поста и ID комментария как строкой, так и объектом — `Message`/`MessageBody` для поста
+и `CommentMessage`/`CommentMessageBody` для комментария, — извлекая `mid` автоматически.
+
+Метод `getComments` возвращает последние `$count` комментариев (по умолчанию 50, максимум 100) из указанного промежутка
+времени; маркера следующей страницы API не возвращает, поэтому для перебора сдвигайте границы `$before` и `$after`.

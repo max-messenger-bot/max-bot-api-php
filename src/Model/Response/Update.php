@@ -16,6 +16,8 @@ use function array_key_exists;
  * > Чтобы получать события из группового чата или канала, назначьте бота администратором
  * > и дайте права на чтение всех сообщений.
  *
+ * На свои действия бот события не получает.
+ *
  * Типы событий:
  * - bot_added — Бот добавлен в чат или канал.
  * - bot_started — Пользователь впервые начал общение с ботом или возобновил после остановки — нажал соответствующую
@@ -31,6 +33,9 @@ use function array_key_exists;
  * - message_created — Пользователь отправил новое сообщение или опубликовал пост.
  * - message_edited — Пользователь отредактировал сообщение в чате или канале.
  * - message_removed — Пользователь удалил сообщение из чата или канала.
+ * - comment_created — Пользователь или бот опубликовал новый комментарий.
+ * - comment_edited — Пользователь или бот изменил комментарий в канале.
+ * - comment_removed — Пользователь или бот удалил комментарий.
  * - user_added — В чат или канал добавлен или перешёл по ссылке новый пользователь.
  * - user_removed — Пользователь удалён или покинул чат или канал.
  *
@@ -41,7 +46,7 @@ class Update extends BaseResponseModel
     /**
      * @var array{
      *     update_type: non-empty-string,
-     *     timestamp: int
+     *     timestamp: non-negative-int
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
@@ -56,7 +61,7 @@ class Update extends BaseResponseModel
     }
 
     /**
-     * @return int Время, когда произошло событие (Unix-время в миллисекундах).
+     * @return non-negative-int Время, когда произошло событие (Unix-время в миллисекундах).
      */
     public function getTimestampRaw(): int
     {
@@ -72,7 +77,7 @@ class Update extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Тип события (minLength: 1).
+     * @return non-empty-string Тип события.
      */
     public function getUpdateTypeRaw(): string
     {
@@ -100,6 +105,9 @@ class Update extends BaseResponseModel
             'bot_started' => BotStartedUpdate::class,
             'bot_stopped' => BotStoppedUpdate::class,
             'chat_title_changed' => ChatTitleChangedUpdate::class,
+            'comment_created' => CommentCreatedUpdate::class,
+            'comment_edited' => CommentEditedUpdate::class,
+            'comment_removed' => CommentRemovedUpdate::class,
             'dialog_cleared' => DialogClearedUpdate::class,
             'dialog_muted' => DialogMutedUpdate::class,
             'dialog_removed' => DialogRemovedUpdate::class,

@@ -14,7 +14,7 @@ use MaxMessenger\Bot\Model\Enum\ButtonType;
 final class RequestContactButton extends Button
 {
     /**
-     * @param non-empty-string|null $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
      */
     public function __construct(?string $text = null)
     {
@@ -22,7 +22,7 @@ final class RequestContactButton extends Button
     }
 
     /**
-     * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      */
     public static function make(string $text): self
     {
@@ -30,7 +30,7 @@ final class RequestContactButton extends Button
     }
 
     /**
-     * @param non-empty-string|null $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
      */
     public static function new(?string $text = null): self
     {

@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Представляет ссылку в тексте.
+ *
+ * В тексте комментариев гиперссылки не поддерживаются.
  */
 class LinkMarkup extends MarkupElement
 {
@@ -18,7 +20,7 @@ class LinkMarkup extends MarkupElement
     protected readonly array $data;
 
     /**
-     * @return non-empty-string URL ссылки (minLength: 1, maxLength: 2048).
+     * @return non-empty-string URL ссылки (maxLength: 2048).
      */
     public function getUrl(): string
     {

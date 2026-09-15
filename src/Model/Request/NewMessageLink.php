@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Request;
 
 use MaxMessenger\Bot\Model\Enum\MessageLinkType;
+use MaxMessenger\Bot\Model\Response\CommentMessage;
+use MaxMessenger\Bot\Model\Response\CommentMessageBody;
 use MaxMessenger\Bot\Model\Response\Message;
 use MaxMessenger\Bot\Model\Response\MessageBody;
 
@@ -28,7 +30,7 @@ final class NewMessageLink extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $mid ID исходного сообщения (minLength: 1).
+     * @param non-empty-string|null $mid ID исходного сообщения (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
      * @param MessageLinkType $type Тип ссылки сообщения.
      */
     public function __construct(?string $mid = null, MessageLinkType $type = MessageLinkType::Reply)
@@ -60,7 +62,7 @@ final class NewMessageLink extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $mid ID исходного сообщения (minLength: 1).
+     * @param non-empty-string $mid ID исходного сообщения (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
      * @param MessageLinkType $type Тип ссылки сообщения.
      */
     public static function make(string $mid, MessageLinkType $type): self
@@ -69,7 +71,7 @@ final class NewMessageLink extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $mid ID исходного сообщения (minLength: 1).
+     * @param non-empty-string|null $mid ID исходного сообщения (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
      * @param MessageLinkType $type Тип ссылки сообщения.
      */
     public static function new(?string $mid = null, MessageLinkType $type = MessageLinkType::Reply): self
@@ -78,10 +80,10 @@ final class NewMessageLink extends BaseRequestModel
     }
 
     public static function newFromMessage(
-        Message|MessageBody $message,
+        Message|MessageBody|CommentMessage|CommentMessageBody $message,
         MessageLinkType $type = MessageLinkType::Reply,
     ): self {
-        if ($message instanceof Message) {
+        if ($message instanceof Message || $message instanceof CommentMessage) {
             $message = $message->getBody();
         }
 
@@ -89,12 +91,12 @@ final class NewMessageLink extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $mid ID исходного сообщения (minLength: 1).
+     * @param non-empty-string $mid ID исходного сообщения (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
      * @return $this
      */
     public function setMid(string $mid): self
     {
-        self::validateString('mid', $mid, minLength: 1);
+        self::validateString('mid', $mid, minLength: 1, pattern: '/^mid\.[a-zA-Z0-9_\-]+$/');
 
         $this->data['mid'] = $mid;
 

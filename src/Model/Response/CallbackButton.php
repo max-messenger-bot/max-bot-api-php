@@ -10,6 +10,9 @@ use MaxMessenger\Bot\Model\Enum\Intent;
  * Callback-кнопка.
  *
  * После нажатия на такую кнопку клиент отправляет на сервер полезную нагрузку, которая содержит.
+ *
+ * @psalm-suppress DeprecatedClass, DeprecatedMethod Поддержка устаревшего {@see Intent}
+ *     сохранена для совместимости.
  */
 class CallbackButton extends Button
 {
@@ -24,6 +27,8 @@ class CallbackButton extends Button
 
     /**
      * @return Intent Намерение кнопки. Влияет на представление в клиентах.
+     * @deprecated С 24 июля 2026 г. поле удалено из официальной схемы API — сервер его не возвращает,
+     *     поэтому метод всегда отдаёт {@see Intent::Default}.
      */
     public function getIntent(): Intent
     {
@@ -32,6 +37,8 @@ class CallbackButton extends Button
 
     /**
      * @return string Намерение кнопки. Влияет на представление в клиентах.
+     * @deprecated С 24 июля 2026 г. поле удалено из официальной схемы API — сервер его не возвращает,
+     *     поэтому метод всегда отдаёт `default`.
      */
     public function getIntentRaw(): string
     {
@@ -39,7 +46,7 @@ class CallbackButton extends Button
     }
 
     /**
-     * @return non-empty-string Токен кнопки (minLength: 1, maxLength: 1024).
+     * @return non-empty-string Токен кнопки (maxLength: 1024).
      */
     public function getPayload(): string
     {

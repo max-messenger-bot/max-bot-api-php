@@ -18,7 +18,7 @@ class Image extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return non-empty-string URL изображения (minLength: 1).
+     * @return non-empty-string URL изображения.
      */
     public function getUrl(): string
     {

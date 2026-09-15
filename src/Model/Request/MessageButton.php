@@ -15,7 +15,7 @@ final class MessageButton extends Button
 {
     /**
      * @param non-empty-string|null $text Текст кнопки, который будет отправлен в чат от лица пользователя
-     *     (minLength: 1, maxLength: 128).
+     *     (maxLength: 128).
      */
     public function __construct(?string $text = null)
     {
@@ -23,8 +23,7 @@ final class MessageButton extends Button
     }
 
     /**
-     * @param non-empty-string $text Текст кнопки, который будет отправлен в чат от лица пользователя
-     *     (minLength: 1, maxLength: 128).
+     * @param non-empty-string $text Текст кнопки, который будет отправлен в чат от лица пользователя (maxLength: 128).
      */
     public static function make(string $text): self
     {
@@ -33,7 +32,7 @@ final class MessageButton extends Button
 
     /**
      * @param non-empty-string|null $text Текст кнопки, который будет отправлен в чат от лица пользователя
-     *     (minLength: 1, maxLength: 128).
+     *     (maxLength: 128).
      */
     public static function new(?string $text = null): self
     {

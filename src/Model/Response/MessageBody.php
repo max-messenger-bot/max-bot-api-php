@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Класс, представляющий тело сообщения.
+ * Информация о сообщении.
  */
 class MessageBody extends BaseResponseModel
 {
@@ -30,7 +30,8 @@ class MessageBody extends BaseResponseModel
     private array|false|null $markup = false;
 
     /**
-     * @return list<Attachment>|null Вложения сообщения. Могут быть одним из типов {@see  Attachment}.
+     * @return list<Attachment>|null Вложения сообщения. Могут быть одним из типов вложений,
+     *     описанных в классе {@see Attachment}.
      */
     public function getAttachments(): ?array
     {
@@ -40,7 +41,8 @@ class MessageBody extends BaseResponseModel
     }
 
     /**
-     * @return list<MarkupElement>|null Разметка текста сообщения.
+     * @return list<MarkupElement>|null Разметка текста сообщения. Подробнее —
+     *     {@link https://dev.max.ru/docs-api#Форматирование%20текста%20в%20сообщениях в разделе «Форматирование»}.
      */
     public function getMarkup(): ?array
     {
@@ -50,7 +52,7 @@ class MessageBody extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Уникальный ID сообщения (minLength: 1).
+     * @return non-empty-string Уникальный ID сообщения.
      */
     public function getMid(): string
     {
@@ -58,7 +60,7 @@ class MessageBody extends BaseResponseModel
     }
 
     /**
-     * @return int ID последовательности сообщения в чате.
+     * @return int ID расположения сообщения в чате по порядку.
      */
     public function getSeq(): int
     {

@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Enum;
 
+use MaxMessenger\Bot\Model\Response\Update;
+
 /**
  * Тип события.
  *
- * Объект `Update` представляет различные типы событий, произошедших в чате.
+ * Объект {@see Update} представляет различные типы событий, произошедших в чате.
  *
  * > Чтобы получать события из группового чата или канала, назначьте бота администратором
  * > и дайте права на чтение всех сообщений.
+ *
+ * На свои действия бот события не получает.
  */
 enum UpdateType: string
 {
@@ -21,6 +25,9 @@ enum UpdateType: string
     case BotStarted = 'bot_started';
     case BotStopped = 'bot_stopped';
     case ChatTitleChanged = 'chat_title_changed';
+    case CommentCreated = 'comment_created';
+    case CommentEdited = 'comment_edited';
+    case CommentRemoved = 'comment_removed';
     case DialogCleared = 'dialog_cleared';
     case DialogMuted = 'dialog_muted';
     case DialogRemoved = 'dialog_removed';

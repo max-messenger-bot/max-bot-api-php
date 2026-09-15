@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: 0.0.32
+  version: 0.0.33
   title: Max Bot API
   license:
     name: Apache 2.0
@@ -60,7 +60,8 @@ paths:
       summary: Редактирует команды бота
       operationId: editMyCommands
       description: >-
-        Добавляет, изменяет или удаляет команды бота. Чтобы удалить команды,
+        Добавляет, изменяет или удаляет команды бота, отображаемые пользователю
+        в качестве подсказок при вводе « `/` ». Чтобы удалить команды,
         передайте пустой массив `commands`
       requestBody:
         required: true
@@ -118,43 +119,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalError'
-  /chats/{chatLink}:
-    get:
-      tags:
-        - chats
-      operationId: getChatByLink
-      description: >-
-        Возвращает информацию о канале по его публичной ссылке. Метод доступен
-        только для каналов — получить информацию о чате по публичной ссылке
-        не получится.
-
-
-        С 10 июля 2026 г. метод удалён из официальной схемы API и больше
-        не поддерживается
-      summary: Получает информацию о канале по его ссылке
-      deprecated: true
-      parameters:
-        - name: chatLink
-          description: Публичная ссылка на канал
-          required: true
-          in: path
-          schema:
-            type: string
-            minLength: 1
-            pattern: '@?[a-zA-Z]+[\w-]*'
-      responses:
-        '200':
-          description: Информация о канале
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Chat'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
   /chats/{chatId}:
     get:
       tags:
@@ -187,7 +151,7 @@ paths:
       operationId: editChat
       description: >-
         Редактирует информацию о групповом чате или канале, включая название,
-        иконку и закреплённое сообщение.
+        описание, иконку и закреплённое сообщение или пост.
 
 
         Бот, чей токен `access_token` используется для авторизации, должен быть
@@ -195,7 +159,7 @@ paths:
       summary: Редактирует информацию о групповом чате или канале
       parameters:
         - name: chatId
-          description: ID чата
+          description: ID чата или канала
           required: true
           in: path
           schema:
@@ -209,7 +173,7 @@ paths:
               $ref: '#/components/schemas/ChatPatch'
       responses:
         '200':
-          description: If success, returns updated chat object
+          description: Возвращается обновлённый объект чата или канала
           content:
             application/json:
               schema:
@@ -250,12 +214,12 @@ paths:
         - chats
       operationId: sendAction
       description: >-
-        Отправляет в групповой чат такие действия бота, как например:
+        Отправляет в диалог или групповой чат такие действия бота, как например:
         «набор текста» или «отправка фото»
-      summary: Отправляет действие бота в групповой чат
+      summary: Отправляет действие бота в диалог или групповой чат
       parameters:
         - name: chatId
-          description: ID чата
+          description: ID диалога или группового чата
           required: true
           in: path
           schema:
@@ -280,15 +244,16 @@ paths:
         - chats
       operationId: getPinnedMessage
       description: >-
-        Возвращает закреплённое сообщение в групповом чате или канале.
+        Возвращает закреплённое сообщение в групповом чате или пост в канале.
 
 
         Бот, чей токен `access_token` используется для авторизации, должен быть
         администратором этого чата или канала
-      summary: Получает закреплённое сообщение в групповом чате или канале
+      summary: >-
+          Получает закреплённое сообщение в групповом чате или пост в канале
       parameters:
         - name: chatId
-          description: ID чата
+          description: ID чата или канала
           required: true
           in: path
           schema:
@@ -316,11 +281,12 @@ paths:
       description: >-
         Бот, чей токен `access_token` используется для авторизации, должен быть
         администратором этого чата или канала
-      summary: Закрепляет сообщение в групповом чате или канале
+      summary: Закрепляет сообщение в групповом чате или пост в канале
       parameters:
         - name: chatId
           description: >-
-            ID группового чата или канала, где нужно закрепить сообщение
+            ID группового чата или канала, где нужно закрепить сообщение или
+            пост
           required: true
           in: path
           schema:
@@ -350,7 +316,7 @@ paths:
       description: >-
         Бот, чей токен `access_token` используется для авторизации, должен быть
         администратором этого чата или канала
-      summary: Открепляет сообщение в групповом чате или канале
+      summary: Открепляет сообщение в групповом чате или пост в канале
       parameters:
         - name: chatId
           description: >-
@@ -363,7 +329,13 @@ paths:
             format: int64
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponse'
+          description: >-
+            Объект удалён или запрос завершился ошибкой (причина ошибки описана
+            в `message`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleQueryResult'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -420,7 +392,13 @@ paths:
             format: int64
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponse'
+          description: >-
+            Объект удалён или запрос завершился ошибкой (причина ошибки описана
+            в `message`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleQueryResult'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -488,33 +466,33 @@ paths:
         **Описание доступных прав администратора**:
 
 
-        - `read_all_messages` — право читать все сообщения в канале или
-        групповом чате. Без этого права не получится управлять сообщениями:
+        - `read_all_messages` — право читать все сообщения в групповом чате или
+        посты в канале. Без этого права не получится управлять сообщениями:
         закреплять (`pin_message`), редактировать и удалять посты в каналах
         (`edit` и `delete`) и групповых чатах (`write`). Это право важно при
         назначении ботов: без него бот не будет получать события группового чата
         или канала. Управление `read_all_messages` в интерфейсе мессенджера
         доступно только для ботов в групповых чатах
 
-        - `edit` — право редактировать посты в каналах (для групповых чатов
-        недоступно). Право можно назначить, только если уже есть право
-        `read_all_messages` или вместе с ним. Ранее вместо `edit` в API
-        использовалось `edit_message` — в ответе могут возвращаться оба
+        - `edit` — право редактировать посты и комментарии в каналах (для
+        групповых чатов недоступно). Право можно назначить, только если уже
+        есть право `read_all_messages` или вместе с ним. Ранее вместо `edit`
+        в API использовалось `edit_message` — в ответе могут возвращаться оба
         значения, однако при назначении новых прав администраторов используйте
         `edit`. Управление `edit` также дублируется в интерфейсе мессенджера
 
-        - `delete` — право удалять посты (для групповых чатов недоступно). Право
-        можно назначить, только если уже есть право `read_all_messages` или
-        вместе с ним. Ранее вместо `delete` в API использовалось
-        `delete_message` — в ответе могут возвращаться оба значения, однако при
-        назначении новых прав администраторов используйте `delete`. Управление
-        `delete` также дублируется в интерфейсе мессенджера
+        - `delete` — право удалять посты и комментарии в каналах (для групповых
+        чатов недоступно). Право можно назначить, только если уже есть право
+        `read_all_messages` или вместе с ним. Ранее вместо `delete` в API
+        использовалось `delete_message` — в ответе могут возвращаться оба
+        значения, однако при назначении новых прав администраторов используйте
+        `delete`. Управление `delete` также дублируется в интерфейсе мессенджера
 
         - `write` — право редактировать и удалять сообщения в групповых чатах, а
-        также писать посты в каналах. Право можно назначить, только если уже
-        есть право `read_all_messages` или вместе с ним. Ранее вместо `write` в
-        API использовалось `post_edit_delete_message` — в ответе могут
-        возвращаться оба значения, однако при назначении новых прав
+        также писать посты и комментарии в каналах. Право можно назначить,
+        только если уже есть право `read_all_messages` или вместе с ним. Ранее
+        вместо `write` в API использовалось `post_edit_delete_message` — в
+        ответе могут возвращаться оба значения, однако при назначении новых прав
         администраторам используйте `write`. Управление `write` также
         дублируется в интерфейсе мессенджера
 
@@ -580,7 +558,7 @@ paths:
     delete:
       tags:
         - chats
-      operationId: deleteAdmin
+      operationId: deleteAdmins
       description: >-
         Лишает пользователя или бота прав администратора в групповом чате или
         канале. При этом из чата и канала они не исключаются.
@@ -608,7 +586,13 @@ paths:
             format: int64
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponse'
+          description: >-
+            Права администратора отменены или запрос завершился ошибкой (причина
+            ошибки описана в `message`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleQueryResult'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
@@ -692,8 +676,14 @@ paths:
         администратором этого чата с правом `add_remove_members`.
 
 
-        Добавить подписчиков в канал с помощью этого метода нельзя
+        Добавить подписчиков в канал с помощью этого метода нельзя.
+
+
+        С 9 сентября 2026 г. работа метода ограничена, а с 30 сентября 2026 г.
+        он будет удалён. После этого API MAX не предоставляет готовой
+        возможности для добавления участников в групповой чат
       summary: Добавляет участников в групповой чат
+      deprecated: true
       parameters:
         - name: chatId
           description: ID группового чата
@@ -710,7 +700,7 @@ paths:
               $ref: '#/components/schemas/UserIdsList'
       responses:
         '200':
-          description: Результат запроса на изменение списка участников чата
+          description: Успешный или неуспешный результат
           content:
             application/json:
               schema:
@@ -760,7 +750,13 @@ paths:
             default: false
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponse'
+          description: >-
+            Объект удалён или запрос завершился ошибкой (причина ошибки описана
+            в `message`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleQueryResult'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -776,7 +772,7 @@ paths:
       summary: Получает Webhook подписки
       responses:
         '200':
-          description: Ожидаемый результат
+          description: Список текущих подписок
           content:
             application/json:
               schema:
@@ -835,7 +831,13 @@ paths:
             type: string
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponse'
+          description: >-
+            Бот отписан от обновлений или запрос завершился ошибкой (причина
+            ошибки описана в `message`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleQueryResult'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
@@ -891,7 +893,8 @@ paths:
             $ref: '#/components/schemas/UploadType'
       responses:
         '200':
-          description: Возвращает URL для загрузки вложения
+          description: >-
+            Возвращает URL для загрузки вложения и токен для загрузки медиафайла
           content:
             application/json:
               schema:
@@ -906,29 +909,28 @@ paths:
         - messages
       operationId: getMessages
       description: >-
-        Возвращает массив сообщений из чата или указанного списка сообщений.
-        Для выполнения запроса нужно указать один из параметров — `chat_id` или
-        `message_ids`:
+        Возвращает массив сообщений из чата или постов из канала. Для выполнения
+        запроса нужно указать один из параметров — `chat_id` или `message_ids`:
 
 
-        - `chat_id` — ID чата для получения сообщений из указанного чата.
-        Сообщения возвращаются в обратном порядке: последние сообщения будут
+        - `chat_id` — ID чата или канала для получения сообщений или постов.
+        Сообщения и посты возвращаются в обратном порядке: последние будут
         первыми в массиве
 
-        - `message_ids` — Список ID сообщений (`mid`).
+        - `message_ids` — Список ID сообщений или постов (`mid`).
         Можно указать один идентификатор или несколько
-      summary: Получает сообщения
+      summary: Получает список сообщений или постов
       parameters:
         - description: >-
-            ID чата, чтобы получить сообщения из определённого чата.
+            ID чата или канала, чтобы получить из него сообщения или посты.
             Обязательный параметр, если не указан `message_ids`
           name: chat_id
           in: query
           schema:
             $ref: '#/components/schemas/bigint'
         - description: >-
-            Список ID сообщений, которые нужно получить (через запятую).
-            Обязательный параметр, если не указан `chat_id`
+            Список ID сообщений или постов, которые нужно получить (через
+            запятую). Обязательный параметр, если не указан `chat_id`
           name: message_ids
           in: query
           style: simple
@@ -936,24 +938,26 @@ paths:
             type: array
             uniqueItems: true
             items:
-              type: string
+              $ref: '#/components/schemas/MessageId'
             format: string
         - name: from
           description: >-
-            Время, до которого будут запрошены все сообщения с начала чата (в
-            формате Unix timestamp)
+            Время, до которого будут запрошены все сообщения или посты, начиная
+            с первого опубликованного. Формат времени: Unix timestamp
+            в миллисекундах
           in: query
           schema:
             $ref: '#/components/schemas/bigint'
         - name: to
           description: >-
-            Время, начиная с которого будут запрошены все сообщения до конца
-            чата (в формате Unix timestamp)
+            Время, начиная с которого будут запрошены все сообщения или посты, —
+            вплоть до последнего опубликованного. Формат времени: Unix timestamp
+            в миллисекундах
           in: query
           schema:
             $ref: '#/components/schemas/bigint'
         - name: count
-          description: Максимальное количество сообщений в ответе
+          description: Максимальное количество сообщений или постов в ответе
           in: query
           schema:
             type: integer
@@ -963,7 +967,7 @@ paths:
             maximum: 100
       responses:
         '200':
-          description: Возвращает список сообщений
+          description: Информация о сообщении или массиве сообщений из чата
           content:
             application/json:
               schema:
@@ -999,14 +1003,17 @@ paths:
       parameters:
         - name: user_id
           description: >-
-            Если вы хотите отправить сообщение пользователю, укажите его ID
+            Если вы хотите отправить сообщение пользователю, укажите ID этого
+            пользователя
           in: query
           required: false
           schema:
             type: integer
             format: int64
         - name: chat_id
-          description: Если сообщение отправляется в чат, укажите его ID
+          description: >-
+            Если сообщение отправляется в чат или канал, укажите ID этого чата
+            или канала
           schema:
             type: integer
             format: int64
@@ -1014,9 +1021,9 @@ paths:
           required: false
         - name: disable_link_preview
           description: >-
-            Если `true`, сервер не будет генерировать превью для ссылок в
-            тексте сообщения. Параметр действует для этого сообщения,
-            в том числе при его дальнейшем редактировании
+            Если `true`, сервер не будет генерировать превью для ссылок
+            в тексте сообщения или поста. Параметр действует для этого
+            сообщения, в том числе при его дальнейшем редактировании
           in: query
           required: false
           schema:
@@ -1030,7 +1037,8 @@ paths:
               $ref: '#/components/schemas/NewMessageBody'
       responses:
         '200':
-          description: Возвращает информацию о созданном сообщении
+          description: >-
+            Информация о созданном сообщении или опубликованном посте
           content:
             application/json:
               schema:
@@ -1044,7 +1052,7 @@ paths:
         - messages
       operationId: editMessage
       description: >-
-        Редактирует сообщения, отправленные ботом.
+        Редактирует сообщения и посты, отправленные ботом.
 
 
         #### Ограничения
@@ -1072,9 +1080,7 @@ paths:
           required: true
           in: query
           schema:
-            type: string
-            minLength: 1
-            pattern: '^mid\.[0-9a-f]+$'
+            $ref: '#/components/schemas/MessageId'
       requestBody:
         required: true
         content:
@@ -1113,12 +1119,16 @@ paths:
           required: true
           in: query
           schema:
-            type: string
-            minLength: 1
-            pattern: '^mid\.[0-9a-f]+$'
+            $ref: '#/components/schemas/MessageId'
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponse'
+          description: >-
+            Объект удалён или запрос завершился ошибкой (причина ошибки описана
+            в `message`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleQueryResult'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1130,21 +1140,20 @@ paths:
       tags:
         - messages
       operationId: getMessageById
-      description: Возвращает сообщение по его ID
+      description: Возвращает сообщение из чата или канала по его ID
       summary: Получает сообщение по ID
       parameters:
         - description: >-
             ID сообщения (`mid`), чтобы получить одно сообщение в чате
+            или канале
           in: path
           name: messageId
           required: true
           schema:
-            type: string
-            minLength: 1
-            pattern: '^mid\.[0-9a-f]+$'
+            $ref: '#/components/schemas/MessageId'
       responses:
         '200':
-          description: Возвращает одно сообщение
+          description: Информация о сообщении с ID, указанным в запросе
           content:
             application/json:
               schema:
@@ -1160,15 +1169,261 @@ paths:
                 $ref: '#/components/schemas/Error'
         '500':
           $ref: '#/components/responses/InternalError'
+  /messages/{messageId}/comments:
+    get:
+      tags:
+        - comments
+      operationId: getComments
+      description: >-
+        Возвращает комментарии к посту в канале. Можно указать промежуток
+        времени, за который нужно получить комментарии, и/или их количество.
+
+
+        Если указан `comment_ids`, возвращаются только запрошенные комментарии,
+        а остальные параметры игнорируются.
+
+
+        Бот, чей токен `access_token` используется для авторизации, должен быть
+        администратором этого канала с правом `read_all_messages`
+      summary: Получает комментарии к посту в канале
+      parameters:
+        - description: >-
+            Идентификатор поста (`mid`), к которому относятся комментарии
+          in: path
+          name: messageId
+          required: true
+          schema:
+            $ref: '#/components/schemas/MessageId'
+        - description: >-
+            Список ID комментариев, которые нужно получить (через запятую).
+            Если параметр указан, остальные параметры игнорируются
+          name: comment_ids
+          in: query
+          style: form
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/components/schemas/MessageId'
+        - name: before
+          description: >-
+            Время, до которого будут запрошены все комментарии с начала поста.
+            Формат времени: Unix timestamp в миллисекундах
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: after
+          description: >-
+            Время, начиная с которого будут запрошены все комментарии до конца
+            поста. Формат времени: Unix timestamp в миллисекундах
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: count
+          description: Максимальное количество комментариев в ответе
+          in: query
+          schema:
+            type: integer
+            format: int32
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Список запрошенных комментариев
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentMessageList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags:
+        - comments
+      operationId: sendComment
+      description: >-
+        Отправляет комментарий к посту в канале.
+
+
+        Для этого в настройках канала должны быть включены комментарии, а бот,
+        чей токен `access_token` используется для авторизации, должен быть
+        администратором этого канала с правами `read_all_messages` и `write`
+      summary: Отправляет комментарий к посту в канале
+      parameters:
+        - description: >-
+            Идентификатор поста (`mid`), к которому относится комментарий
+          in: path
+          name: messageId
+          required: true
+          schema:
+            $ref: '#/components/schemas/MessageId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCommentBody'
+      responses:
+        '200':
+          description: Информация о созданном комментарии
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendCommentResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    put:
+      tags:
+        - comments
+      operationId: editComment
+      description: >-
+        Редактирует комментарий бота к посту в канале.
+
+
+        Бот, чей токен `access_token` используется для авторизации, должен быть
+        участником этого канала. Комментарии, опубликованные от имени канала,
+        можно редактировать, только если боту назначено право администратора
+        `edit`; без этого права бот может редактировать лишь свои комментарии.
+
+
+        Если канал архивирован или в нём отключены комментарии, бот может
+        редактировать старые комментарии
+      summary: Редактирует комментарий к посту в канале
+      parameters:
+        - description: >-
+            Идентификатор поста (`mid`), комментарий к которому нужно
+            отредактировать
+          in: path
+          name: messageId
+          required: true
+          schema:
+            $ref: '#/components/schemas/MessageId'
+        - name: comment_id
+          description: Идентификатор редактируемого комментария
+          required: true
+          in: query
+          schema:
+            $ref: '#/components/schemas/MessageId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCommentBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      tags:
+        - comments
+      operationId: deleteComment
+      summary: Удаляет комментарий к посту в канале
+      description: >-
+        Удаляет комментарий пользователя или бота к посту в канале. Можно
+        удалять как свои комментарии, так и чужие. Восстановить удалённый
+        комментарий нельзя.
+
+
+        Если канал архивирован или в нём отключены комментарии, старые
+        комментарии по-прежнему можно удалять.
+
+
+        Бот, чей токен `access_token` используется для авторизации, должен быть
+        администратором этого канала с правами `read_all_messages` и `delete`
+      parameters:
+        - description: >-
+            Идентификатор поста (`mid`), комментарий к которому нужно удалить
+          in: path
+          name: messageId
+          required: true
+          schema:
+            $ref: '#/components/schemas/MessageId'
+        - name: comment_id
+          description: Идентификатор удаляемого комментария
+          required: true
+          in: query
+          schema:
+            $ref: '#/components/schemas/MessageId'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /messages/{messageId}/comments/{commentId}:
+    get:
+      tags:
+        - comments
+      operationId: getCommentById
+      summary: Получает комментарий по ID
+      description: >-
+        Возвращает информацию о комментарии к посту в канале по его
+        идентификатору (`mid`).
+
+
+        Бот, чей токен `access_token` используется для авторизации, должен быть
+        администратором этого канала с правом `read_all_messages`
+      parameters:
+        - description: >-
+            Идентификатор поста (`mid`), к которому относится комментарий
+          in: path
+          name: messageId
+          required: true
+          schema:
+            $ref: '#/components/schemas/MessageId'
+        - description: Идентификатор комментария (`mid`)
+          in: path
+          name: commentId
+          required: true
+          schema:
+            $ref: '#/components/schemas/MessageId'
+      responses:
+        '200':
+          description: >-
+            Информация о комментарии, идентификатор которого был передан
+            в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: >-
+            Комментарий или пост не найдены, либо у бота нет к ним доступа.
+            Проверьте, что бот назначен администратором канала с правом
+            `read_all_messages`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalError'
   /videos/{videoToken}:
     get:
       tags:
         - messages
       operationId: getVideoAttachmentDetails
       description: >-
-        Возвращает подробную информацию о прикреплённом видео
-        (URL-адреса воспроизведения и дополнительные метаданные)
-      summary: Получает информацию о видео
+        Возвращает подробную информацию о видео, прикреплённом к сообщению
+        в чате или канале: URL-адреса воспроизведения и дополнительные
+        метаданные
+      summary: Получает информацию о видео, прикреплённом к сообщению
       parameters:
         - description: Токен видео-вложения
           in: path
@@ -1180,7 +1435,7 @@ paths:
             pattern: '^[a-zA-Z0-9\+/_-]+={0-2}$'
       responses:
         '200':
-          description: Detailed video attachment info
+          description: Подробная информация о прикреплённом видео
           content:
             application/json:
               schema:
@@ -1226,6 +1481,15 @@ paths:
             type: string
             minLength: 1
             pattern: '^\s+$'
+        - name: disable_link_preview
+          description: >-
+            Если `true`, сервер не будет генерировать превью для ссылок в тексте
+            сообщения или поста
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
       requestBody:
         required: true
         content:
@@ -1288,7 +1552,8 @@ paths:
             format: int64
         - name: types
           description: >-
-            Список типов событий, которые вы хотите получить
+            Список типов событий, которые вы хотите получать. Полный список
+            возможных событий смотрите в описании класса `Update`
           in: query
           example: types=message_created,message_callback
           schema:
@@ -1299,7 +1564,8 @@ paths:
           style: simple
       responses:
         '200':
-          description: Список событий
+          description: >-
+            Список обновлений событий с указателем на следующую страницу данных
           content:
             application/json:
               schema:
@@ -1346,7 +1612,7 @@ components:
             $ref: '#/components/schemas/Error'
     Unauthorized:
       description: >-
-        Ошибка авторизации. Не предоставлен `access_token` или токен
+        Ошибка авторизации. Токен `access_token` указан некорректно или
         недействителен
       content:
         application/json:
@@ -1374,6 +1640,12 @@ components:
     bigint:
       type: integer
       format: int64
+    MessageId:
+      description: >-
+        Идентификатор сообщения, поста или комментария (`mid`)
+      type: string
+      minLength: 1
+      pattern: 'mid\.[a-zA-Z0-9_\-]+'
     User:
       description: >-
         Объект содержит общую информацию о пользователе или боте без аватара.
@@ -1419,10 +1691,10 @@ components:
           type: boolean
         last_activity_time:
           description: >-
-            Время последней активности пользователя или бота в MAX (Unix-время в
-            миллисекундах). Если пользователь отключил в настройках профиля
-            мессенджера MAX возможность видеть, что он в сети онлайн, поле может
-            не возвращаться
+            Время последней активности пользователя или бота в MAX (Unix
+            timestamp в миллисекундах). Если пользователь отключил в настройках
+            профиля мессенджера MAX возможность видеть, что он в сети онлайн,
+            поле может не возвращаться
           type: integer
           format: int64
       required:
@@ -1515,7 +1787,9 @@ components:
       description: Объект для обновления команд бота
       properties:
         commands:
-          description: Команды, которые поддерживает бот
+          description: >-
+            Список команд и их описаний, отображаемых пользователю в подсказках
+            при вводе « `/` »
           type: array
           items:
             $ref: '#/components/schemas/BotCommand'
@@ -1557,11 +1831,13 @@ components:
           type: string
           minLength: 1
         icon:
-          description: Иконка чата или канала
+          description: Аватар группового чата или канала
           allOf:
             - $ref: '#/components/schemas/Image'
         last_event_time:
-          description: Время последнего события в чате или канале
+          description: >-
+            Время последнего события в чате или канале (Unix timestamp
+            в миллисекундах)
           type: integer
           format: int64
         participants_count:
@@ -1575,15 +1851,19 @@ components:
           format: int64
         participants:
           description: >-
-            Участники чата или канала с временем последней активности
-            (`array<int, int>`). Значение — Unix-time в ms или 0.
+            Список участников в формате ключ-значение (`array<int, int>`),
+            где ключ — идентификатор участника `user_id`, а значение — время
+            его последней активности в чате или канале `last_event_time`
+            (Unix timestamp в миллисекундах) или `0`.
             Может отсутствовать, если запрашивается список чатов
           type: object
           additionalProperties:
             type: integer
             format: int64
         is_public:
-          description: Доступен ли чат публично (для диалогов всегда `false`)
+          description: >-
+            Параметр показывает, доступен ли групповой чат или канал публично.
+            Для диалогов и приватных каналов — всегда `false`
           type: boolean
         link:
           description: Ссылка на чат
@@ -1599,15 +1879,15 @@ components:
             - $ref: '#/components/schemas/UserWithPhoto'
         messages_count:
           description: >-
-            Количество сообщений в групповых чатах и каналах.
+            Количество сообщений в групповом чате или постов в канале.
             Недоступно для диалогов
           type: integer
           format: int32
         chat_message_id:
           description: >-
             Идентификатор сообщения с кнопкой, через которую был инициирован чат
-          type: string
-          minLength: 1
+          allOf:
+            - $ref: '#/components/schemas/MessageId'
         pinned_message:
           description: >-
             Закреплённое сообщение в чате (возвращается только при запросе
@@ -1629,6 +1909,11 @@ components:
         - `chat` — Групповой чат
         - `channel` — Канал
         - `dialog` — Диалог
+
+        Для комментариев к постам в канале значение определяет, от чьего имени
+        оставлен комментарий:
+        - `channel` — от имени канала
+        - `chat` — от имени пользователя или бота
       enum:
         - channel
         - chat
@@ -1663,17 +1948,28 @@ components:
     ChatPatch:
       properties:
         icon:
+          description: >-
+            Данные для прикрепления изображения в качестве аватара чата
+            или канала
           allOf:
             - $ref: '#/components/schemas/PhotoAttachmentRequestPayload'
         title:
           type: string
           minLength: 1
           maxLength: 200
+        description:
+          description: >-
+            Новое описание чата или канала. Чтобы удалить описание, передайте
+            пустую строку
+          type: string
+          minLength: 0
+          maxLength: 16000
         pin:
           description: >-
-            ID сообщения для закрепления в чате. Чтобы удалить закреплённое
-            сообщение, используйте метод `unpinMessage()`
-          type: string
+            ID сообщения для закрепления в чате или канале. Чтобы удалить
+            закреплённое сообщение, используйте метод `unpinMessage()`
+          allOf:
+            - $ref: '#/components/schemas/MessageId'
         notify:
           description: >-
             Если `true`, участники получат системное уведомление об изменении
@@ -1707,7 +2003,8 @@ components:
             join_time:
               type: integer
               format: int64
-              description: Дата присоединения к чату в формате Unix time
+              description: >-
+                Дата присоединения к чату (Unix timestamp в миллисекундах)
             permissions:
               description: >-
                 Перечень прав доступа пользователя или бота, если тот является
@@ -1773,33 +2070,33 @@ components:
         **Описание доступных прав администратора**:
 
 
-        - `read_all_messages` — право читать все сообщения в канале или
-        групповом чате. Без этого права не получится управлять сообщениями:
+        - `read_all_messages` — право читать все сообщения в групповом чате или
+        посты в канале. Без этого права не получится управлять сообщениями:
         закреплять (`pin_message`), редактировать и удалять посты в каналах
         (`edit` и `delete`) и групповых чатах (`write`). Это право важно при
         назначении ботов: без него бот не будет получать события группового чата
         или канала. Управление `read_all_messages` в интерфейсе мессенджера
         доступно только для ботов в групповых чатах
 
-        - `edit` — право редактировать посты в каналах (для групповых чатов
-        недоступно). Право можно назначить, только если уже есть право
-        `read_all_messages` или вместе с ним. Ранее вместо `edit` в API
-        использовалось `edit_message` — в ответе могут возвращаться оба
+        - `edit` — право редактировать посты и комментарии в каналах (для
+        групповых чатов недоступно). Право можно назначить, только если уже
+        есть право `read_all_messages` или вместе с ним. Ранее вместо `edit`
+        в API использовалось `edit_message` — в ответе могут возвращаться оба
         значения, однако при назначении новых прав администраторов используйте
         `edit`. Управление `edit` также дублируется в интерфейсе мессенджера
 
-        - `delete` — право удалять посты (для групповых чатов недоступно). Право
-        можно назначить, только если уже есть право `read_all_messages` или
-        вместе с ним. Ранее вместо `delete` в API использовалось
-        `delete_message` — в ответе могут возвращаться оба значения, однако при
-        назначении новых прав администраторов используйте `delete`. Управление
-        `delete` также дублируется в интерфейсе мессенджера
+        - `delete` — право удалять посты и комментарии в каналах (для групповых
+        чатов недоступно). Право можно назначить, только если уже есть право
+        `read_all_messages` или вместе с ним. Ранее вместо `delete` в API
+        использовалось `delete_message` — в ответе могут возвращаться оба
+        значения, однако при назначении новых прав администраторов используйте
+        `delete`. Управление `delete` также дублируется в интерфейсе мессенджера
 
         - `write` — право редактировать и удалять сообщения в групповых чатах, а
-        также писать посты в каналах. Право можно назначить, только если уже
-        есть право `read_all_messages` или вместе с ним. Ранее вместо `write` в
-        API использовалось `post_edit_delete_message` — в ответе могут
-        возвращаться оба значения, однако при назначении новых прав
+        также писать посты и комментарии в каналах. Право можно назначить,
+        только если уже есть право `read_all_messages` или вместе с ним. Ранее
+        вместо `write` в API использовалось `post_edit_delete_message` — в
+        ответе могут возвращаться оба значения, однако при назначении новых прав
         администраторам используйте `write`. Управление `write` также
         дублируется в интерфейсе мессенджера
 
@@ -1902,7 +2199,8 @@ components:
           type: string
           minLength: 12
         time:
-          description: Unix-время, когда была создана подписка
+          description: >-
+            Unix timestamp в миллисекундах, когда была создана подписка
           type: integer
           format: int64
         update_types:
@@ -1923,37 +2221,55 @@ components:
         - time
     Recipient:
       description: >-
-        Новый получатель сообщения. Может быть пользователем или чатом
+        Получатель сообщения. Может быть пользователем, чатом или каналом
       properties:
         chat_id:
-          description: ID чата
+          description: ID чата или канала
           type: integer
           format: int64
         chat_type:
-          description: Тип чата
+          description: >-
+            Тип чата. Для комментариев определяет, от чьего имени оставлен
+            комментарий
           allOf:
             - $ref: '#/components/schemas/ChatType'
         user_id:
           description: >-
-            ID пользователя, если сообщение было отправлено пользователю
+            ID получателя сообщения в диалоге (пользователя или бота). Если
+            сообщение отправлено в групповой чат или канал, параметр отсутствует
           type: integer
           format: int64
+        post_id:
+          description: >-
+            Идентификатор поста в канале, к которому оставлен комментарий.
+            Возвращается только для комментариев
+          allOf:
+            - $ref: '#/components/schemas/MessageId'
       required:
         - chat_id
         - chat_type
     Message:
-      description: Сообщение в чате
+      description: >-
+        Содержит общую информацию о сообщении в чате или посте в канале: данные
+        об отправителе и получателе, время создания сообщения, содержимое (текст
+        и вложения), контекст связи с другими сообщениями (ответ или пересылка),
+        а также публичную ссылку и статистику для постов в каналах
       properties:
         sender:
-          description: Пользователь, отправивший сообщение
+          description: >-
+            Отправитель сообщения: пользователь или бот. Объект отсутствует,
+            если сообщение отправлено от имени канала
           allOf:
             - $ref: '#/components/schemas/User'
         recipient:
-          description: Получатель сообщения. Может быть пользователем или чатом
+          description: >-
+            Получатель сообщения: пользователь или бот (для диалога), чат
+            или канал
           allOf:
             - $ref: '#/components/schemas/Recipient'
         timestamp:
-          description: Время создания сообщения в формате Unix-time
+          description: >-
+            Время создания сообщения (Unix timestamp в миллисекундах)
           type: integer
           format: int64
         link:
@@ -1966,7 +2282,8 @@ components:
             - $ref: '#/components/schemas/MessageBody'
         stat:
           description: >-
-            Статистика сообщения. Возвращается только для постов в каналах
+            Статистика просмотров постов и репостов — возвращается только
+            для каналов
           allOf:
             - $ref: '#/components/schemas/MessageStat'
         url:
@@ -1979,27 +2296,70 @@ components:
         - recipient
         - body
         - timestamp
+    CommentMessage:
+      description: >-
+        Комментарий к посту в канале.
+
+
+        В отличие от сообщения в чате или поста в канале не содержит вложений
+        `attachments` и не поддерживает пересылку комментариев
+        (`link.type = forward`)
+      type: object
+      properties:
+        sender:
+          description: >-
+            Пользователь, отправивший комментарий. Может быть `null`,
+            если комментарий опубликован от имени канала
+          allOf:
+            - $ref: '#/components/schemas/User'
+        recipient:
+          description: 'Получатель комментария: канал'
+          allOf:
+            - $ref: '#/components/schemas/Recipient'
+        timestamp:
+          description: >-
+            Время создания комментария (Unix timestamp в миллисекундах)
+          type: integer
+          format: int64
+        link:
+          description: Комментарий, на который получен ответ
+          allOf:
+            - $ref: '#/components/schemas/CommentLinkedMessage'
+        body:
+          description: Информация о комментарии
+          allOf:
+            - $ref: '#/components/schemas/CommentMessageBody'
+        url:
+          description: Публичная ссылка на комментарий в канале
+          type: string
+          minLength: 1
+      required:
+        - recipient
+        - body
+        - timestamp
     MessageStat:
       description: >-
         Статистика сообщения. Возвращается только для постов в каналах
       properties:
         views:
           description: >-
-            Количество пользователей, которые увидели пост в канале. Просмотр
-            засчитывается, когда пост попадает в область видимости экрана
+            Количество пользователей, которые увидели пост или репост в канале.
+            Просмотр засчитывается, когда пост или репост попадает в область
+            видимости экрана. Если это репост, будет показано количество именно
+            его просмотров
           type: integer
       required:
         - views
     MessageBody:
-      description: Тело сообщения
+      description: Информация о сообщении
       type: object
       properties:
         mid:
           description: Уникальный ID сообщения
-          type: string
-          minLength: 1
+          allOf:
+            - $ref: '#/components/schemas/MessageId'
         seq:
-          description: ID последовательности сообщения в чате
+          description: ID расположения сообщения в чате по порядку
           type: integer
           format: int64
         text:
@@ -2007,14 +2367,41 @@ components:
           type: string
         attachments:
           description: >-
-            Вложения сообщения. Могут быть одним из типов `Attachment`.
-            Смотрите описание схемы
+            Вложения сообщения. Могут быть одним из типов вложений, описанных
+            в классе `Attachment`
           type: array
           required: false
           items:
             $ref: '#/components/schemas/Attachment'
         markup:
-          description: Разметка текста сообщения
+          description: >-
+            Разметка текста сообщения. Подробнее — в разделе
+            [Форматирование](https://dev.max.ru/docs-api#Форматирование%20текста%20в%20сообщениях)
+          type: array
+          items:
+            $ref: '#/components/schemas/MarkupElement'
+      required:
+        - mid
+        - seq
+        - text
+    CommentMessageBody:
+      description: Информация о комментарии
+      type: object
+      properties:
+        mid:
+          description: Уникальный ID комментария
+          allOf:
+            - $ref: '#/components/schemas/MessageId'
+        seq:
+          description: Порядковый номер расположения комментария в посте
+          type: integer
+          format: int64
+        text:
+          description: Текст комментария
+          type: string
+          minLength: 1
+        markup:
+          description: Разметка текста комментария
           type: array
           items:
             $ref: '#/components/schemas/MarkupElement'
@@ -2023,7 +2410,9 @@ components:
         - seq
         - text
     MessageList:
-      description: Пагинированный список сообщений
+      description: >-
+        Массив сообщений. Маркер следующей страницы API не возвращает: для
+        перебора сдвигайте границы промежутка времени `from` и `to`
       properties:
         messages:
           description: Массив сообщений
@@ -2032,13 +2421,39 @@ components:
             $ref: '#/components/schemas/Message'
       required:
         - messages
+    CommentMessageList:
+      description: Список комментариев к посту в канале
+      type: object
+      properties:
+        messages:
+          description: Список комментариев к посту в канале
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentMessage'
+      required:
+        - messages
     TextFormat:
-      description: Формат текста сообщения
+      description: >-
+        Формат текста сообщения.
+
+
+        В тексте комментариев не поддерживаются гиперссылки и упоминание
+        пользователей
       type: string
       enum:
         - markdown
         - html
     NewMessageBody:
+      description: >-
+        Объект используется при отправке нового сообщения в чат или канал,
+        редактировании существующего сообщения или поста, а также
+        при callback-отправке сообщения пользователю, нажавшему кнопку
+        в чате или канале.
+
+
+        Параметры объекта содержат текст и способ его форматирования, вложения,
+        ссылку на связанное сообщение (ответ или пересылка) и настройку
+        PUSH-уведомлений для участников чата
       properties:
         text:
           description: Текст сообщения
@@ -2046,25 +2461,58 @@ components:
           maxLength: 4000
         attachments:
           description: >-
-            Вложения сообщения. Если в этом поле при обновлении сообщения
-            передан пустой список, все вложения будут удалены
+            Вложения сообщения. Если поле не передано или равно `null`,
+            изменений не произойдёт. Если массив пуст, все вложения будут
+            удалены
           type: array
           items:
             $ref: '#/components/schemas/AttachmentRequest'
         link:
-          description: Ссылка на сообщение
+          description: >-
+            Ссылка на сообщение в чате или пост в канале. Ссылки на комментарии
+            к постам в каналах не поддерживаются
           type: object
           allOf:
             - $ref: '#/components/schemas/NewMessageLink'
         notify:
-          description: Если `false`, участники чата не будут уведомлены
+          description: >-
+            Если `false`, участники чата не получат push-уведомления. Для
+            каналов запрос нужно отправлять с `notify = true` или без этого
+            поля: каналы не подразумевают отправку постов без push-уведомлений
           type: boolean
           default: true
         format:
           description: >-
-            Если установлен, текст сообщения будет форматирован данным способом
+            Разметка текста сообщения. Подробнее — в разделе
+            [Форматирование](https://dev.max.ru/docs-api#Форматирование%20текста%20в%20сообщениях)
           allOf:
             - $ref: '#/components/schemas/TextFormat'
+    NewCommentBody:
+      description: >-
+        Тело нового комментария к посту в канале.
+
+
+        В отличие от сообщений в чатах и постов в каналах (`NewMessageBody`),
+        в комментариях не поддерживаются вложения `attachments` и пересылка
+        сообщения (тип `forward`)
+      properties:
+        text:
+          description: Текст комментария
+          type: string
+          minLength: 1
+          maxLength: 4000
+        link:
+          description: Ссылка на комментарий
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/NewMessageLink'
+        format:
+          description: >-
+            Если установлен, текст комментария будет форматирован данным способом
+          allOf:
+            - $ref: '#/components/schemas/TextFormat'
+      required:
+        - text
     NewMessageLink:
       properties:
         type:
@@ -2073,8 +2521,8 @@ components:
             - $ref: '#/components/schemas/MessageLinkType'
         mid:
           description: ID исходного сообщения
-          type: string
-          minLength: 1
+          allOf:
+            - $ref: '#/components/schemas/MessageId'
       required:
         - type
         - mid
@@ -2085,20 +2533,49 @@ components:
           allOf:
             - $ref: '#/components/schemas/MessageLinkType'
         sender:
-          description: Пользователь, отправивший сообщение.
+          description: Пользователь или бот, отправивший сообщение
           allOf:
             - $ref: '#/components/schemas/User'
         chat_id:
           description: >-
-            Чат, в котором сообщение было изначально опубликовано.
-            `0`, если сообщение из другого диалога
+            Чат или канал, в котором опубликовано связанное сообщение:
+            для `type = forward` — чат-источник, для `type = reply` совпадает
+            с чатом сообщения. `0`, если у бота нет доступа к чату-источнику
           type: integer
           format: int64
         message:
+          description: Информация о связанном сообщении
           allOf:
             - $ref: '#/components/schemas/MessageBody'
       required:
         - type
+        - chat_id
+        - message
+    CommentLinkedMessage:
+      description: Комментарий, на который получен ответ
+      properties:
+        type:
+          description: Тип связанного сообщения
+          allOf:
+            - $ref: '#/components/schemas/MessageLinkType'
+        sender:
+          description: >-
+            Пользователь или бот, отправивший комментарий. Объект отсутствует,
+            если комментарий опубликован от имени канала
+          allOf:
+            - $ref: '#/components/schemas/User'
+        chat_id:
+          description: Канал, в котором оставлен комментарий
+          type: integer
+          format: int64
+        message:
+          description: Информация о комментарии
+          allOf:
+            - $ref: '#/components/schemas/CommentMessageBody'
+      required:
+        - type
+        - chat_id
+        - message
     SendMessageResult:
       description: Информация о созданном сообщении
       properties:
@@ -2106,8 +2583,28 @@ components:
           $ref: '#/components/schemas/Message'
       required:
         - message
+    SendCommentResult:
+      description: Информация о созданном комментарии
+      type: object
+      properties:
+        message:
+          $ref: '#/components/schemas/CommentMessage'
+      required:
+        - message
     Attachment:
-      description: Общая схема, представляющая вложение сообщения
+      description: |-
+        Общая схема, представляющая вложение сообщения.
+
+        Кроме текста сообщения и посты могут содержать следующие типы вложений:
+        - `image` — изображение (JPG, JPEG, PNG, GIF, TIFF, BMP, HEIC)
+        - `video` — видео (MP4, MOV, MKV, WEBM, MATROSKA)
+        - `audio` — аудио (MP3, WAV, M4A и другие)
+        - `file` — файл (TXT, DOC и другие)
+        - `sticker` — стикер
+        - `contact` — контакт (данные контакта из телефонного справочника)
+        - `inline_keyboard` — сообщение или пост с кнопкой
+        - `share` — контент, прикреплённый по внешнему URL
+        - `location` — локация
       discriminator:
         propertyName: type
         mapping:
@@ -2138,20 +2635,24 @@ components:
           required:
             - payload
     PhotoAttachmentPayload:
+      description: Данные, использованные для отправки изображения
       properties:
         photo_id:
           description: Уникальный ID этого изображения
           type: integer
           format: int64
         token:
-          description: Token изображения
+          description: >-
+            Токен вложения — уникальный ID загруженного медиа: изображения,
+            аудио, видео или файла. Возвращается в ответ на вызов [POST
+            /uploads](https://dev.max.ru/docs-api/methods/POST/uploads)
           type: string
           minLength: 1
         url:
           description: >-
             URL изображения. Время жизни ссылки ограниченно. Срок истечения
             указан в параметре `expires` — если он истёк, ссылку необходимо
-            запросить повторно
+            запросить повторно. Доступно в веб-клиенте и на Android
           type: string
           minLength: 1
       required:
@@ -2286,17 +2787,18 @@ components:
       properties:
         url:
           description: >-
-            URL медиа-вложения. Этот URL будет получен в объекте `Update` после
-            отправки сообщения в чат.
+            URL вложения, который возвращается в объекте `Update` после
+            отправки сообщения в чат или канал.
 
 
-            Прямую ссылку на видео также можно получить с помощью метода
-            `getVideoAttachmentDetails()`
+            В случае с вложенным видео прямую ссылку также можно получить
+            с помощью метода `getVideoAttachmentDetails()`
           type: string
           minLength: 1
       required:
         - url
     MediaAttachmentPayload:
+      description: Результат загрузки аудио или видео
       allOf:
         - $ref: '#/components/schemas/AttachmentPayload'
         - properties:
@@ -2310,6 +2812,7 @@ components:
             - id
             - token
     FileAttachmentPayload:
+      description: Результат загрузки файла
       allOf:
         - $ref: '#/components/schemas/AttachmentPayload'
         - properties:
@@ -2326,6 +2829,7 @@ components:
         - $ref: '#/components/schemas/Attachment'
         - properties:
             payload:
+              description: Результат загрузки данных контакта в сообщение
               type: object
               allOf:
                 - $ref: '#/components/schemas/ContactAttachmentPayload'
@@ -2349,6 +2853,7 @@ components:
           allOf:
             - $ref: '#/components/schemas/User'
     StickerAttachmentPayload:
+      description: Результат загрузки стикера
       allOf:
         - $ref: '#/components/schemas/AttachmentPayload'
         - properties:
@@ -2363,6 +2868,7 @@ components:
         - $ref: '#/components/schemas/Attachment'
         - properties:
             payload:
+              description: Данные, использованные для отправки стикера
               type: object
               allOf:
                 - $ref: '#/components/schemas/StickerAttachmentPayload'
@@ -2377,11 +2883,11 @@ components:
             - width
             - height
     ShareAttachmentPayload:
-      description: Полезная нагрузка запроса ShareAttachmentRequest
+      description: Данные прикреплённого к сообщению предпросмотра медиавложения
       properties:
         url:
           description: >-
-            URL, прикрепленный к сообщению в качестве предпросмотра медиа
+            URL, прикреплённый к сообщению для предпросмотра медиавложения
           type: string
           minLength: 1
         token:
@@ -2395,6 +2901,9 @@ components:
         - $ref: '#/components/schemas/Attachment'
         - properties:
             payload:
+              description: >-
+                Данные, использованные для прикрепления к сообщению
+                предпросмотра контента по внешнему URL
               type: object
               allOf:
                 - $ref: '#/components/schemas/ShareAttachmentPayload'
@@ -2419,11 +2928,11 @@ components:
             latitude:
               type: number
               format: double
-              description: Широта
+              description: Широта, до 15 символов
             longitude:
               type: number
               format: double
-              description: Долгота
+              description: Долгота, до 15 символов
           required:
             - latitude
             - longitude
@@ -2433,6 +2942,10 @@ components:
         - $ref: '#/components/schemas/Attachment'
         - properties:
             payload:
+              description: >-
+                Данные клавиатуры. Подробнее о типах кнопок и клавиатуре
+                в ботах — в разделе [«Клавиатура для
+                чат-бота»](https://dev.max.ru/docs-api#Клавиатура%20для%20чат-бота)
               type: object
               allOf:
                 - $ref: '#/components/schemas/Keyboard'
@@ -2495,10 +3008,6 @@ components:
               type: string
               minLength: 1
               maxLength: 1024
-            intent:
-              description: Намерение кнопки. Влияет на представление в клиентах
-              allOf:
-                - $ref: '#/components/schemas/Intent'
           required:
             - payload
     LinkButton:
@@ -2539,8 +3048,9 @@ components:
         - properties:
             quick:
               description: >-
-                Если `true`, отправляет местоположение без запроса подтверждения
-                пользователя
+                Если `true`, отправляет местоположение без запроса
+                подтверждения пользователя. Если `false`, возвращает модальное
+                окно с дополнительным уточнением об отправке местоположения
               type: boolean
               default: false
     ChatButton:
@@ -2642,15 +3152,15 @@ components:
               description: >-
                 Текст кнопки, который будет отправлен в чат от лица пользователя
               type: string
-    Intent:
-      description: Намерение кнопки
-      type: string
-      enum:
-        - positive
-        - negative
-        - default
     MessageLinkType:
-      description: Тип связанного сообщения
+      description: |-
+        Тип связанного сообщения.
+
+        Возможные значения:
+        - `reply` — Ответ на сообщение или комментарий в чате или канале
+        - `forward` — Пересланное сообщение в чате или канале
+
+        Для комментариев поддерживается только тип `reply`
       type: string
       enum:
         - forward
@@ -2685,8 +3195,14 @@ components:
             - payload
     PhotoAttachmentRequestPayload:
       description: >-
-        Запрос на прикрепление изображения (все поля являются
-        взаимоисключающими)
+        Данные для прикрепления изображения (все поля являются
+        взаимоисключающими).
+
+
+        Вместе с изображениями можно прикрепить видеофайлы (`type: video`)
+        и одно вложение с кнопками (`type: inline_keyboard`). Общее количество
+        вложений не должно превышать 12. Подробнее — [в
+        примерах](https://dev.max.ru/docs-api#Примеры%20с%20видео,%20изображением,%20файлом)
       properties:
         url:
           description: >-
@@ -2717,7 +3233,14 @@ components:
       required:
         - photos
     VideoAttachmentRequest:
-      description: Запрос на прикрепление видео к сообщению
+      description: >-
+        Данные для прикрепления видео к сообщению.
+
+
+        Вместе с видео можно прикрепить изображения (`type: image`) и одно
+        вложение с кнопками (`type: inline_keyboard`). Общее количество
+        вложений не должно превышать 12. Подробнее — [в
+        примерах](https://dev.max.ru/docs-api#Примеры%20с%20видео,%20изображением,%20файлом)
       allOf:
         - $ref: '#/components/schemas/AttachmentRequest'
         - properties:
@@ -2742,25 +3265,36 @@ components:
             - payload
     UploadedInfo:
       description: >-
-        Это информация, которую вы получите, как только аудио/видео будет
-        загружено
+        Данные, которые вы получили в ответ на запрос загрузки медиафайла.
+        Их можно передавать после того, как вы загрузили аудио, видео или файл
+        и получили в ответ от сервера `retval`
       properties:
         token:
-          description: Токен — уникальный ID загруженного медиафайла
+          description: >-
+            Токен вложения — уникальный ID загруженного медиа: изображения,
+            аудио, видео или файла. Возвращается в ответ на вызов [POST
+            /uploads](https://dev.max.ru/docs-api/methods/POST/uploads)
           type: string
           minLength: 1
       required:
         - token
     FileAttachmentRequest:
       description: >-
-        Запрос на прикрепление файла к сообщению.
+        Данные для прикрепления файла к сообщению, которые вы получили в ответ
+        на запрос загрузки.
 
 
-        Должен быть единственным вложением в сообщении
+        Файл можно отправить только в комбинации с вложением с кнопками —
+        отправка совместно с изображением или видео не поддерживается. При этом
+        к сообщению можно прикрепить только один файл и одно вложение
+        с кнопками
       allOf:
         - $ref: '#/components/schemas/AttachmentRequest'
         - properties:
             payload:
+              description: >-
+                Данные для прикрепления файла к сообщению, которые вы получили
+                в ответ на запрос загрузки
               allOf:
                 - $ref: '#/components/schemas/UploadedInfo'
           required:
@@ -2808,11 +3342,16 @@ components:
         Запрос на прикрепление карточки контакта к сообщению.
 
 
-        Должен быть единственным вложением в сообщении
+        К сообщению можно прикрепить только один контакт. Совместно с ним можно
+        прикрепить дополнительно одно вложение с кнопками
+        (`type: inline_keyboard`). Передача других типов вложений совместно
+        с контактом не поддерживается
       allOf:
         - $ref: '#/components/schemas/AttachmentRequest'
         - properties:
             payload:
+              description: >-
+                Данные для прикрепления карточки контакта к сообщению
               allOf:
                 - $ref: '#/components/schemas/ContactAttachmentRequestPayload'
           required:
@@ -2855,6 +3394,19 @@ components:
         - $ref: '#/components/schemas/AttachmentRequest'
         - properties:
             payload:
+              description: >-
+                Данные для прикрепления кнопок к сообщению.
+
+
+                Ограничения:
+
+                - Максимальное количество кнопок в ряду — 7
+
+                - Максимальное количество строк с кнопками — 30
+
+                - Если в ряду есть кнопки с типами `link`, `open_app`,
+                `request_geo_location` или `request_contact`, то максимальное
+                количество кнопок в ряду — 3
               type: object
               allOf:
                 - $ref: '#/components/schemas/InlineKeyboardAttachmentRequestPayload'
@@ -2874,29 +3426,30 @@ components:
       required:
         - buttons
     LocationAttachmentRequest:
-      description: Запрос на прикрепление клавиатуры к сообщению
+      description: Запрос на прикрепление геолокации к сообщению
       allOf:
         - $ref: '#/components/schemas/AttachmentRequest'
         - properties:
             latitude:
               type: number
               format: double
-              description: Широта
+              description: Широта, до 15 символов
             longitude:
               type: number
               format: double
-              description: Долгота
+              description: Долгота, до 15 символов
           required:
             - latitude
             - longitude
     ShareAttachmentRequest:
       description: >-
-        Запрос на прикрепление предпросмотра медиафайла по внешнему URL
+        Запрос на прикрепление предпросмотра контента по внешнему URL
       allOf:
         - $ref: '#/components/schemas/AttachmentRequest'
         - properties:
             payload:
-              description: Payload с данными вложения
+              description: >-
+                Данные для прикрепления предпросмотра контента по внешнему URL
               allOf:
                 - $ref: '#/components/schemas/ShareAttachmentPayload'
           required:
@@ -2908,7 +3461,11 @@ components:
 
         Может быть \*\*жирный\*\*, \*курсив\*, ~~зачёркнутый~~,
         ++подчёркнутый++, \`моноширинный\`, ^^выделенный^^, цитата,
-        заголовок, ссылка или упоминание пользователя
+        заголовок, ссылка или упоминание пользователя.
+
+
+        В тексте комментариев не поддерживаются гиперссылки и упоминание
+        пользователей
       properties:
         type:
           type: string
@@ -2918,7 +3475,7 @@ components:
           type: integer
           format: int32
         length:
-          description: Длина элемента разметки
+          description: Длина элемента разметки в символах
           type: integer
           format: int32
       discriminator:
@@ -2952,7 +3509,11 @@ components:
       allOf:
         - $ref: '#/components/schemas/MarkupElement'
     LinkMarkup:
-      description: Представляет ссылку в тексте
+      description: >-
+        Представляет ссылку в тексте.
+
+
+        В тексте комментариев гиперссылки не поддерживаются
       allOf:
         - $ref: '#/components/schemas/MarkupElement'
         - properties:
@@ -2982,7 +3543,10 @@ components:
     UserMentionMarkup:
       description: >-
         Представляет упоминание пользователя в тексте. Упоминание может быть как
-        по имени пользователя, так и по ID, если у пользователя нет имени
+        по имени пользователя, так и по ID, если у пользователя нет имени.
+
+
+        В тексте комментариев упоминание пользователей не поддерживается
       allOf:
         - $ref: '#/components/schemas/MarkupElement'
         - properties:
@@ -3047,7 +3611,7 @@ components:
             `true`, если запрос был успешным, `false` — в противном случае
           type: boolean
         message:
-          description: Объяснительное сообщение, если результат не был успешным
+          description: Сообщение об ошибке
           type: string
       required:
         - success
@@ -3057,8 +3621,8 @@ components:
           description: >-
             ID сообщения, которое нужно закрепить. Соответствует полю
             `Message.body.mid`
-          type: string
-          minLength: 1
+          allOf:
+            - $ref: '#/components/schemas/MessageId'
         notify:
           description: >-
             Если `true`, участники получат уведомление с системным сообщением о
@@ -3079,7 +3643,8 @@ components:
       description: Объект, отправленный боту, когда пользователь нажимает кнопку
       properties:
         timestamp:
-          description: Unix-время, когда пользователь нажал кнопку
+          description: >-
+            Unix timestamp в миллисекундах, когда пользователь нажал кнопку
           type: integer
           format: int64
         callback_id:
@@ -3209,6 +3774,9 @@ components:
 
         > Чтобы получать события из группового чата или канала, назначьте бота
         администратором и дайте права на чтение всех сообщений
+
+
+        На свои действия бот события не получает
       discriminator:
         propertyName: update_type
         mapping:
@@ -3216,6 +3784,9 @@ components:
           message_callback: '#/components/schemas/MessageCallbackUpdate'
           message_edited: '#/components/schemas/MessageEditedUpdate'
           message_removed: '#/components/schemas/MessageRemovedUpdate'
+          comment_created: '#/components/schemas/CommentCreatedUpdate'
+          comment_edited: '#/components/schemas/CommentEditedUpdate'
+          comment_removed: '#/components/schemas/CommentRemovedUpdate'
           bot_added: '#/components/schemas/BotAddedToChatUpdate'
           bot_removed: '#/components/schemas/BotRemovedFromChatUpdate'
           dialog_muted: '#/components/schemas/DialogMutedUpdate'
@@ -3231,7 +3802,8 @@ components:
         update_type:
           type: string
         timestamp:
-          description: Unix-время, когда произошло событие
+          description: >-
+            Unix timestamp в миллисекундах, когда произошло событие
           type: integer
           format: int64
       required:
@@ -3260,12 +3832,19 @@ components:
             - callback
             - message
     MessageCreatedUpdate:
-      description: Вы получите это событие, как только сообщение будет создано
+      description: >-
+        Вы получите это событие, как только сообщение будет создано.
+
+
+        Событие может относиться к объекту, который не поддерживается MAX API.
+        В этом случае поле `message` не передаётся
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
             message:
-              description: Новое созданное сообщение
+              description: >-
+                Новое созданное сообщение. Отсутствует, если событие относится
+                к объекту, который не поддерживается MAX API
               allOf:
                 - $ref: '#/components/schemas/Message'
             user_locale:
@@ -3274,8 +3853,6 @@ components:
                 в диалогах
               type: string
               minLength: 1
-          required:
-            - message
     MessageRemovedUpdate:
       description: Вы получите это событие, как только сообщение будет удалено
       allOf:
@@ -3283,8 +3860,8 @@ components:
         - properties:
             message_id:
               description: ID удалённого сообщения
-              type: string
-              minLength: 1
+              allOf:
+                - $ref: '#/components/schemas/MessageId'
             chat_id:
               description: ID чата, где сообщение было удалено
               type: integer
@@ -3299,16 +3876,71 @@ components:
             - user_id
     MessageEditedUpdate:
       description: >-
-        Вы получите это событие, как только пользователь отредактирует сообщение
+        Вы получите это событие, как только пользователь отредактирует
+        сообщение.
+
+
+        Событие может относиться к объекту, который не поддерживается MAX API.
+        В этом случае поле `message` не передаётся
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
             message:
-              description: Отредактированное сообщение
+              description: >-
+                Отредактированное сообщение. Отсутствует, если событие относится
+                к объекту, который не поддерживается MAX API
               allOf:
                 - $ref: '#/components/schemas/Message'
+    CommentCreatedUpdate:
+      description: Вы получите это событие, как только комментарий будет создан
+      allOf:
+        - $ref: '#/components/schemas/Update'
+        - properties:
+            message:
+              description: Новый созданный комментарий
+              allOf:
+                - $ref: '#/components/schemas/CommentMessage'
           required:
             - message
+    CommentEditedUpdate:
+      description: >-
+        Вы получите это событие, как только пользователь или бот отредактирует
+        комментарий в канале
+      allOf:
+        - $ref: '#/components/schemas/Update'
+        - properties:
+            message:
+              description: Отредактированный комментарий
+              allOf:
+                - $ref: '#/components/schemas/CommentMessage'
+          required:
+            - message
+    CommentRemovedUpdate:
+      description: Вы получите это событие, как только комментарий будет удалён
+      allOf:
+        - $ref: '#/components/schemas/Update'
+        - properties:
+            message_id:
+              description: ID удалённого комментария
+              allOf:
+                - $ref: '#/components/schemas/MessageId'
+            chat_id:
+              description: ID чата, где комментарий был удалён
+              type: integer
+              format: int64
+            user_id:
+              description: Пользователь, удаливший комментарий
+              type: integer
+              format: int64
+            post_id:
+              description: Идентификатор поста в канале
+              allOf:
+                - $ref: '#/components/schemas/MessageId'
+          required:
+            - message_id
+            - chat_id
+            - user_id
+            - post_id
     BotAddedToChatUpdate:
       description: >-
         Вы получите это событие, как только бот будет добавлен в чат или канал
@@ -3316,7 +3948,7 @@ components:
         - $ref: '#/components/schemas/Update'
         - properties:
             chat_id:
-              description: ID чата, куда был добавлен бот
+              description: ID чата или канала, куда был добавлен бот
               type: integer
               format: int64
             user:
@@ -3354,12 +3986,12 @@ components:
     DialogMutedUpdate:
       description: >-
         Вы получите это событие, как только пользователь отключит уведомления о
-        новых сообщениях в диалоге с ботом
+        новых сообщениях в диалоге, чате или канале
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
             chat_id:
-              description: ID чата, где произошло событие
+              description: ID диалога, чата или канала, где произошло событие
               type: integer
               format: int64
             user:
@@ -3367,7 +3999,9 @@ components:
               allOf:
                 - $ref: '#/components/schemas/User'
             muted_until:
-              description: Время, до наступления которого диалог был отключён
+              description: >-
+                Время, до наступления которого уведомления в диалоге, чате или
+                канале были отключены (Unix timestamp в миллисекундах)
               type: integer
               format: int64
             user_locale:
@@ -3381,12 +4015,12 @@ components:
     DialogUnmutedUpdate:
       description: >-
         Вы получите это событие, как только пользователь включит уведомления о
-        новых сообщениях в диалоге с ботом
+        новых сообщениях в диалоге, чате или канале
       allOf:
         - $ref: '#/components/schemas/Update'
         - properties:
             chat_id:
-              description: ID чата, где произошло событие
+              description: ID диалога, чата или канала, где произошло событие
               type: integer
               format: int64
             user:
@@ -3512,17 +4146,23 @@ components:
               type: integer
               format: int64
             user:
-              description: Пользователь, который нажал кнопку 'Начать'
+              description: >-
+                Пользователь, который запустил бота через интерфейс, например
+                нажав кнопку «Начать»
               allOf:
                 - $ref: '#/components/schemas/User'
             payload:
               description: >-
-                Дополнительные данные из диплинков, переданные при запуске бота
+                Дополнительные данные из диплинков, переданные при запуске бота.
+                Подробнее о диплинках — в
+                [разделе FAQ](https://dev.max.ru/help/deeplinks)
               type: string
               minLength: 1
               maxLength: 128
             user_locale:
-              description: Текущий язык пользователя в формате IETF BCP 47
+              description: >-
+                Текущий язык пользователя в формате
+                [IETF BCP 47](https://www.rfc-editor.org/info/bcp47/)
               type: string
               minLength: 1
           required:
@@ -3587,8 +4227,8 @@ components:
                 - $ref: '#/components/schemas/Chat'
             message_id:
               description: ID сообщения, где была нажата кнопка
-              type: string
-              minLength: 1
+              allOf:
+                - $ref: '#/components/schemas/MessageId'
             start_payload:
               description: Полезная нагрузка от кнопки чата
               type: string

@@ -20,8 +20,7 @@ class ClipboardButton extends Button
     protected readonly array $data;
 
     /**
-     * @return non-empty-string Текст, который копируется в буфер обмена после нажатия на кнопку
-     *     (minLength: 1, maxLength: 1024).
+     * @return non-empty-string Текст, который копируется в буфер обмена после нажатия на кнопку (maxLength: 1024).
      */
     public function getPayload(): string
     {

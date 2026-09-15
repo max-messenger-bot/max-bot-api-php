@@ -10,6 +10,10 @@ use function array_key_exists;
 
 /**
  * Запрос на прикрепление видео к сообщению.
+ *
+ * Вместе с видео можно прикрепить изображения ({@see PhotoAttachmentRequest}) и одно вложение
+ * с кнопками ({@see InlineKeyboardAttachmentRequest}). Общее количество вложений не должно превышать 12.
+ * Подробнее — {@link https://dev.max.ru/docs-api#Примеры%20с%20видео,%20изображением,%20файлом в примерах}.
  */
 final class VideoAttachmentRequest extends AttachmentRequest
 {

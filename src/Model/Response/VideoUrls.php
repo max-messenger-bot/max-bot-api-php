@@ -21,7 +21,7 @@ class VideoUrls extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return non-empty-string|null URL трансляции, если доступно (minLength: 1).
+     * @return non-empty-string|null URL трансляции, если доступно.
      */
     public function getHls(): ?string
     {
@@ -29,7 +29,7 @@ class VideoUrls extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null URL видео в разрешении 1080p, если доступно (minLength: 1).
+     * @return non-empty-string|null URL видео в разрешении 1080p, если доступно.
      */
     public function getMp4R1080(): ?string
     {
@@ -37,7 +37,7 @@ class VideoUrls extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null URL видео в разрешении 144p, если доступно (minLength: 1).
+     * @return non-empty-string|null URL видео в разрешении 144p, если доступно.
      */
     public function getMp4R144(): ?string
     {
@@ -45,7 +45,7 @@ class VideoUrls extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null URL видео в разрешении 240p, если доступно (minLength: 1).
+     * @return non-empty-string|null URL видео в разрешении 240p, если доступно.
      */
     public function getMp4R240(): ?string
     {
@@ -53,7 +53,7 @@ class VideoUrls extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null URL видео в разрешении 360p, если доступно (minLength: 1).
+     * @return non-empty-string|null URL видео в разрешении 360p, если доступно.
      */
     public function getMp4R360(): ?string
     {
@@ -61,7 +61,7 @@ class VideoUrls extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null URL видео в разрешении 480p, если доступно (minLength: 1).
+     * @return non-empty-string|null URL видео в разрешении 480p, если доступно.
      */
     public function getMp4R480(): ?string
     {
@@ -69,7 +69,7 @@ class VideoUrls extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null URL видео в разрешении 720p, если доступно (minLength: 1).
+     * @return non-empty-string|null URL видео в разрешении 720p, если доступно.
      */
     public function getMp4R720(): ?string
     {

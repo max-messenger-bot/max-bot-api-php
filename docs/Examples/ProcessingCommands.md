@@ -181,7 +181,7 @@ $adminIds = [123456, 789012];
 $commandHandler = $bot->getCommandHandler();
 
 $commandHandler->onCommand('admin', function (MessageCreatedEvent $event) use ($adminIds): bool {
-    $userId = $event->getMessage()->getSender()?->getUserId();
+    $userId = $event->getUserId();
     
     if (!in_array($userId, $adminIds, true)) {
         $event->reply('У вас нет прав для выполнения этой команды');

@@ -13,7 +13,7 @@ class Callback extends BaseResponseModel
 {
     /**
      * @var array{
-     *     timestamp: int,
+     *     timestamp: non-negative-int,
      *     callback_id: non-empty-string,
      *     payload: non-empty-string,
      *     user: array
@@ -24,7 +24,7 @@ class Callback extends BaseResponseModel
     private User|false $user = false;
 
     /**
-     * @return non-empty-string Текущий ID клавиатуры (minLength: 1).
+     * @return non-empty-string Текущий ID клавиатуры.
      */
     public function getCallbackId(): string
     {
@@ -32,7 +32,7 @@ class Callback extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Токен кнопки (minLength: 1, maxLength: 1024).
+     * @return non-empty-string Токен кнопки (maxLength: 1024).
      */
     public function getPayload(): string
     {
@@ -48,7 +48,7 @@ class Callback extends BaseResponseModel
     }
 
     /**
-     * @return int Время, когда пользователь нажал кнопку (Unix-время в миллисекундах).
+     * @return non-negative-int Время, когда пользователь нажал кнопку (Unix-время в миллисекундах).
      */
     public function getTimestampRaw(): int
     {

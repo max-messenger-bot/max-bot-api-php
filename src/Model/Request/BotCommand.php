@@ -24,8 +24,8 @@ final class BotCommand extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $name Название команды (minLength: 1, maxLength: 64).
-     * @param non-empty-string|null $description Описание команды (minLength: 1, maxLength: 128).
+     * @param non-empty-string|null $name Название команды (maxLength: 64).
+     * @param non-empty-string|null $description Описание команды (maxLength: 128).
      */
     public function __construct(?string $name = null, ?string $description = null)
     {
@@ -66,8 +66,8 @@ final class BotCommand extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $name Название команды (minLength: 1, maxLength: 64).
-     * @param non-empty-string|null $description Описание команды (minLength: 1, maxLength: 128).
+     * @param non-empty-string $name Название команды (maxLength: 64).
+     * @param non-empty-string|null $description Описание команды (maxLength: 128).
      */
     public static function make(string $name, ?string $description = null): self
     {
@@ -75,8 +75,8 @@ final class BotCommand extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $name Название команды (minLength: 1, maxLength: 64).
-     * @param non-empty-string|null $description Описание команды (minLength: 1, maxLength: 128).
+     * @param non-empty-string|null $name Название команды (maxLength: 64).
+     * @param non-empty-string|null $description Описание команды (maxLength: 128).
      */
     public static function new(?string $name = null, ?string $description = null): self
     {
@@ -84,7 +84,7 @@ final class BotCommand extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $description Описание команды (minLength: 1, maxLength: 128).
+     * @param non-empty-string $description Описание команды (maxLength: 128).
      * @return $this
      */
     public function setDescription(string $description): self
@@ -97,7 +97,7 @@ final class BotCommand extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $name Название команды (minLength: 1, maxLength: 64).
+     * @param non-empty-string $name Название команды (maxLength: 64).
      * @return $this
      */
     public function setName(string $name): self

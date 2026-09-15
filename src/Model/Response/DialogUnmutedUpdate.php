@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Вы получите это событие, как только пользователь включит уведомления о новых сообщениях в диалоге с ботом.
+ * Вы получите это событие, как только пользователь включит уведомления о новых сообщениях в диалоге, чате или канале.
  */
 class DialogUnmutedUpdate extends Update
 {
@@ -21,7 +21,7 @@ class DialogUnmutedUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int ID диалога, чата или канала, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -39,7 +39,7 @@ class DialogUnmutedUpdate extends Update
     }
 
     /**
-     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47 (minLength: 1).
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47.
      */
     public function getUserLocale(): ?string
     {

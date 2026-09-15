@@ -24,12 +24,11 @@ final class OpenAppButton extends Button
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
      *     чьё мини-приложение надо запустить (minLength: 5).
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData`
-     *     мини-приложения (minLength: 1).
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения.
      */
     public function __construct(
         ?string $text = null,
@@ -84,12 +83,11 @@ final class OpenAppButton extends Button
     }
 
     /**
-     * @param non-empty-string $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
      *     чьё мини-приложение надо запустить (minLength: 5).
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData`
-     *     мини-приложения (minLength: 1).
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения.
      */
     public static function make(
         string $text,
@@ -101,12 +99,11 @@ final class OpenAppButton extends Button
     }
 
     /**
-     * @param non-empty-string|null $text Видимый текст кнопки (minLength: 1, maxLength: 128).
+     * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
      *     чьё мини-приложение надо запустить (minLength: 5).
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData`
-     *     мини-приложения (minLength: 1).
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения.
      */
     public static function new(
         ?string $text = null,
@@ -129,8 +126,7 @@ final class OpenAppButton extends Button
     }
 
     /**
-     * @param non-empty-string $payload Параметр запуска, который будет передан в `initData` мини-приложения
-     *     (minLength: 1).
+     * @param non-empty-string $payload Параметр запуска, который будет передан в `initData` мини-приложения.
      * @return $this
      */
     public function setPayload(string $payload): self

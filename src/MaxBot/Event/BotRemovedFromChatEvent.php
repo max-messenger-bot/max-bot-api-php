@@ -8,11 +8,13 @@ use MaxMessenger\Bot\Model\Response\BotRemovedFromChatUpdate;
 use MaxMessenger\Bot\Model\Response\User;
 
 /**
+ * Событие удаления бота из чата или канала.
+ *
  * @property-read BotRemovedFromChatUpdate $update
  */
 final class BotRemovedFromChatEvent extends BaseEvent
 {
-    use UserEventTrait;
+    use SendMessageToUserTrait;
 
     /**
      * @return int ID чата, откуда был удалён бот.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Полезная нагрузка запроса ShareAttachmentRequest.
+ * Данные прикреплённого к сообщению предпросмотра медиавложения.
  */
 class ShareAttachmentPayload extends BaseResponseModel
 {
@@ -19,7 +19,7 @@ class ShareAttachmentPayload extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return non-empty-string|null Токен вложения (minLength: 1).
+     * @return non-empty-string|null Токен вложения.
      */
     public function getToken(): ?string
     {
@@ -27,7 +27,7 @@ class ShareAttachmentPayload extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string URL, прикрепленный к сообщению в качестве предпросмотра медиа (minLength: 1).
+     * @return non-empty-string URL, прикреплённый к сообщению для предпросмотра медиавложения.
      */
     public function getUrl(): string
     {

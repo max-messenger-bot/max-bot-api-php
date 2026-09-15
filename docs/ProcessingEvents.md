@@ -28,6 +28,9 @@
 | `MessageCreatedEvent`      | Новое сообщение в чате                |
 | `MessageEditedEvent`       | Сообщение отредактировано             |
 | `MessageRemovedEvent`      | Сообщение удалено                     |
+| `CommentCreatedEvent`      | Новый комментарий к посту в канале    |
+| `CommentEditedEvent`       | Комментарий отредактирован            |
+| `CommentRemovedEvent`      | Комментарий удалён                    |
 | `MessageCallbackEvent`     | Пользователь нажал кнопку в сообщении |
 | `BotStartedEvent`          | Начат диалог с ботом                  |
 | `BotStoppedEvent`          | Диалог с ботом приостановлен          |
@@ -35,8 +38,8 @@
 | `BotRemovedFromChatEvent`  | Бот удалён из чата или канала         |
 | `ChatTitleChangedEvent`    | Изменён заголовок чата                |
 | `DialogClearedEvent`       | Диалог очищен                         |
-| `DialogMutedEvent`         | Уведомления для диалога выключены     |
-| `DialogUnmutedEvent`       | Уведомления для диалога включены      |
+| `DialogMutedEvent`         | Уведомления выключены                 |
+| `DialogUnmutedEvent`       | Уведомления включены                  |
 | `DialogRemovedEvent`       | Диалог удалён                         |
 | `UserAddedToChatEvent`     | Пользователь добавлен в чат           |
 | `UserRemovedFromChatEvent` | Пользователь удалён из чата           |
@@ -95,9 +98,10 @@ $bot->onMessageCallback(function (MessageCallbackEvent $event): bool {
 });
 ```
 
-Доступные методы: `onMessageCreated`, `onMessageEdited`, `onMessageRemoved`, `onMessageCallback`, `onBotStarted`,
-`onBotStopped`, `onBotAddedToChat`, `onBotRemovedFromChat`, `onChatTitleChanged`, `onDialogCleared`, `onDialogMuted`,
-`onDialogUnmuted`, `onDialogRemoved`, `onUserAddedToChat`, `onUserRemovedFromChat`, `onUnknown`.
+Доступные методы: `onMessageCreated`, `onMessageEdited`, `onMessageRemoved`, `onMessageCallback`,
+`onCommentCreated`, `onCommentEdited`, `onCommentRemoved`, `onBotStarted`, `onBotStopped`, `onBotAddedToChat`,
+`onBotRemovedFromChat`, `onChatTitleChanged`, `onDialogCleared`, `onDialogMuted`, `onDialogUnmuted`,
+`onDialogRemoved`, `onUserAddedToChat`, `onUserRemovedFromChat`, `onUnknown`.
 
 ### onFallback — обработчик не обработанных событий
 
@@ -262,8 +266,8 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 
 Статус события можно менять ранее описанными способами.
 
-- Если ни один обработчик исключений не поменял статус **события** на `true` или `false`, то исключение будет выброшено
-  дальше
+- Если ни один обработчик исключений не поменял статус **события** на `true` или `false`,
+  то исключение будет выброшено дальше
 - Если хоть один обработчик исключений поменял статус на `true`, **событие** будет отмечено обработанным
 - В остальных случаях обработка **события** будет продолжена другими обработчиками
 
@@ -287,14 +291,24 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 
 Все события наследуют от `BaseEvent` и имеют следующие методы:
 
-| Метод               | Возвращает          | Описание                                                    |
-|---------------------|---------------------|-------------------------------------------------------------|
-| `getTimestamp()`    | `DateTimeImmutable` | Время, когда произошло событие                              |
-| `getTimestampRaw()` | `int`               | Время, когда произошло событие (Unix-время в миллисекундах) |
-| `markAsHandled()`   | `void`              | Отметить событие как обработанное                           |
-| `markAsUnhandled()` | `void`              | Отметить событие как не обработанное                        |
-| `break()`           | `never`             | Прервать обработку, установить статус `true`                |
-| `continue()`        | `never`             | Прервать обработку, установить статус `false`               |
+| Метод               | Возвращает          | Описание                                                      |
+|---------------------|---------------------|---------------------------------------------------------------|
+| `break()`           | `never`             | Прервать обработку, установить статус `true`                  |
+| `continue()`        | `never`             | Прервать обработку, установить статус `false`                 |
+| `exit()`            | `never`             | Прервать обработку, статус не менять                          |
+| `getChatId()`       | `int\|null`         | ID чата события (`null`, если чата у события нет)             |
+| `getTimestamp()`    | `DateTimeImmutable` | Время, когда произошло событие                                |
+| `getTimestampRaw()` | `non-negative-int`  | Время, когда произошло событие (Unix-время в миллисекундах)   |
+| `getUser()`         | `User\|null`        | Пользователь события (`null`, если его у события нет)         |
+| `getUserId()`       | `int\|null`         | ID пользователя события (`null`, если его у события нет)      |
+| `markAsHandled()`   | `void`              | Отметить событие как обработанное                             |
+| `markAsUnhandled()` | `void`              | Отметить событие как не обработанное                          |
+| `requireChatId()`   | `int`               | ID чата события, `ChatIdMissingException` вместо `null`       |
+| `requireUser()`     | `User`              | Пользователь события, `UserMissingException` вместо `null`    |
+| `requireUserId()`   | `int`               | ID пользователя события, `UserMissingException` вместо `null` |
+
+Методы `getChatId()`, `getUser()` и `getUserId()` объявлены абстрактными: конкретные события уточняют
+их тип возврата — в таблицах ниже он указан для каждого события.
 
 **Свойства:**
 
@@ -307,21 +321,54 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 | `$handledIn`              | `HandlerListType\|null` | Список, в котором событие было обработано      |
 | `$currentHandlerListType` | `HandlerListType\|null` | Текущий обрабатываемый список                  |
 
-### UserEventTrait (трейд пользователя)
+### SendMessageToChatTrait (трейд отправки в чат)
 
-Этот трейд используют события, связанные с действиями пользователей.
 Предоставляет методы:
 
-| Метод                  | Возвращает          | Описание                                     |
-|------------------------|---------------------|----------------------------------------------|
-| `getUser()`            | `User`              | Пользователь, инициировавший событие         |
-| `getUserId()`          | `int`               | ID пользователя, инициировавшего событие     |
-| `getChatId()`          | `int`               | ID чата, где произошло событие               |
-| `sendToChat($message)` | `SendMessageResult` | Отправить сообщение в чат события            |
-| `sendToUser($message)` | `SendMessageResult` | Отправить сообщение в диалог с пользователем |
+| Метод                         | Возвращает          | Описание                                                                                     |
+|-------------------------------|---------------------|----------------------------------------------------------------------------------------------|
+| `sendAction($action)`         | `bool`              | **Устарело.** Будет удалён; используйте `sendActionToChat()`                                 |
+| `sendActionToChat($action)`   | `bool`              | Отправить действие бота («набор текста», «отправка фото», отметку о прочтении) в чат события |
+| `sendMessageToChat($message)` | `SendMessageResult` | Отправить сообщение в чат события                                                            |
+| `sendToChat($message)`        | `SendMessageResult` | **Устарело.** Будет удалён; используйте `sendMessageToChat()`                                |
+
+`sendActionToChat()` всегда возвращает `true`; тип `bool` устарел и в следующих версиях станет `void`.
+
+Действие отображается в диалогах и групповых чатах. Для каналов сервер принимает запрос,
+но участникам действие не показывается.
+
+**Используют:** `BotAddedToChatEvent`, `BotStartedEvent`, `ChatTitleChangedEvent`, `DialogClearedEvent`,
+`DialogMutedEvent`, `DialogUnmutedEvent`, `MessageCallbackEvent`, `MessageCreatedEvent`, `MessageEditedEvent`,
+`MessageRemovedEvent`, `UserAddedToChatEvent`, `UserRemovedFromChatEvent`.
+
+Этих методов нет у событий, после которых бот писать уже не может (`BotStoppedEvent`,
+`BotRemovedFromChatEvent`, `DialogRemovedEvent`), у событий комментариев (`CommentCreatedEvent`,
+`CommentEditedEvent`, `CommentRemovedEvent`) и у `UnknownEvent`.
+
+### SendMessageToUserTrait (трейд отправки в диалог)
+
+Предоставляет один метод:
+
+| Метод                         | Возвращает          | Описание                                                      |
+|-------------------------------|---------------------|---------------------------------------------------------------|
+| `sendMessageToUser($message)` | `SendMessageResult` | Отправить сообщение в диалог с пользователем                  |
+| `sendToUser($message)`        | `SendMessageResult` | **Устарело.** Будет удалён; используйте `sendMessageToUser()` |
+
+Если у события нет пользователя, метод выбросит `UserMissingException`.
 
 **Используют:** `BotAddedToChatEvent`, `BotRemovedFromChatEvent`, `BotStartedEvent`, `ChatTitleChangedEvent`,
-`DialogClearedEvent`, `DialogMutedEvent`, `DialogUnmutedEvent`, `MessageRemovedEvent`, `UserAddedToChatEvent`,
+`CommentCreatedEvent`, `CommentEditedEvent`, `CommentRemovedEvent`, `DialogClearedEvent`, `DialogMutedEvent`,
+`DialogUnmutedEvent`, `MessageCallbackEvent`, `MessageCreatedEvent`, `MessageEditedEvent`,
+`MessageRemovedEvent`, `UserAddedToChatEvent`, `UserRemovedFromChatEvent`.
+
+### UserEventTrait (трейд пользователя)
+
+> **Устарело.** Трейд будет удалён в следующих версиях: он разделён на `SendMessageToChatTrait`
+> и `SendMessageToUserTrait`, которые события подключают самостоятельно. Сам трейд методов
+> больше не добавляет.
+
+**Используют:** `BotAddedToChatEvent`, `BotStartedEvent`, `ChatTitleChangedEvent`, `DialogClearedEvent`,
+`DialogMutedEvent`, `DialogUnmutedEvent`, `MessageRemovedEvent`, `UserAddedToChatEvent`,
 `UserRemovedFromChatEvent`.
 
 ### MessageEventTrait (трейд сообщения)
@@ -329,103 +376,189 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 Этот трейд используют события, связанные с сообщениями.
 Предоставляет методы:
 
-| Метод                                                | Возвращает          | Описание                                     |
-|------------------------------------------------------|---------------------|----------------------------------------------|
-| `getMessage()`                                       | `Message`           | Объект сообщения                             |
-| `getUser()`                                          | `User\|null`        | Отправитель сообщения (может быть `null`)    |
-| `getUserId()`                                        | `int\|null`         | ID отправителя сообщения (может быть `null`) |
-| `getChatId()`                                        | `int`               | ID чата, где было отправлено сообщение       |
-| `deleteMessage()`                                    | `void`              | Удалить сообщение                            |
-| `forwardToChat($chatId)`                             | `SendMessageResult` | Переслать сообщение в указанный чат          |
-| `forwardToUser($userId)`                             | `SendMessageResult` | Переслать сообщение в диалог с пользователем |
-| `reply($message, $asReply = false)`                  | `SendMessageResult` | Ответить в чате сообщения                    |
-| `replyToUser($message, $forwardOrigMessage = false)` | `SendMessageResult` | Ответить пользователю в диалоге              |
-| `isChannel()`                                        | `bool`              | `true`, если сообщение из канала             |
-| `isChat()`                                           | `bool`              | `true`, если сообщение из группы             |
-| `isDialog()`                                         | `bool`              | `true`, если сообщение из диалога            |
+| Метод                                                | Возвращает          | Описание                                                         |
+|------------------------------------------------------|---------------------|------------------------------------------------------------------|
+| `deleteMessage()`                                    | `void`              | Удалить сообщение                                                |
+| `forwardToChat($chatId)`                             | `SendMessageResult` | Переслать сообщение в указанный чат                              |
+| `forwardToUser($userId)`                             | `SendMessageResult` | Переслать сообщение в диалог с пользователем                     |
+| `getChatId()`                                        | `int`               | ID диалога, чата или канала, где было отправлено сообщение       |
+| `getMessage()`                                       | `Message`           | Объект сообщения                                                 |
+| `getUser()`                                          | `User\|null`        | Отправитель сообщения (может быть `null`)                        |
+| `getUserId()`                                        | `int\|null`         | ID отправителя сообщения (может быть `null`)                     |
+| `hasMessage()`                                       | `bool`              | `true`, если событие содержит сообщение                          |
+| `isChannel()`                                        | `bool`              | `true`, если сообщение из канала                                 |
+| `isChat()`                                           | `bool`              | `true`, если сообщение из группы                                 |
+| `isDialog()`                                         | `bool`              | `true`, если сообщение из диалога                                |
+| `isUnsupported()`                                    | `bool`              | `true`, если тип чата сообщения неизвестен                       |
+| `reply($message, $asReply = false)`                  | `SendMessageResult` | Ответить в чате сообщения                                        |
+| `replyToUser($message, $forwardOrigMessage = false)` | `SendMessageResult` | Ответить пользователю в диалоге                                  |
+| `requireUser()`                                      | `User`              | Отправитель сообщения, `SenderUnknownException` вместо `null`    |
+| `requireUserId()`                                    | `int`               | ID отправителя сообщения, `SenderUnknownException` вместо `null` |
+
+Дополнительно включает `SendMessageToChatTrait` и `SendMessageToUserTrait` — их методы `sendMessageToChat()`,
+`sendActionToChat()` и `sendMessageToUser()` доступны во всех событиях, использующих этот трейд.
 
 **Используют:** `MessageCallbackEvent`, `MessageCreatedEvent`, `MessageEditedEvent`.
 
+> **Внимание:** событие может относиться к объекту, который не поддерживается MAX API, — тогда сообщения в нём нет.
+> В этом случае `getMessage()` и все методы, которым нужно сообщение, прерывают обработку события
+> через `BaseEvent::continue()`: текущий обработчик завершается, событие остаётся необработанным,
+> а следующие обработчики вызываются как обычно.
+
+Проверка нужна там, где событие обрабатывается вне обработчиков бота: прерывание — это исключение `EventException`,
+и ловить его придётся самостоятельно.
+
+```php
+$event = $bot->makeEvent(MaxBot::makeUpdateFromString($body));
+
+if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
+    $event->reply('Ваше сообщение получено', true);
+}
+```
+
+### CommentEventTrait (трейд комментария)
+
+Этот трейд используют события, связанные с комментариями к постам в каналах.
+Предоставляет методы:
+
+| Метод                               | Возвращает          | Описание                                                           |
+|-------------------------------------|---------------------|--------------------------------------------------------------------|
+| `deleteComment()`                   | `void`              | Удалить комментарий                                                |
+| `editComment($comment)`             | `void`              | Редактировать комментарий                                          |
+| `getChatId()`                       | `int`               | ID канала, где был оставлен комментарий                            |
+| `getComment()`                      | `CommentMessage`    | Объект комментария                                                 |
+| `getPostId()`                       | `non-empty-string`  | ID поста, к которому оставлен комментарий                          |
+| `getUser()`                         | `User\|null`        | Отправитель комментария (`null`, если опубликован от имени канала) |
+| `getUserId()`                       | `int\|null`         | ID отправителя комментария (может быть `null`)                     |
+| `isChannel()`                       | `bool`              | `true`, если комментарий опубликован от имени канала               |
+| `isChat()`                          | `bool`              | `true`, если комментарий опубликован пользователем или ботом       |
+| `reply($comment, $asReply = false)` | `SendCommentResult` | Ответить комментарием к тому же посту                              |
+| `replyToUser($message)`             | `SendMessageResult` | Ответить автору комментария в диалоге                              |
+| `requireUser()`                     | `User`              | Отправитель комментария, `SenderUnknownException` вместо `null`    |
+| `requireUserId()`                   | `int`               | ID отправителя комментария, `SenderUnknownException` вместо `null` |
+
+Дополнительно включает `SendMessageToUserTrait` — его метод `sendMessageToUser()` доступен во всех
+событиях, использующих этот трейд.
+
+**Используют:** `CommentCreatedEvent`, `CommentEditedEvent`.
+
 ### MessageCreatedEvent
 
-| Метод             | Возвращает     | Описание                                                                              |
-|-------------------|----------------|---------------------------------------------------------------------------------------|
-| `getMessage()`    | `Message`      | Новое созданное сообщение                                                             |
-| `getUserLocale()` | `string\|null` | Язык пользователя (IETF BCP 47), только в диалогах                                    |
-| `isSelfContact()` | `bool`         | Проверяет, что пользователь поделился контактом с номером, привязанным к его аккаунту |
+| Метод             | Возвращает      | Описание                                                                              |
+|-------------------|-----------------|---------------------------------------------------------------------------------------|
+| `getMessage()`    | `Message`       | Новое созданное сообщение                                                             |
+| `getUserLocale()` | `string\|null`  | Язык пользователя (IETF BCP 47), только в диалогах                                    |
+| `hasMessage()`    | `bool`          | `true`, если событие содержит сообщение                                               |
+| `isSelfContact()` | `bool`          | Проверяет, что пользователь поделился контактом с номером, привязанным к его аккаунту |
 
-**Трейды:** `MessageEventTrait`
+**Трейды:** `MessageEventTrait` (включает `SendMessageToChatTrait` и `SendMessageToUserTrait`)
 
 ### MessageEditedEvent
 
-| Метод          | Возвращает | Описание                    |
-|----------------|------------|-----------------------------|
-| `getMessage()` | `Message`  | Отредактированное сообщение |
+| Метод          | Возвращает | Описание                                |
+|----------------|------------|-----------------------------------------|
+| `getMessage()` | `Message`  | Отредактированное сообщение             |
+| `hasMessage()` | `bool`     | `true`, если событие содержит сообщение |
 
-**Трейды:** `MessageEventTrait`
+**Трейды:** `MessageEventTrait` (включает `SendMessageToChatTrait` и `SendMessageToUserTrait`)
 
 ### MessageRemovedEvent
 
-| Метод                   | Возвращает          | Описание                                               |
-|-------------------------|---------------------|--------------------------------------------------------|
-| `getChatId()`           | `int`               | ID чата, где сообщение было удалено                    |
-| `getMessageId()`        | `non-empty-string`  | ID удалённого сообщения                                |
-| `getUserId()`           | `int`               | ID пользователя, удалившего сообщение                  |
-| `sendMessage($message)` | `SendMessageResult` | Отправить сообщение пользователю, удалившему сообщение |
+| Метод                   | Возвращает          | Описание                                                              |
+|-------------------------|---------------------|-----------------------------------------------------------------------|
+| `getChatId()`           | `int`               | ID чата, где сообщение было удалено                                   |
+| `getMessageId()`        | `non-empty-string`  | ID удалённого сообщения                                               |
+| `getUser()`             | `null`              | Всегда `null`: событие не содержит объекта пользователя               |
+| `getUserId()`           | `int`               | ID пользователя, удалившего сообщение                                 |
+| `sendMessage($message)` | `SendMessageResult` | **Устарело.** Используйте `sendMessageToUser()` — метод дублирует его |
 
-**Трейды:** `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+
+### CommentCreatedEvent
+
+| Метод          | Возвращает       | Описание                    |
+|----------------|------------------|-----------------------------|
+| `getComment()` | `CommentMessage` | Новый созданный комментарий |
+
+**Трейды:** `CommentEventTrait` (включает `SendMessageToUserTrait`)
+
+### CommentEditedEvent
+
+| Метод          | Возвращает       | Описание                      |
+|----------------|------------------|-------------------------------|
+| `getComment()` | `CommentMessage` | Отредактированный комментарий |
+
+**Трейды:** `CommentEventTrait` (включает `SendMessageToUserTrait`)
+
+### CommentRemovedEvent
+
+| Метод             | Возвращает          | Описание                                                |
+|-------------------|---------------------|---------------------------------------------------------|
+| `getChatId()`     | `int`               | ID чата, где комментарий был удалён                     |
+| `getMessageId()`  | `non-empty-string`  | ID удалённого комментария                               |
+| `getPostId()`     | `non-empty-string`  | ID поста в канале                                       |
+| `getUser()`       | `null`              | Всегда `null`: событие не содержит объекта пользователя |
+| `getUserId()`     | `int`               | ID пользователя, удалившего комментарий                 |
+| `reply($comment)` | `SendCommentResult` | Ответить комментарием к тому же посту                   |
+
+**Трейды:** `SendMessageToUserTrait`
+
+> Отправки в чат у этого события нет: к комментариям она не применима.
 
 ### MessageCallbackEvent
 
-| Метод                                                | Возвращает          | Описание                                     |
-|------------------------------------------------------|---------------------|----------------------------------------------|
-| `getCallback()`                                      | `Callback`          | Объект callback (нажатая кнопка)             |
-| `getMessage()`                                       | `Message`           | Сообщение с нажатой кнопкой                  |
-| `getUser()`                                          | `User`              | Пользователь, нажавший кнопку                |
-| `getUserId()`                                        | `int`               | ID пользователя, нажавшего кнопку            |
-| `getChatId()`                                        | `int`               | ID чата                                      |
-| `getUserLocale()`                                    | `string\|null`      | Язык пользователя (IETF BCP 47)              |
-| `answer($message)`                                   | `void`              | Ответить на callback с обновлением сообщения |
-| `deleteMessage()`                                    | `void`              | Удалить сообщение                            |
-| `forwardToChat($chatId)`                             | `SendMessageResult` | Переслать сообщение в указанный чат          |
-| `forwardToUser($userId)`                             | `SendMessageResult` | Переслать сообщение в диалог с пользователем |
-| `reply($message, $asReply = false)`                  | `SendMessageResult` | Ответить в чате сообщения                    |
-| `replyToUser($message, $forwardOrigMessage = false)` | `SendMessageResult` | Ответить пользователю в диалоге              |
-| `isChannel()`                                        | `bool`              | `true`, если сообщение из канала             |
-| `isChat()`                                           | `bool`              | `true`, если сообщение из группы             |
-| `isDialog()`                                         | `bool`              | `true`, если сообщение из диалога            |
+| Метод                                                          | Возвращает          | Описание                                     |
+|----------------------------------------------------------------|---------------------|----------------------------------------------|
+| `answer($message, $notification, $disableLinkPreview = false)` | `void`              | Ответить на callback с обновлением сообщения |
+| `deleteMessage()`                                              | `void`              | Удалить сообщение                            |
+| `forwardToChat($chatId)`                                       | `SendMessageResult` | Переслать сообщение в указанный чат          |
+| `forwardToUser($userId)`                                       | `SendMessageResult` | Переслать сообщение в диалог с пользователем |
+| `getCallback()`                                                | `Callback`          | Объект callback (нажатая кнопка)             |
+| `getChatId()`                                                  | `int`               | ID чата                                      |
+| `getMessage()`                                                 | `Message`           | Сообщение с нажатой кнопкой                  |
+| `getUser()`                                                    | `User`              | Пользователь, нажавший кнопку                |
+| `getUserId()`                                                  | `int`               | ID пользователя, нажавшего кнопку            |
+| `getUserLocale()`                                              | `string\|null`      | Язык пользователя (IETF BCP 47)              |
+| `hasMessage()`                                                 | `bool`              | Всегда `true`: сообщение есть всегда         |
+| `isChannel()`                                                  | `bool`              | `true`, если сообщение из канала             |
+| `isChat()`                                                     | `bool`              | `true`, если сообщение из группы             |
+| `isDialog()`                                                   | `bool`              | `true`, если сообщение из диалога            |
+| `reply($message, $asReply = false)`                            | `SendMessageResult` | Ответить в чате сообщения                    |
+| `replyToUser($message, $forwardOrigMessage = false)`           | `SendMessageResult` | Ответить пользователю в диалоге              |
 
-**Трейды:** `MessageEventTrait`
+**Трейды:** `MessageEventTrait` (включает `SendMessageToChatTrait` и `SendMessageToUserTrait`)
 
 ### BotStartedEvent
 
 | Метод             | Возвращает               | Описание                              |
 |-------------------|--------------------------|---------------------------------------|
 | `getChatId()`     | `int`                    | ID диалога                            |
+| `getPayload()`    | `non-empty-string\|null` | Данные из дип-линка (до 128 символов) |
 | `getUser()`       | `User`                   | Пользователь, запустивший бота        |
 | `getUserId()`     | `int`                    | ID пользователя                       |
-| `getPayload()`    | `non-empty-string\|null` | Данные из дип-линка (до 128 символов) |
 | `getUserLocale()` | `string\|null`           | Язык пользователя (IETF BCP 47)       |
 
-**Трейды:** `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
 
 ### BotStoppedEvent
 
-| Метод             | Возвращает     | Описание                        |
-|-------------------|----------------|---------------------------------|
-| `getChatId()`     | `int`          | ID диалога                      |
-| `getUser()`       | `User`         | Пользователь, остановивший бота |
-| `getUserLocale()` | `string\|null` | Язык пользователя (IETF BCP 47) |
+| Метод             | Возвращает     | Описание                            |
+|-------------------|----------------|-------------------------------------|
+| `getChatId()`     | `int`          | ID диалога                          |
+| `getUser()`       | `User`         | Пользователь, остановивший бота     |
+| `getUserId()`     | `int`          | ID пользователя, остановившего бота |
+| `getUserLocale()` | `string\|null` | Язык пользователя (IETF BCP 47)     |
 
 ### BotAddedToChatEvent
 
-| Метод         | Возвращает | Описание                          |
-|---------------|------------|-----------------------------------|
-| `getChatId()` | `int`      | ID чата, куда добавлен бот        |
-| `getUser()`   | `User`     | Пользователь, добавивший бота     |
-| `isChannel()` | `bool`     | `true`, если бот добавлен в канал |
+| Метод         | Возвращает | Описание                             |
+|---------------|------------|--------------------------------------|
+| `getChatId()` | `int`      | ID чата, куда добавлен бот           |
+| `getUser()`   | `User`     | Пользователь, добавивший бота        |
+| `getUserId()` | `int`      | ID пользователя, добавившего бота    |
+| `isChannel()` | `bool`     | `true`, если бот добавлен в канал    |
 
-**Трейды:** `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
 
 ### BotRemovedFromChatEvent
 
@@ -433,51 +566,58 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 |---------------|------------|-----------------------------------|
 | `getChatId()` | `int`      | ID чата, откуда удалён бот        |
 | `getUser()`   | `User`     | Пользователь, удаливший бота      |
+| `getUserId()` | `int`      | ID пользователя, удалившего бота  |
 | `isChannel()` | `bool`     | `true`, если бот удалён из канала |
 
-**Трейды:** `UserEventTrait`
+**Трейды:** `SendMessageToUserTrait`
+
+> Отправки в чат у этого события нет: бот из чата уже удалён.
 
 ### ChatTitleChangedEvent
 
-| Метод         | Возвращает         | Описание                          |
-|---------------|--------------------|-----------------------------------|
-| `getChatId()` | `int`              | ID чата                           |
-| `getTitle()`  | `non-empty-string` | Новое название чата               |
-| `getUser()`   | `User`             | Пользователь, изменивший название |
+| Метод         | Возвращает         | Описание                              |
+|---------------|--------------------|---------------------------------------|
+| `getChatId()` | `int`              | ID чата                               |
+| `getTitle()`  | `non-empty-string` | Новое название чата                   |
+| `getUser()`   | `User`             | Пользователь, изменивший название     |
+| `getUserId()` | `int`              | ID пользователя, изменившего название |
 
-**Трейды:** `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
 
 ### DialogClearedEvent
-
-| Метод             | Возвращает     | Описание                         |
-|-------------------|----------------|----------------------------------|
-| `getChatId()`     | `int`          | ID чата                          |
-| `getUser()`       | `User`         | Пользователь, очистивший историю |
-| `getUserLocale()` | `string\|null` | Язык пользователя (IETF BCP 47)  |
-
-**Трейды:** `UserEventTrait`
-
-### DialogMutedEvent
-
-| Метод                | Возвращает          | Описание                               |
-|----------------------|---------------------|----------------------------------------|
-| `getChatId()`        | `int`               | ID чата                                |
-| `getUser()`          | `User`              | Пользователь, отключивший уведомления  |
-| `getMutedUntil()`    | `DateTimeImmutable` | Время, до которого диалог был отключён |
-| `getMutedUntilRaw()` | `int`               | Unix-время отключения                  |
-| `getUserLocale()`    | `string\|null`      | Язык пользователя (IETF BCP 47)        |
-
-**Трейды:** `UserEventTrait`
-
-### DialogUnmutedEvent
 
 | Метод             | Возвращает     | Описание                             |
 |-------------------|----------------|--------------------------------------|
 | `getChatId()`     | `int`          | ID чата                              |
-| `getUser()`       | `User`         | Пользователь, включивший уведомления |
+| `getUser()`       | `User`         | Пользователь, очистивший историю     |
+| `getUserId()`     | `int`          | ID пользователя, очистившего историю |
 | `getUserLocale()` | `string\|null` | Язык пользователя (IETF BCP 47)      |
 
-**Трейды:** `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+
+### DialogMutedEvent
+
+| Метод                | Возвращает          | Описание                                                              |
+|----------------------|---------------------|-----------------------------------------------------------------------|
+| `getChatId()`        | `int`               | ID диалога, чата или канала                                           |
+| `getMutedUntil()`    | `DateTimeImmutable` | Время, до которого отключены уведомления                              |
+| `getMutedUntilRaw()` | `non-negative-int`  | Время, до которого отключены уведомления (Unix-время в миллисекундах) |
+| `getUser()`          | `User`              | Пользователь, отключивший уведомления                                 |
+| `getUserId()`        | `int`               | ID пользователя, отключившего уведомления                             |
+| `getUserLocale()`    | `string\|null`      | Язык пользователя (IETF BCP 47)                                       |
+
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+
+### DialogUnmutedEvent
+
+| Метод             | Возвращает     | Описание                                 |
+|-------------------|----------------|------------------------------------------|
+| `getChatId()`     | `int`          | ID диалога, чата или канала              |
+| `getUser()`       | `User`         | Пользователь, включивший уведомления     |
+| `getUserId()`     | `int`          | ID пользователя, включившего уведомления |
+| `getUserLocale()` | `string\|null` | Язык пользователя (IETF BCP 47)          |
+
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
 
 ### DialogRemovedEvent
 
@@ -485,6 +625,7 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 |-------------------|----------------|---------------------------------|
 | `getChatId()`     | `int`          | ID чата                         |
 | `getUser()`       | `User`         | Пользователь, удаливший чат     |
+| `getUserId()`     | `int`          | ID пользователя, удалившего чат |
 | `getUserLocale()` | `string\|null` | Язык пользователя (IETF BCP 47) |
 
 ### UserAddedToChatEvent
@@ -492,26 +633,29 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 | Метод            | Возвращает  | Описание                                                |
 |------------------|-------------|---------------------------------------------------------|
 | `getChatId()`    | `int`       | ID чата                                                 |
-| `getUser()`      | `User`      | Пользователь, добавленный в чат                         |
 | `getInviterId()` | `int\|null` | Пользователь, добавивший в чат (`null`, если по ссылке) |
+| `getUser()`      | `User`      | Пользователь, добавленный в чат                         |
+| `getUserId()`    | `int`       | ID пользователя, добавленного в чат                     |
 | `isChannel()`    | `bool`      | `true`, если пользователь добавлен в канал              |
 
-**Трейды:** `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
 
 ### UserRemovedFromChatEvent
 
 | Метод          | Возвращает  | Описание                                                         |
 |----------------|-------------|------------------------------------------------------------------|
+| `getAdminId()` | `int\|null` | Администратор, удаливший пользователя (`null`, если покинул сам) |
 | `getChatId()`  | `int`       | ID чата                                                          |
 | `getUser()`    | `User`      | Пользователь, удалённый из чата                                  |
-| `getAdminId()` | `int\|null` | Администратор, удаливший пользователя (`null`, если покинул сам) |
+| `getUserId()`  | `int`       | ID пользователя, удалённого из чата                              |
 | `isChannel()`  | `bool`      | `true`, если пользователь удалён из канала                       |
 
-**Трейды:** `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
 
 ### UnknownEvent
 
-Событие неизвестного типа. Не имеет дополнительных методов кроме унаследованных от `BaseEvent`.
+Событие неизвестного типа. Дополнительных методов нет, а `getChatId()`, `getUser()` и `getUserId()`
+всегда возвращают `null`.
 
 ## Вспомогательные данные события
 

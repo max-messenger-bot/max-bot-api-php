@@ -7,15 +7,19 @@ namespace MaxMessenger\Bot\MaxBot\Event;
 use ArrayObject;
 use Closure;
 use DateTimeImmutable;
+use MaxMessenger\Bot\Exception\MaxBot\Event\ChatIdMissingException;
 use MaxMessenger\Bot\Exception\MaxBot\Event\EventException;
+use MaxMessenger\Bot\Exception\MaxBot\Event\UserMissingException;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\HandlerListType;
-use MaxMessenger\Bot\Model\Enum\SenderAction;
 use MaxMessenger\Bot\Model\Response\BotAddedToChatUpdate;
 use MaxMessenger\Bot\Model\Response\BotRemovedFromChatUpdate;
 use MaxMessenger\Bot\Model\Response\BotStartedUpdate;
 use MaxMessenger\Bot\Model\Response\BotStoppedUpdate;
 use MaxMessenger\Bot\Model\Response\ChatTitleChangedUpdate;
+use MaxMessenger\Bot\Model\Response\CommentCreatedUpdate;
+use MaxMessenger\Bot\Model\Response\CommentEditedUpdate;
+use MaxMessenger\Bot\Model\Response\CommentRemovedUpdate;
 use MaxMessenger\Bot\Model\Response\DialogClearedUpdate;
 use MaxMessenger\Bot\Model\Response\DialogMutedUpdate;
 use MaxMessenger\Bot\Model\Response\DialogRemovedUpdate;
@@ -33,6 +37,11 @@ use Throwable;
 use function is_bool;
 
 /**
+ * Базовый класс события бота.
+ *
+ * Хранит полученное обновление {@see Update}, API-клиент и пользовательские данные, а также управляет
+ * статусом обработки события и вызовом обработчиков.
+ *
  * @psalm-consistent-constructor
  */
 abstract class BaseEvent
@@ -95,7 +104,7 @@ abstract class BaseEvent
     }
 
     /**
-     * @return int Время, когда произошло событие (Unix-время в миллисекундах).
+     * @return non-negative-int Время, когда произошло событие (Unix-время в миллисекундах).
      */
     public function getTimestampRaw(): int
     {
@@ -153,6 +162,9 @@ abstract class BaseEvent
             BotStartedUpdate::class => BotStartedEvent::class,
             BotStoppedUpdate::class => BotStoppedEvent::class,
             ChatTitleChangedUpdate::class => ChatTitleChangedEvent::class,
+            CommentCreatedUpdate::class => CommentCreatedEvent::class,
+            CommentEditedUpdate::class => CommentEditedEvent::class,
+            CommentRemovedUpdate::class => CommentRemovedEvent::class,
             DialogClearedUpdate::class => DialogClearedEvent::class,
             DialogMutedUpdate::class => DialogMutedEvent::class,
             DialogRemovedUpdate::class => DialogRemovedEvent::class,
@@ -171,17 +183,43 @@ abstract class BaseEvent
         return new $className($update, $maxApiClient, $exceptionHandlers, $userData);
     }
 
-    public function sendAction(SenderAction $action): bool
+    /**
+     * ID чата события.
+     *
+     * В отличие от {@see getChatId()}, вместо `null` выбрасывает исключение.
+     *
+     * @return int ID чата события.
+     * @throws ChatIdMissingException Если у события нет чата.
+     */
+    public function requireChatId(): int
     {
-        $chatId = $this->getChatId();
+        return $this->getChatId() ?? throw new ChatIdMissingException();
+    }
 
-        if ($chatId === null) {
-            return false;
-        }
+    /**
+     * Пользователь события.
+     *
+     * В отличие от {@see getUser()}, вместо `null` выбрасывает исключение.
+     *
+     * @return User Пользователь события.
+     * @throws UserMissingException Если у события нет пользователя.
+     */
+    public function requireUser(): User
+    {
+        return $this->getUser() ?? throw new UserMissingException();
+    }
 
-        $this->apiClient->sendAction($chatId, $action);
-
-        return true;
+    /**
+     * ID пользователя события.
+     *
+     * В отличие от {@see getUserId()}, вместо `null` выбрасывает исключение.
+     *
+     * @return int ID пользователя события.
+     * @throws UserMissingException Если у события нет пользователя.
+     */
+    public function requireUserId(): int
+    {
+        return $this->getUserId() ?? throw new UserMissingException();
     }
 
     /**
@@ -190,7 +228,7 @@ abstract class BaseEvent
      * Вызывается при возникновении необработанного исключения в процессе обработки события.
      * Запускает все зарегистрированные обработчики исключений.
      *
-     * Если ни один обработчик не вернул `true` или `false` и не вызвал соответствующие методы `Event`,
+     * Если ни один обработчик не вернул `true` или `false` и не вызвал соответствующие методы {@see Event},
      * исключение будет выброшено дальше.
      *
      * @param Throwable $exception Обрабатываемое исключение.

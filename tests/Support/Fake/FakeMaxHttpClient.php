@@ -34,6 +34,20 @@ final class FakeMaxHttpClient implements MaxHttpClientInterface
         }
     }
 
+    /**
+     * Готовые данные комментария к посту в канале для ответов API.
+     *
+     * @return array<string, mixed>
+     */
+    public static function commentData(): array
+    {
+        return [
+            'recipient' => ['chat_id' => 100, 'chat_type' => 'channel', 'post_id' => 'mid.post'],
+            'timestamp' => 1_700_000_000_000,
+            'body' => ['mid' => 'mid.comment', 'seq' => 1, 'text' => 'комментарий'],
+        ];
+    }
+
     public function delete(string $path, ?array $query = null): array
     {
         $this->calls[] = ['method' => 'delete', 'path' => $path, 'body' => null, 'query' => $query];

@@ -7,9 +7,12 @@ namespace MaxMessenger\Bot\Tests\Unit\MaxBot\Event;
 use ArrayObject;
 use Codeception\Test\Unit;
 use DateTimeImmutable;
+use MaxMessenger\Bot\Exception\MaxBot\Event\ChatIdMissingException;
 use MaxMessenger\Bot\Exception\MaxBot\Event\EventException;
+use MaxMessenger\Bot\Exception\MaxBot\Event\UserMissingException;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
+use MaxMessenger\Bot\MaxBot\Event\BotStoppedEvent;
 use MaxMessenger\Bot\MaxBot\Event\Event;
 use MaxMessenger\Bot\MaxBot\Event\UnknownEvent;
 use MaxMessenger\Bot\Model\Response\Update;
@@ -447,6 +450,54 @@ final class BaseEventTest extends Unit
         self::assertInstanceOf(UnknownEvent::class, $event);
     }
 
+    public function testRequireChatId(): void
+    {
+        $unknown = BaseEvent::new(
+            Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]),
+            $this->apiClient,
+            [],
+        );
+        $stopped = $this->createBotStoppedEvent();
+
+        self::assertSame(100, $stopped->requireChatId());
+
+        $this->expectException(ChatIdMissingException::class);
+
+        $unknown->requireChatId();
+    }
+
+    public function testRequireUser(): void
+    {
+        $unknown = BaseEvent::new(
+            Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]),
+            $this->apiClient,
+            [],
+        );
+        $stopped = $this->createBotStoppedEvent();
+
+        self::assertSame(200, $stopped->requireUser()->getUserId());
+
+        $this->expectException(UserMissingException::class);
+
+        $unknown->requireUser();
+    }
+
+    public function testRequireUserId(): void
+    {
+        $unknown = BaseEvent::new(
+            Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]),
+            $this->apiClient,
+            [],
+        );
+        $stopped = $this->createBotStoppedEvent();
+
+        self::assertSame(200, $stopped->requireUserId());
+
+        $this->expectException(UserMissingException::class);
+
+        $unknown->requireUserId();
+    }
+
     public function testTimestamp(): void
     {
         $time = time();
@@ -537,5 +588,18 @@ final class BaseEventTest extends Unit
     protected function _before(): void
     {
         $this->apiClient = new MaxApiClient('test-token');
+    }
+
+    private function createBotStoppedEvent(): BotStoppedEvent
+    {
+        $event = BaseEvent::new(Update::newFromData([
+            'update_type' => 'bot_stopped',
+            'timestamp' => time() * 1000,
+            'chat_id' => 100,
+            'user' => ['user_id' => 200, 'first_name' => 'Иван', 'is_bot' => false],
+        ]), $this->apiClient, []);
+        self::assertInstanceOf(BotStoppedEvent::class, $event);
+
+        return $event;
     }
 }

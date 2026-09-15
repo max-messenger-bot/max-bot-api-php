@@ -11,6 +11,8 @@ use MaxMessenger\Bot\Model\Enum\MarkupElementType;
  *
  * Может быть \*\*жирный\*\*, \*курсив\*, ~~зачёркнутый~~, ++подчёркнутый++, \`моноширинный\`, ^^выделенный^^,
  * цитата, заголовок, ссылка или упоминание пользователя.
+ *
+ * В тексте комментариев не поддерживаются гиперссылки и упоминание пользователей.
  */
 class MarkupElement extends BaseResponseModel
 {
@@ -33,7 +35,7 @@ class MarkupElement extends BaseResponseModel
     }
 
     /**
-     * @return int Длина элемента разметки.
+     * @return int Длина элемента разметки в символах.
      */
     public function getLength(): int
     {

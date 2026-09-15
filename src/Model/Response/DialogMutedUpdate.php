@@ -7,7 +7,7 @@ namespace MaxMessenger\Bot\Model\Response;
 use DateTimeImmutable;
 
 /**
- * Вы получите это событие, как только пользователь отключит уведомления о новых сообщениях в диалоге с ботом.
+ * Вы получите это событие, как только пользователь отключит уведомления о новых сообщениях в диалоге, чате или канале.
  */
 class DialogMutedUpdate extends Update
 {
@@ -15,7 +15,7 @@ class DialogMutedUpdate extends Update
      * @var array{
      *     chat_id: int,
      *     user: array,
-     *     muted_until: int,
+     *     muted_until: non-negative-int,
      *     user_locale?: non-empty-string
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
@@ -24,7 +24,7 @@ class DialogMutedUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int ID диалога, чата или канала, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -32,7 +32,7 @@ class DialogMutedUpdate extends Update
     }
 
     /**
-     * @return DateTimeImmutable Время, до наступления которого диалог был отключён.
+     * @return DateTimeImmutable Время, до наступления которого уведомления в диалоге, чате или канале были отключены.
      */
     public function getMutedUntil(): DateTimeImmutable
     {
@@ -40,7 +40,8 @@ class DialogMutedUpdate extends Update
     }
 
     /**
-     * @return int Время, до наступления которого диалог был отключён (Unix-time).
+     * @return non-negative-int Время, до наступления которого уведомления в диалоге, чате или канале
+     *     были отключены (Unix-время в миллисекундах).
      */
     public function getMutedUntilRaw(): int
     {
@@ -58,7 +59,7 @@ class DialogMutedUpdate extends Update
     }
 
     /**
-     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47 (minLength: 1).
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47.
      */
     public function getUserLocale(): ?string
     {

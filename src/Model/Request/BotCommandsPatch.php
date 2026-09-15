@@ -27,8 +27,8 @@ final class BotCommandsPatch extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param BotCommand[]|null $commands Команды, которые поддерживает бот. Чтобы удалить все команды,
-     *     передайте пустой список (maxItems: 32).
+     * @param BotCommand[]|null $commands Список команд и их описаний, отображаемых пользователю
+     *     в подсказках при вводе `/` (maxItems: 32). Чтобы удалить все команды, передайте пустой список.
      */
     public function __construct(?array $commands = null)
     {
@@ -74,8 +74,8 @@ final class BotCommandsPatch extends BaseRequestModel
     }
 
     /**
-     * @param BotCommand[] $commands Команды, которые поддерживает бот. Чтобы удалить все команды,
-     *     передайте пустой список (maxItems: 32).
+     * @param BotCommand[] $commands Список команд и их описаний, отображаемых пользователю
+     *     в подсказках при вводе `/` (maxItems: 32). Чтобы удалить все команды, передайте пустой список.
      */
     public static function make(array $commands): self
     {
@@ -83,8 +83,8 @@ final class BotCommandsPatch extends BaseRequestModel
     }
 
     /**
-     * @param BotCommand[]|null $commands Команды, которые поддерживает бот. Чтобы удалить все команды,
-     *     передайте пустой список (maxItems: 32).
+     * @param BotCommand[]|null $commands Список команд и их описаний, отображаемых пользователю
+     *     в подсказках при вводе `/` (maxItems: 32). Чтобы удалить все команды, передайте пустой список.
      */
     public static function new(?array $commands = null): self
     {
@@ -92,8 +92,8 @@ final class BotCommandsPatch extends BaseRequestModel
     }
 
     /**
-     * @param BotCommand[] $commands Команды, которые поддерживает бот. Чтобы удалить все команды,
-     *     передайте пустой список (maxItems: 32).
+     * @param BotCommand[] $commands Список команд и их описаний, отображаемых пользователю
+     *     в подсказках при вводе `/` (maxItems: 32). Чтобы удалить все команды, передайте пустой список.
      * @return $this
      */
     public function setCommands(array $commands): self

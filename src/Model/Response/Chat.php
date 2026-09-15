@@ -24,7 +24,7 @@ class Chat extends BaseResponseModel
      *     status: string,
      *     title?: non-empty-string,
      *     icon?: array,
-     *     last_event_time: int,
+     *     last_event_time: non-negative-int,
      *     participants_count: int,
      *     owner_id?: int,
      *     participants?: array<int, int>,
@@ -52,8 +52,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null Идентификатор сообщения с кнопкой, через которую был инициирован чат
-     *     (minLength: 1).
+     * @return non-empty-string|null Идентификатор сообщения с кнопкой, через которую был инициирован чат.
      */
     public function getChatMessageId(): ?string
     {
@@ -61,7 +60,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null Описание чата или канала (minLength: 1).
+     * @return non-empty-string|null Описание чата или канала.
      */
     public function getDescription(): ?string
     {
@@ -97,7 +96,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return int Время последнего события в чате или канале (Unix-время в миллисекундах).
+     * @return non-negative-int Время последнего события в чате или канале (Unix-время в миллисекундах).
      */
     public function getLastEventTimeRaw(): int
     {
@@ -177,7 +176,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null Отображаемое название чата или канала (minLength: 1).
+     * @return non-empty-string|null Отображаемое название чата или канала.
      *     Может отсутствовать для диалогов.
      */
     public function getTitle(): ?string

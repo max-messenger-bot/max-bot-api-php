@@ -8,6 +8,11 @@ use MaxMessenger\Bot\Model\Response\BotStoppedUpdate;
 use MaxMessenger\Bot\Model\Response\User;
 
 /**
+ * Событие остановки бота пользователем.
+ *
+ * Приходит, когда пользователь остановил или удалил бота через настройки бота в МАКС.
+ * Во втором случае одновременно приходит {@see DialogRemovedEvent}.
+ *
  * @property-read BotStoppedUpdate $update
  */
 final class BotStoppedEvent extends BaseEvent

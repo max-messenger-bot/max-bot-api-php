@@ -22,6 +22,7 @@ class RequestGeoLocationButton extends Button
 
     /**
      * @return bool Если `true`, отправляет местоположение без запроса подтверждения пользователя.
+     *     Если `false`, возвращает модальное окно с дополнительным уточнением об отправке местоположения.
      */
     public function isQuick(): bool
     {

@@ -10,8 +10,8 @@
 Представление данных в виде объектов делает этот пакет предпочтительным для новичков:
 не нужно разбираться в документации и изучать структуру данных API Max — IDE сама подскажет доступные поля и методы.
 
-**Актуальность:** 29 июля 2026 г.<br>
-**Версия схемы API:** 0.0.32
+**Актуальность:** 15 сентября 2026 г.<br>
+**Версия схемы API:** 0.0.33
 
 ```php
 use MaxMessenger\Bot\MaxApiClient;
@@ -29,11 +29,11 @@ use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 $bot = new MaxBot('your-access-token', 'your-secret');
 
 $bot->onBotStarted(function (BotStartedEvent $event): void {
-    $event->sendToChat(sprintf('Здравствуйте, %s!', $event->getUser()->getFirstName()));
+    $event->sendMessageToChat(sprintf('Здравствуйте, %s!', $event->getUser()->getFirstName()));
 });
 
 $bot->onMessageCreated(function (MessageCreatedEvent $event): void {
-    $message = $event->getMessage()->getText();
+    $text = $event->getMessage()->getText();
     // Обработка сообщения
     $event->reply('Ваше сообщение получено.', true);
 });
@@ -53,6 +53,10 @@ $bot->handleFromGlobal();
 > [!WARNING]
 > При написании бота, используйте [инструменты отладки](docs/Tools.md), они сильно упростят разработку.
 
+> [!IMPORTANT]
+> В конструкторах используйте именованные параметры: состав и порядок параметров повторяют схему API
+> и могут измениться при её обновлении. Именованные параметры обеспечивают обратную совместимость.
+
 Некоторые недокументированные в официальном API функции могут быть отключены на стороне Max.
 Когда они писались и тестировались, они работали.
 
@@ -69,7 +73,13 @@ $bot->handleFromGlobal();
 - В большинстве случаев для понимания работы, Вам достаточно будет посмотреть [примеры кода](./docs/Examples/README.md).
 - Есть валидация данных в моделях запросов (можно отключить).
 - Реализована загрузка файлов на сервера обоими поддерживаемыми способами.
+- Поддерживаются комментарии к постам в каналах.
 - Имеются утилиты (скрипты) для тестирования и отладки обработки событий сервера.
+    - Утилита `polling-to-webhook` получает события методом Long Polling и передаёт их локальному
+      скрипту-обработчику, эмулируя Webhook-запрос (совместимо с Laravel и Symfony). Обработчик
+      запускается заново для каждого события, поэтому после правки его кода перезапускать ничего не нужно.
+- Webhook-запросы можно обрабатывать как из глобального контекста, так и из объекта запроса PSR-7
+  (`Psr\Http\Message\ServerRequestInterface`).
 - Весь функционал разбит на слои (бот, API Max клиент, HTTP клиент для API Max, Curl HTTP клиент),
   каждый слой может быть частично или полностью заменён Вашей реализацией
   (используются интерфейсы и многие внутренние методы объявлены как публичные).
@@ -100,6 +110,11 @@ composer require max-messenger-bot/max-bot-api-php
 ### Зависимости
 
 - `mj4444/simple-http-client` ^0.2 — HTTP-клиент для выполнения запросов
+
+Необязательные:
+
+- `psr/http-message` ^2.0 — только если обрабатываете Webhook-запросы через
+  `MaxBot::handleFromRequest()` или `MaxBot::readRequestContent()`
 
 ## Сертификаты (TLS)
 
@@ -155,6 +170,24 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 
 $bot->handleFromGlobal();
 ```
+
+### Обработка событий сервера из запроса PSR-7
+
+Если приложение работает с объектом запроса, вместо `handleFromGlobal()` используйте
+`handleFromRequest()` — проверки метода, типа содержимого и секрета выполняются так же.
+
+```php
+use MaxMessenger\Bot\MaxBot;
+
+$bot = new MaxBot('your-access-token', 'your-secret');
+
+// Добавление обработчиков
+
+$bot->handleFromRequest($request);
+```
+
+Для этого нужен пакет `psr/http-message` — он не входит в зависимости SDK, но обычно уже установлен
+вместе с Вашим HTTP-фреймворком.
 
 ### Обработка событий сервера через Long Polling
 

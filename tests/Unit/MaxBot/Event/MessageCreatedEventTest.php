@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit\MaxBot\Event;
 
 use Codeception\Test\Unit;
+use MaxMessenger\Bot\Exception\MaxBot\Event\EventException;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
@@ -75,13 +76,44 @@ final class MessageCreatedEventTest extends Unit
         self::assertFalse($this->createEvent()->isSelfContact());
     }
 
+    public function testNoMessage(): void
+    {
+        $event = $this->createEvent(withMessage: false);
+
+        self::assertFalse($event->hasMessage());
+
+        $this->expectException(EventException::class);
+
+        $event->getMessage();
+    }
+
+    public function testNoMessageInterruptsHandler(): void
+    {
+        $event = $this->createEvent(withMessage: false);
+        $called = false;
+
+        $handled = $event->handle(function (MessageCreatedEvent $event) use (&$called): bool {
+            $called = true;
+            $event->getChatId();
+
+            return true;
+        });
+
+        self::assertTrue($called);
+        self::assertFalse($handled);
+        self::assertFalse($event->isHandled);
+    }
+
     public function testNoUserLocale(): void
     {
         self::assertNull($this->createEvent(userLocale: null)->getUserLocale());
     }
 
-    private function createEvent(string $chatType = 'dialog', ?string $userLocale = 'ru-RU'): MessageCreatedEvent
-    {
+    private function createEvent(
+        string $chatType = 'dialog',
+        ?string $userLocale = 'ru-RU',
+        bool $withMessage = true,
+    ): MessageCreatedEvent {
         $message = [
             'sender' => ['user_id' => 200, 'first_name' => 'Иван', 'is_bot' => false],
             'recipient' => ['chat_id' => 100, 'chat_type' => $chatType, 'user_id' => 200],
@@ -92,8 +124,10 @@ final class MessageCreatedEventTest extends Unit
         $data = [
             'update_type' => 'message_created',
             'timestamp' => 1_700_000_000_000,
-            'message' => $message,
         ];
+        if ($withMessage) {
+            $data['message'] = $message;
+        }
         if ($userLocale !== null) {
             $data['user_locale'] = $userLocale;
         }

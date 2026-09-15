@@ -19,6 +19,9 @@ use MaxMessenger\Bot\MaxBot\Event\BotRemovedFromChatEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotStoppedEvent;
 use MaxMessenger\Bot\MaxBot\Event\ChatTitleChangedEvent;
+use MaxMessenger\Bot\MaxBot\Event\CommentCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\CommentEditedEvent;
+use MaxMessenger\Bot\MaxBot\Event\CommentRemovedEvent;
 use MaxMessenger\Bot\MaxBot\Event\DialogClearedEvent;
 use MaxMessenger\Bot\MaxBot\Event\DialogMutedEvent;
 use MaxMessenger\Bot\MaxBot\Event\DialogRemovedEvent;
@@ -33,6 +36,7 @@ use MaxMessenger\Bot\MaxBot\Event\UserRemovedFromChatEvent;
 use MaxMessenger\Bot\MaxBot\HandlerListType;
 use MaxMessenger\Bot\Model\Enum\UpdateType;
 use MaxMessenger\Bot\Model\Response\Update;
+use Psr\Http\Message\ServerRequestInterface;
 use SensitiveParameter;
 use SensitiveParameterValue;
 use Throwable;
@@ -239,10 +243,21 @@ final class MaxBot
     }
 
     /**
+     * Запускает процесс обработки события из PSR-7 запроса.
+     *
+     * @param ServerRequestInterface $request Запрос от Webhook.
+     * @return bool `true`, если событие считается обработанным.
+     */
+    public function handleFromRequest(ServerRequestInterface $request): bool
+    {
+        return $this->handleUpdate(self::makeUpdateFromString($this->readRequestContent($request)));
+    }
+
+    /**
      * Получает события с сервера через API и запускает процесс их обработки.
      *
-     * @param int<1, 1000> $limit Максимальное количество событий для получения (minimum: 1, maximum: 1000).
-     * @param int<0, 90> $timeout Тайм-аут в секундах для долгого опроса (minimum: 0, maximum: 90).
+     * @param int<1, 1000> $limit Максимальное количество событий для получения.
+     * @param int<0, 90> $timeout Тайм-аут в секундах для долгого опроса.
      * @param int|null $marker Маркер для получения событий с конкретной позиции.
      *     Для получения всех ранее непрочитанных событий, передайте `null`.
      * @param array<UpdateType|string>|null $types Список типов событий, которые ваш бот хочет получать.
@@ -361,6 +376,39 @@ final class MaxBot
     public function onChatTitleChanged(Closure $handler): static
     {
         $this->eventHandlers[ChatTitleChangedEvent::class][] = $handler;
+
+        return $this;
+    }
+
+    /**
+     * @param Closure(CommentCreatedEvent $event): (bool|void) $handler
+     * @return $this
+     */
+    public function onCommentCreated(Closure $handler): static
+    {
+        $this->eventHandlers[CommentCreatedEvent::class][] = $handler;
+
+        return $this;
+    }
+
+    /**
+     * @param Closure(CommentEditedEvent $event): (bool|void) $handler
+     * @return $this
+     */
+    public function onCommentEdited(Closure $handler): static
+    {
+        $this->eventHandlers[CommentEditedEvent::class][] = $handler;
+
+        return $this;
+    }
+
+    /**
+     * @param Closure(CommentRemovedEvent $event): (bool|void) $handler
+     * @return $this
+     */
+    public function onCommentRemoved(Closure $handler): static
+    {
+        $this->eventHandlers[CommentRemovedEvent::class][] = $handler;
 
         return $this;
     }
@@ -531,6 +579,46 @@ final class MaxBot
         $this->eventHandlers[UserRemovedFromChatEvent::class][] = $handler;
 
         return $this;
+    }
+
+    /**
+     * Читает тело PSR-7 запроса.
+     *
+     * Проверяет метод запроса, тип содержимого, наличие и совпадение `Content-Length`, а также секрет
+     * из заголовка `X-Max-Bot-Api-Secret`, если он задан методом {@see setSecret()}.
+     *
+     * @param ServerRequestInterface $request Запрос от Webhook.
+     * @return non-empty-string Тело запроса.
+     * @throws BadRequestException Если запрос не является корректным Webhook-запросом MAX.
+     * @throws InvalidSecretException Если секрет в запросе не совпадает с заданным.
+     */
+    public function readRequestContent(ServerRequestInterface $request): string
+    {
+        $isPost = $request->getMethod() === 'POST';
+        $isJson = str_contains($request->getHeaderLine('Content-Type'), 'application/json');
+        $contentLength = $request->getHeaderLine('Content-Length');
+
+        if (!$isPost || !$isJson || $contentLength === '') {
+            throw new BadRequestException('Required: POST, application/json, content-length');
+        }
+
+        $secret = $this->secret?->getValue();
+        /** @psalm-suppress RiskyTruthyFalsyComparison */
+        if ($secret && !hash_equals($secret, $request->getHeaderLine('X-Max-Bot-Api-Secret'))) {
+            throw new InvalidSecretException();
+        }
+
+        $body = (string) $request->getBody();
+
+        if ($body === '') {
+            throw new BadRequestException('Body is empty.');
+        }
+
+        if (strlen($body) !== (int) $contentLength) {
+            throw new BadRequestException('The Body size does not match the passed content-length.');
+        }
+
+        return $body;
     }
 
     /**

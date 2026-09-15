@@ -28,7 +28,7 @@ class MessageRemovedUpdate extends Update
     }
 
     /**
-     * @return non-empty-string ID удалённого сообщения (minLength: 1).
+     * @return non-empty-string ID удалённого сообщения.
      */
     public function getMessageId(): string
     {

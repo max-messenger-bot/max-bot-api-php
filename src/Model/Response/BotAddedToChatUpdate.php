@@ -21,7 +21,7 @@ class BotAddedToChatUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID чата, куда был добавлен бот.
+     * @return int ID чата или канала, куда был добавлен бот.
      */
     public function getChatId(): int
     {

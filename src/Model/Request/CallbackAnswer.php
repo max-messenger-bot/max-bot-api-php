@@ -103,7 +103,7 @@ final class CallbackAnswer extends BaseRequestModel
 
     /**
      * @param non-empty-string $notification Устарело: с 21 июля 2026 г. поле удалено из официальной
-     *     схемы API — на сервер не передаётся и игнорируется (minLength: 1).
+     *     схемы API — на сервер не передаётся и игнорируется.
      * @return $this
      * @deprecated С 21 июля 2026 г. поле удалено из официальной схемы API — метод ничего не делает.
      * @psalm-suppress UnusedParam Параметр сохранён для обратной совместимости сигнатуры.

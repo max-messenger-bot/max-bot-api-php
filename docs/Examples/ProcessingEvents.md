@@ -52,7 +52,7 @@ $bot->onBotStarted(function (BotStartedEvent $event): bool {
         $welcomeText .= "\nВы пришли по ссылке с параметром: " . $payload;
     }
     
-    $event->sendToUser($welcomeText);
+    $event->sendMessageToUser($welcomeText);
 
     return true; // Отмечаем событие как обработанное
 });
@@ -96,6 +96,35 @@ $bot->onMessageRemoved(function (MessageRemovedEvent $event): bool {
     return true;
 });
 ```
+
+### Обработка комментариев к постам в канале
+
+```php
+use MaxMessenger\Bot\MaxBot\Event\CommentCreatedEvent;
+use MaxMessenger\Bot\MaxBot\Event\CommentRemovedEvent;
+
+// Новый комментарий к посту
+$bot->onCommentCreated(function (CommentCreatedEvent $event): bool {
+    $comment = $event->getComment();
+
+    // Отвечаем комментарием с цитированием исходного
+    $event->reply('Спасибо за комментарий!', asReply: true);
+
+    error_log("Комментарий к посту {$event->getPostId()}: " . $comment->getText());
+
+    return true;
+});
+
+// Удаление комментария
+$bot->onCommentRemoved(function (CommentRemovedEvent $event): bool {
+    error_log("Комментарий {$event->getMessageId()} удалён пользователем {$event->getUserId()}");
+
+    return true;
+});
+```
+
+> Комментарии от имени канала приходят без отправителя: `$event->getUser()` вернёт `null`,
+> а `$event->isChannel()` — `true`.
 
 ### Обработка изменений в чате
 
@@ -401,7 +430,7 @@ $bot->onUserAddedToChat(function (UserAddedToChatEvent $event): bool {
     $user = $event->getUser();
     
     // Отправляем приветственное сообщение пользователю в диалог
-    $event->sendToUser('Добро пожаловать в чат, ' . $user->getFirstName() . '!');
+    $event->sendMessageToUser('Добро пожаловать в чат, ' . $user->getFirstName() . '!');
 
     return true;
 });
@@ -416,7 +445,7 @@ $bot->onChatTitleChanged(function (ChatTitleChangedEvent $event): bool {
     $title = $event->getTitle();
 
     // Отправляем сообщение в чат, где произошло событие
-    $event->sendToChat('Заголовок чата изменён на: ' . $title);
+    $event->sendMessageToChat('Заголовок чата изменён на: ' . $title);
 
     return true;
 });
@@ -493,7 +522,7 @@ $bot->onBotStarted(function (BotStartedEvent $event): bool {
     $message = "Привет, {$user->getFirstName()}!\n\n"
              . "Я тестовый бот. Отправьте мне сообщение.";
     
-    $event->sendToUser($message);
+    $event->sendMessageToUser($message);
 
     return true;
 });

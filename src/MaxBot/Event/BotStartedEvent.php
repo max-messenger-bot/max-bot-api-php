@@ -8,10 +8,18 @@ use MaxMessenger\Bot\Model\Response\BotStartedUpdate;
 use MaxMessenger\Bot\Model\Response\User;
 
 /**
+ * Событие запуска бота пользователем.
+ *
+ * Приходит, когда пользователь впервые начал общение с ботом или возобновил его после остановки —
+ * например нажал кнопку «Начать» в интерфейсе МАКС.
+ *
  * @property-read BotStartedUpdate $update
+ * @psalm-suppress DeprecatedTrait {@see UserEventTrait} подключён для совместимости.
  */
 final class BotStartedEvent extends BaseEvent
 {
+    use SendMessageToChatTrait;
+    use SendMessageToUserTrait;
     use UserEventTrait;
 
     /**
@@ -23,8 +31,7 @@ final class BotStartedEvent extends BaseEvent
     }
 
     /**
-     * @return non-empty-string|null Дополнительные данные из диплинков, переданные при запуске бота
-     *     (minLength: 1, maxLength: 128).
+     * @return non-empty-string|null Дополнительные данные из диплинков, переданные при запуске бота (maxLength: 128).
      */
     public function getPayload(): ?string
     {

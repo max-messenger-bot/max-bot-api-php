@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+use MaxMessenger\Bot\MaxApiClient;
+
+/**
+ * Данные, использованные для отправки изображения.
+ */
 class PhotoAttachmentPayload extends BaseResponseModel
 {
     /**
@@ -25,7 +30,8 @@ class PhotoAttachmentPayload extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Токен изображения (minLength: 1).
+     * @return non-empty-string Токен вложения — уникальный ID загруженного медиа: изображения, аудио,
+     *     видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
      */
     public function getToken(): string
     {
@@ -33,8 +39,8 @@ class PhotoAttachmentPayload extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string URL изображения (minLength: 1). Время жизни ссылки ограниченно. Срок
-     *     истечения указан в параметре `expires` — если он истёк, ссылку необходимо запросить повторно.
+     * @return non-empty-string URL изображения. Время жизни ссылки ограниченно.
+     *     Срок истечения указан в параметре `expires` — если он истёк, ссылку необходимо запросить повторно.
      */
     public function getUrl(): string
     {

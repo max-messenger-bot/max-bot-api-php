@@ -142,6 +142,9 @@ abstract class BaseResponseModel implements ModelInterface
         throw new ActionProhibited();
     }
 
+    /**
+     * @param non-negative-int $timestamp Время (Unix-время в миллисекундах).
+     */
     protected static function makeDateTime(int $timestamp): DateTimeImmutable
     {
         if (PHP_VERSION_ID >= 80400) {
@@ -158,6 +161,9 @@ abstract class BaseResponseModel implements ModelInterface
         );
     }
 
+    /**
+     * @param non-negative-int|null $timestamp Время (Unix-время в миллисекундах).
+     */
     protected static function makeNullableDateTime(?int $timestamp): ?DateTimeImmutable
     {
         return $timestamp !== null

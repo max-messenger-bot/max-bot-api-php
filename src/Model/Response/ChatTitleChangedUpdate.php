@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Вы получите это событие, как только будет изменено название чата        .
+ * Вы получите это событие, как только будет изменено название чата.
  */
 class ChatTitleChangedUpdate extends Update
 {
@@ -29,7 +29,7 @@ class ChatTitleChangedUpdate extends Update
     }
 
     /**
-     * @return non-empty-string Новое название (minLength: 1).
+     * @return non-empty-string Новое название.
      */
     public function getTitle(): string
     {

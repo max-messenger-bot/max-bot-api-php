@@ -31,7 +31,8 @@ class BotStartedUpdate extends Update
 
     /**
      * @return non-empty-string|null Дополнительные данные из диплинков, переданные при запуске бота
-     *     (minLength: 1, maxLength: 128).
+     *     (maxLength: 128).
+     *     Подробнее о диплинках — {@link https://dev.max.ru/help/deeplinks в разделе FAQ}.
      */
     public function getPayload(): ?string
     {
@@ -39,7 +40,7 @@ class BotStartedUpdate extends Update
     }
 
     /**
-     * @return User Пользователь, который нажал кнопку 'Начать'.
+     * @return User Пользователь, который запустил бота через интерфейс, например нажав кнопку «Начать».
      */
     public function getUser(): User
     {
@@ -49,7 +50,7 @@ class BotStartedUpdate extends Update
     }
 
     /**
-     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47 (minLength: 1).
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47.
      */
     public function getUserLocale(): ?string
     {

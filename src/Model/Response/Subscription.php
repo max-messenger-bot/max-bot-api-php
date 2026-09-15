@@ -15,7 +15,7 @@ class Subscription extends BaseResponseModel
     /**
      * @var array{
      *     url: non-empty-string,
-     *     time: int,
+     *     time: non-negative-int,
      *     update_types?: list<non-empty-string>,
      *     version?: non-empty-string
      * }
@@ -24,7 +24,7 @@ class Subscription extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return DateTimeImmutable Unix-время, когда была создана подписка.
+     * @return DateTimeImmutable Время, когда была создана подписка.
      */
     public function getTime(): DateTimeImmutable
     {
@@ -32,7 +32,7 @@ class Subscription extends BaseResponseModel
     }
 
     /**
-     * @return int Unix-время, когда была создана подписка (Unix-time).
+     * @return non-negative-int Время, когда была создана подписка (Unix-время в миллисекундах).
      */
     public function getTimeRaw(): int
     {

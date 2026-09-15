@@ -150,6 +150,30 @@ cp dev/.polling-to-webhook.conf.example dev/.polling-to-webhook.conf
 | Параметр              | Описание                                                                                        |
 |-----------------------|-------------------------------------------------------------------------------------------------|
 | `MAXBOT_ACCESS_TOKEN` | Токен доступа бота для Long Polling (необязателен — если не задан, будет запрошен интерактивно) |
-| `SCRIPT`              | Полный путь к скрипту-обработчику (webhook handler)                                             |
+| `SCRIPT_FILENAME`     | Полный путь к скрипту-обработчику (webhook handler)                                             |
+| `DOCUMENT_ROOT`       | Корневая папка сайта, внутри которой лежит скрипт-обработчик                                    |
 | `BIN`                 | Путь к интерпретатору `php-cgi`                                                                 |
 | `MAXBOT_SECRET`       | Значение заголовка `X-Max-Bot-Api-Secret`                                                       |
+| `REQUEST_URI`         | Адрес запроса. По умолчанию — путь скрипта относительно `DOCUMENT_ROOT`                         |
+| `HTTP_HOST`           | Значение заголовка `Host`, можно с портом (`localhost:8080`). По умолчанию: `localhost`         |
+| `SCHEME`              | Схема запроса: `http` или `https`. По умолчанию: `http`                                         |
+| `REMOTE_ADDR`         | IP-адрес отправителя запроса. По умолчанию: `127.0.0.1`                                         |
+
+#### Обработчик на Laravel или Symfony
+
+Скрипту-обработчику передаётся окружение, достаточное для создания объекта запроса из глобального
+контекста (`Illuminate\Http\Request::capture()`, `Symfony\Component\HttpFoundation\Request::createFromGlobals()`):
+кроме тела запроса и заголовков задаются `REQUEST_URI`, `DOCUMENT_ROOT`, `SCRIPT_NAME`, `PHP_SELF`,
+`SERVER_NAME`, `SERVER_PORT`, `SERVER_PROTOCOL`, `REQUEST_SCHEME`, `REMOTE_ADDR`, `HTTP_HOST` и `HTTP_ACCEPT`.
+
+Если обработчик — фронт-контроллер фреймворка, укажите `REQUEST_URI`: иначе адресом запроса станет путь
+самого фронт-контроллера (`/index.php`) и маршрут не будет найден.
+
+```ini
+SCRIPT_FILENAME=/var/www/app/public/index.php
+DOCUMENT_ROOT=/var/www/app/public
+REQUEST_URI=/api/max/webhook
+HTTP_HOST=localhost
+```
+
+Секрет приходит в заголовке `X-Max-Bot-Api-Secret` — там, где его ждёт и настоящий Webhook-запрос.

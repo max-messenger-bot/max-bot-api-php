@@ -24,8 +24,8 @@ final class ShareAttachmentPayload extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $url URL, прикрепленный к сообщению в качестве предпросмотра медиа (minLength: 1).
-     * @param non-empty-string|null $token Токен вложения (minLength: 1).
+     * @param non-empty-string|null $url URL, прикрепленный к сообщению в качестве предпросмотра медиа.
+     * @param non-empty-string|null $token Токен вложения.
      */
     public function __construct(?string $url = null, ?string $token = null)
     {
@@ -66,8 +66,8 @@ final class ShareAttachmentPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $url URL, прикрепленный к сообщению в качестве предпросмотра медиа (minLength: 1).
-     * @param non-empty-string|null $token Токен вложения (minLength: 1).
+     * @param non-empty-string $url URL, прикрепленный к сообщению в качестве предпросмотра медиа.
+     * @param non-empty-string|null $token Токен вложения.
      */
     public static function make(string $url, ?string $token = null): self
     {
@@ -75,8 +75,8 @@ final class ShareAttachmentPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $url URL, прикрепленный к сообщению в качестве предпросмотра медиа (minLength: 1).
-     * @param non-empty-string|null $token Токен вложения (minLength: 1).
+     * @param non-empty-string|null $url URL, прикрепленный к сообщению в качестве предпросмотра медиа.
+     * @param non-empty-string|null $token Токен вложения.
      */
     public static function new(?string $url = null, ?string $token = null): self
     {
@@ -84,7 +84,7 @@ final class ShareAttachmentPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $token Токен вложения (minLength: 1).
+     * @param non-empty-string $token Токен вложения.
      * @return $this
      */
     public function setToken(string $token): self
@@ -96,7 +96,7 @@ final class ShareAttachmentPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $url URL, прикрепленный к сообщению в качестве предпросмотра медиа (minLength: 1).
+     * @param non-empty-string $url URL, прикрепленный к сообщению в качестве предпросмотра медиа.
      * @return $this
      */
     public function setUrl(string $url): self

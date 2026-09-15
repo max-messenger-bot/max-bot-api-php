@@ -19,7 +19,7 @@ class BotCommand extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return non-empty-string|null Описание команды (minLength: 1, maxLength: 128).
+     * @return non-empty-string|null Описание команды (maxLength: 128).
      */
     public function getDescription(): ?string
     {
@@ -27,7 +27,7 @@ class BotCommand extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Название команды (minLength: 1, maxLength: 64).
+     * @return non-empty-string Название команды (maxLength: 64).
      */
     public function getName(): string
     {

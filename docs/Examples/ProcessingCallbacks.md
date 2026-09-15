@@ -34,7 +34,7 @@ $bot->onBotStarted(function (BotStartedEvent $event): bool {
         ->newRow()
         ->addCallbackButton('⚙️ Настройки', 'settings');
     
-    $event->sendToUser($message);
+    $event->sendMessageToUser($message);
 
     return true; // Отмечаем событие как обработанное
 });
@@ -252,7 +252,7 @@ $bot->onBotStarted(function (BotStartedEvent $event): bool {
         ->newRow()
         ->addCallbackButton('❓ Помощь', 'help');
     
-    $event->sendToUser($message);
+    $event->sendMessageToUser($message);
 
     return true; // Отмечаем событие как обработанное
 });

@@ -12,37 +12,46 @@ class LinkedMessage extends BaseResponseModel
      * @var array{
      *     type: string,
      *     sender?: array,
-     *     chat_id?: int,
-     *     message?: array
+     *     chat_id: int,
+     *     message: array
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
-    private MessageBody|false|null $message = false;
+    private MessageBody|false $message = false;
     private User|false|null $sender = false;
 
     /**
-     * @return int|null Чат, в котором сообщение было изначально опубликовано.
-     *     `null`, если сообщение из другого диалога.
+     * ID чата или канала, в котором опубликовано связанное сообщение.
+     *
+     * Для {@see isForward()} это чат-источник, для {@see isReply()} — чат самого сообщения.
+     *
+     * @return int|null ID чата или канала, в котором опубликовано связанное сообщение.
+     *     `null`, если у бота нет доступа к чату-источнику.
      */
     public function getChatId(): ?int
     {
-        /** @psalm-suppress RiskyTruthyFalsyComparison */
+        /**
+         * Сервер передаёт `0`, если у бота нет доступа к чату-источнику.
+         *
+         * @psalm-suppress RiskyTruthyFalsyComparison Поле объявлено обязательным, но проверяем и его отсутствие.
+         */
         return $this->data['chat_id'] ?? null ?: null;
     }
 
     /**
-     * @return MessageBody|null
+     * @return MessageBody Информация о связанном сообщении.
      */
-    public function getMessage(): ?MessageBody
+    public function getMessage(): MessageBody
     {
         return $this->message === false
-            ? $this->message = MessageBody::newFromNullableData($this->data['message'] ?? null)
+            ? ($this->message = MessageBody::newFromData($this->data['message']))
             : $this->message;
     }
 
     /**
-     * @return User|null Пользователь, отправивший сообщение.
+     * @return User|null Пользователь или бот, отправивший сообщение.
+     *     Может быть `null`, если сообщение опубликовано от имени канала.
      */
     public function getSender(): ?User
     {

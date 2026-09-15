@@ -20,7 +20,7 @@ class UploadEndpoint extends BaseResponseModel
 
     /**
      * @return non-empty-string|null Токен для отправки медиафайла во вложении к сообщению с помощью
-     *     {@see MaxApiClient::sendMessage()} или {@see MaxApiClient::editMessage()} (minLength: 1).
+     *     {@see MaxApiClient::sendMessage()} или {@see MaxApiClient::editMessage()}.
      */
     public function getToken(): ?string
     {
@@ -28,7 +28,7 @@ class UploadEndpoint extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string URL для загрузки медиафайла. Срок жизни ссылки не ограничен (minLength: 1).
+     * @return non-empty-string URL для загрузки медиафайла. Срок жизни ссылки не ограничен.
      */
     public function getUrl(): string
     {

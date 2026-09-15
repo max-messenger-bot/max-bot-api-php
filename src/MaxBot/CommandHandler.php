@@ -6,7 +6,6 @@ namespace MaxMessenger\Bot\MaxBot;
 
 use Closure;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
-use MaxMessenger\Bot\Model\Enum\ChatType;
 
 use function explode;
 use function mb_strlen;
@@ -148,12 +147,8 @@ final class CommandHandler
 
     private function getTextFromDialogEvent(MessageCreatedEvent $event): ?string
     {
-        $message = $event->getMessage();
-
-        if ($message->getRecipient()->getChatType() !== ChatType::Dialog) {
-            return null;
-        }
-
-        return $message->getBody()->getText();
+        return $event->isDialog()
+            ? $event->getMessage()->getBody()->getText()
+            : null;
     }
 }

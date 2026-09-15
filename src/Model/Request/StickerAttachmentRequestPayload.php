@@ -25,7 +25,7 @@ final class StickerAttachmentRequestPayload extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $code Код стикера (minLength: 1).
+     * @param non-empty-string|null $code Код стикера.
      */
     public function __construct(?string $code = null)
     {
@@ -50,7 +50,7 @@ final class StickerAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $code Код стикера (minLength: 1).
+     * @param non-empty-string $code Код стикера.
      */
     public static function make(string $code): self
     {
@@ -58,7 +58,7 @@ final class StickerAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $code Код стикера (minLength: 1).
+     * @param non-empty-string|null $code Код стикера.
      */
     public static function new(?string $code = null): self
     {
@@ -66,7 +66,7 @@ final class StickerAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $code Код стикера (minLength: 1).
+     * @param non-empty-string $code Код стикера.
      * @return $this
      */
     public function setCode(string $code): self

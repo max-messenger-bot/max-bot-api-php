@@ -24,8 +24,8 @@ final class PinMessageBody extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $messageId ID сообщения, которое нужно закрепить (minLength: 1).
-     *     Соответствует полю `Message.body.mid`.
+     * @param non-empty-string|null $messageId ID сообщения, которое нужно закрепить
+     *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$'). Соответствует полю `Message.body.mid`.
      * @param bool $notify Если `true`, участники получат уведомление с системным сообщением о закреплении.
      */
     public function __construct(?string $messageId = null, bool $notify = true)
@@ -57,7 +57,7 @@ final class PinMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $messageId ID сообщения, которое нужно закрепить (minLength: 1).
+     * @param non-empty-string $messageId ID сообщения, которое нужно закрепить (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
      *     Соответствует полю `Message.body.mid`.
      * @param bool $notify Если `true`, участники получат уведомление с системным сообщением о закреплении.
      */
@@ -67,8 +67,8 @@ final class PinMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $messageId ID сообщения, которое нужно закрепить (minLength: 1).
-     *     Соответствует полю `Message.body.mid`.
+     * @param non-empty-string|null $messageId ID сообщения, которое нужно закрепить
+     *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$'). Соответствует полю `Message.body.mid`.
      * @param bool $notify Если `true`, участники получат уведомление с системным сообщением о закреплении.
      */
     public static function new(?string $messageId = null, bool $notify = true): self
@@ -77,13 +77,13 @@ final class PinMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $messageId ID сообщения, которое нужно закрепить (minLength: 1).
+     * @param non-empty-string $messageId ID сообщения, которое нужно закрепить (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
      *     Соответствует полю `Message.body.mid`.
      * @return $this
      */
     public function setMessageId(string $messageId): self
     {
-        self::validateString('messageId', $messageId, minLength: 1);
+        self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[a-zA-Z0-9_\-]+$/');
 
         $this->data['message_id'] = $messageId;
 

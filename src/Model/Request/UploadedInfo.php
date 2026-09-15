@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
+use MaxMessenger\Bot\MaxApiClient;
+
 use function array_key_exists;
 
 /**
- * Информация, которую вы получите, как только аудио/видео будет загружено.
+ * Данные, которые вы получили в ответ на запрос загрузки медиафайла.
+ *
+ * Их можно передавать после того, как вы загрузили аудио, видео или файл и получили в ответ от сервера `retval`.
  */
 final class UploadedInfo extends BaseRequestModel
 {
@@ -23,7 +27,8 @@ final class UploadedInfo extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $token Токен — уникальный ID загруженного медиафайла (minLength: 1).
+     * @param non-empty-string|null $token Токен вложения — уникальный ID загруженного медиа:
+     *     изображения, аудио, видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
      */
     public function __construct(?string $token = null)
     {
@@ -48,7 +53,8 @@ final class UploadedInfo extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $token Токен — уникальный ID загруженного медиафайла (minLength: 1).
+     * @param non-empty-string $token Токен вложения — уникальный ID загруженного медиа:
+     *     изображения, аудио, видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
      */
     public static function make(string $token): self
     {
@@ -56,7 +62,8 @@ final class UploadedInfo extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $token Токен — уникальный ID загруженного медиафайла (minLength: 1).
+     * @param non-empty-string|null $token Токен вложения — уникальный ID загруженного медиа:
+     *     изображения, аудио, видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
      */
     public static function new(?string $token = null): self
     {
@@ -64,7 +71,8 @@ final class UploadedInfo extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $token Токен — уникальный ID загруженного медиафайла (minLength: 1).
+     * @param non-empty-string $token Токен вложения — уникальный ID загруженного медиа:
+     *     изображения, аудио, видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
      * @return $this
      */
     public function setToken(string $token): self

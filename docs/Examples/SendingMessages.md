@@ -88,26 +88,35 @@ $event->reply('Сообщение получено', true);
 **Ответ используя API клиент:**
 
 ```php
-$chatId = $event->getMessage()->getRecipient()->getChatId();
-$event->apiClient->sendMessageToChat($chatId, 'Привет');
+$event->apiClient->sendMessageToChat($event->getChatId(), 'Привет');
 ```
+
+> Если событие относится к объекту, который не поддерживается MAX API, сообщения в нём нет
+> и `getChatId()` прерывает обработку события через `BaseEvent::continue()`.
 
 ## Реакции на события бота
 
 У разных событий есть разные методы реакций на события.
 
-- `$event->sendToChat($message, $disableLinkPreview = false)`,
-  `$event->sendToUser($message, $disableLinkPreview = false)`
+- `$event->sendMessageToChat($message, $disableLinkPreview = false)`
     - **BotAddedToChatEvent**
-    - **BotRemovedFromChatEvent**
     - **BotStartedEvent**
     - **ChatTitleChangedEvent**
     - **DialogClearedEvent**
     - **DialogMutedEvent**
     - **DialogUnmutedEvent**
+    - **MessageCallbackEvent**
+    - **MessageCreatedEvent**
+    - **MessageEditedEvent**
     - **MessageRemovedEvent**
     - **UserAddedToChatEvent**
     - **UserRemovedFromChatEvent**
+- `$event->sendMessageToUser($message, $disableLinkPreview = false)`
+    - все события из списка выше
+    - **BotRemovedFromChatEvent**
+    - **CommentCreatedEvent**
+    - **CommentEditedEvent**
+    - **CommentRemovedEvent**
 - `$event->forwardToChat($chatId)`, `$event->forwardToUser($userId)`,
   `$event->reply($message, $asReply = false, $disableLinkPreview = false)`,
   `$event->replyToUser($message, $forwardOrigMessage = false, $disableLinkPreview = false)`

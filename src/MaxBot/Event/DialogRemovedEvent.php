@@ -8,6 +8,10 @@ use MaxMessenger\Bot\Model\Response\DialogRemovedUpdate;
 use MaxMessenger\Bot\Model\Response\User;
 
 /**
+ * Событие удаления диалога с ботом.
+ *
+ * Вместе с этим событием приходит {@see BotStoppedEvent} — при удалении диалога бот останавливается автоматически.
+ *
  * @property-read DialogRemovedUpdate $update
  */
 final class DialogRemovedEvent extends BaseEvent

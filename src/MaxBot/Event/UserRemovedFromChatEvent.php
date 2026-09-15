@@ -8,10 +8,19 @@ use MaxMessenger\Bot\Model\Response\User;
 use MaxMessenger\Bot\Model\Response\UserRemovedFromChatUpdate;
 
 /**
+ * Событие удаления пользователя из чата или канала.
+ *
+ * Приходит, когда пользователя удалили или он покинул чат или канал.
+ *
+ * На свои действия бот события не получает.
+ *
  * @property-read UserRemovedFromChatUpdate $update
+ * @psalm-suppress DeprecatedTrait {@see UserEventTrait} подключён для совместимости.
  */
 final class UserRemovedFromChatEvent extends BaseEvent
 {
+    use SendMessageToChatTrait;
+    use SendMessageToUserTrait;
     use UserEventTrait;
 
     /**

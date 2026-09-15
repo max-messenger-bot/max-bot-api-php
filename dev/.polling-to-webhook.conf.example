@@ -5,10 +5,29 @@
 MAXBOT_ACCESS_TOKEN=your_access_token_here
 
 # Полный путь к скрипту-обработчику (webhook handler)
-SCRIPT=/path/to/your/webhook.php
+SCRIPT_FILENAME=/path/to/your/public/webhook.php
+
+# Корневая папка сайта, внутри которой лежит скрипт-обработчик
+DOCUMENT_ROOT=/path/to/your/public
 
 # PHP CGI интерпретатор
 BIN=/usr/bin/php-cgi
 
 # Секрет для заголовка X-Max-Bot-Api-Secret
 MAXBOT_SECRET=your_secret_here
+
+# Необязательные параметры
+
+# Адрес запроса. По умолчанию — путь скрипта-обработчика относительно DOCUMENT_ROOT.
+# Задайте его, если обработчик — фронт-контроллер фреймворка (Laravel, Symfony):
+# без этого маршрут не будет найден
+#REQUEST_URI=/api/max/webhook
+
+# Значение заголовка Host, можно указать с портом (localhost:8080). По умолчанию: localhost
+#HTTP_HOST=localhost
+
+# Схема запроса: http или https. По умолчанию: http
+#SCHEME=http
+
+# IP-адрес отправителя запроса. По умолчанию: 127.0.0.1
+#REMOTE_ADDR=127.0.0.1
