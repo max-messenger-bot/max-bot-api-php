@@ -11,13 +11,11 @@ use MaxMessenger\Bot\Model\Response\User;
  * Событие очистки истории диалога с ботом.
  *
  * @property-read DialogClearedUpdate $update
- * @psalm-suppress DeprecatedTrait {@see UserEventTrait} подключён для совместимости.
  */
 final class DialogClearedEvent extends BaseEvent
 {
     use SendMessageToChatTrait;
     use SendMessageToUserTrait;
-    use UserEventTrait;
 
     /**
      * @return int ID чата, где произошло событие.

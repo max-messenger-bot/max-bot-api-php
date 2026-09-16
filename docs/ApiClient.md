@@ -21,9 +21,10 @@
 ### Инициализация
 
 ```php
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\BadRequestException;
+use MaxMessenger\Bot\HttpClient\Exception\TemporaryExceptionInterface;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxApiConfig;
-use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
 
 // Простая инициализация с токеном
 $client = new MaxApiClient('your-access-token');
@@ -35,8 +36,11 @@ $config = new MaxApiConfig(
 );
 $client = new MaxApiClient($config);
 
-// Добавление логгера исключений
-$exceptionLogger = static function (string $method, HttpClientException $exception): void {
+// Добавление логгера исключений: сюда попадают ошибки, после которых запрос повторяется
+$exceptionLogger = static function (
+    string $method,
+    TemporaryExceptionInterface|BadRequestException $exception,
+): void {
     echo sprintf("%s [%s] %s\n", date('H:i:s'), $method, $exception->getMessage());
 };
 $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
@@ -47,16 +51,114 @@ $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 - Все методы API имеют строгую типизацию и встроенную валидацию параметров
 - Для работы с моделями запросов используются классы из `MaxMessenger\Bot\Model\Request\`
 - Модели ответов возвращаются из `MaxMessenger\Bot\Model\Response\`
-- HTTP-клиент доступен через `$client->getHttpClient()` для выполнения произвольных запросов
+- HTTP-клиент доступен через `$client->getMaxHttpClient()` для выполнения произвольных запросов
 - Метод `sendMessage()` автоматически обрабатывает ошибки готовности вложений с повторными попытками
 - Все методы автоматически делают повторные попытки при сетевых ошибках
+
+## Выбор HTTP-клиента
+
+Запросы к API выполняет один из двух клиентов. Оба реализуют `MaxMessenger\Bot\Contract\Http\HttpClientInterface`,
+принимают `HttpRequest` и возвращают `HttpResponse`, поэтому остальной код от выбора не зависит.
+
+### CurlHttpClient (по умолчанию)
+
+Встроенный клиент на curl. Отдельной настройки не требует: его создаёт `MaxApiConfig`, применяя заданные
+таймауты и параметры TLS. Нужен модуль `ext-curl`.
+
+Собственный экземпляр нужен, только если требуются особые настройки:
+
+```php
+use MaxMessenger\Bot\CurlHttpClient\CurlHttpClient;
+use MaxMessenger\Bot\MaxApiClient;
+use MaxMessenger\Bot\MaxApiConfig;
+
+$httpClient = (new CurlHttpClient())
+    ->setConnectTimeout(3000)
+    ->setTimeout(30_000)
+    ->setUserAgent('my-bot/1.0')
+    ->setProxy('127.0.0.1:1080', socks5: true);
+
+$config = (new MaxApiConfig('your-access-token'))->setHttpClient($httpClient);
+$client = new MaxApiClient($config);
+```
+
+Настройки клиента: `setConnectTimeout()`, `setTimeout()`, `setUserAgent()`, `setProxy()`,
+`setVerifySslCertificate()`, `setCaCertificatePath()`, `setCaCertificateDir()`. Любой другой параметр curl
+задаётся методом `setOption()`.
+
+### PsrHttpClient (любой клиент PSR-18)
+
+Подходит, когда в проекте уже есть настроенный HTTP-клиент — Guzzle, Symfony HttpClient и другие.
+Требует пакеты `psr/http-client`, `psr/http-factory` и `psr/http-message`, а также саму реализацию.
+
+**Guzzle** — он же является фабрикой PSR-17, поэтому фабрики передавать не нужно:
+
+```php
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\HttpFactory;
+use MaxMessenger\Bot\MaxApiConfig;
+use MaxMessenger\Bot\PsrHttpClient\PsrHttpClient;
+
+$factory = new HttpFactory();
+$httpClient = new PsrHttpClient(new Client(['timeout' => 30]), $factory, $factory);
+
+$config = (new MaxApiConfig('your-access-token'))->setHttpClient($httpClient);
+```
+
+**Symfony HttpClient** — через адаптер `Psr18Client`, который сам реализует обе фабрики:
+
+```php
+use MaxMessenger\Bot\MaxApiConfig;
+use MaxMessenger\Bot\PsrHttpClient\PsrHttpClient;
+use Symfony\Component\HttpClient\Psr18Client;
+
+$config = (new MaxApiConfig('your-access-token'))->setHttpClient(new PsrHttpClient(new Psr18Client()));
+```
+
+> **Внимание:** в PSR-18 нет таймаутов, поэтому таймаут отдельного запроса не применяется. Задавайте его
+> при настройке своего клиента и учитывайте long polling: `getUpdates()` ждёт ответа до 90 секунд,
+> поэтому таймаут клиента должен быть больше.
+
+### Ошибки
+
+Ошибки делятся на два вида: ответ не получен и ответ получен, но не подошёл. Первые бросает клиент,
+вторые — `MaxHttpClient`, поэтому от выбора клиента они не зависят.
+
+```
+MaxApiException
+├── HttpClient\Exception\HttpClientException            ответ не получен
+│   ├── NetworkException                                нет соединения, таймаут, ошибка TLS
+│   ├── CurlHttpClient\Exception\CurlException          прочие ошибки curl
+│   └── PsrHttpClient\Exception\PsrClientException      прочие ошибки клиента PSR-18
+└── HttpClient\Exception\HttpResponse\HttpResponseException   ответ получен
+    ├── Http\HttpException                              сервер вернул код ошибки
+    │   ├── BadRequestException (400), UnauthorizedException (401), ForbiddenException (403)
+    │   ├── NotFoundException (404), NotAllowedException (405), NotAcceptableException (406)
+    │   ├── ProxyAuthenticationRequiredException (407), UnsupportedMediaTypeException (415)
+    │   ├── TooManyRequestsException (429), InternalHttpException (500)
+    │   ├── NotImplementedException (501), BadGatewayException (502)
+    │   ├── ServiceUnavailableException (503), GatewayTimeoutException (504)
+    │   └── UnknownException                            прочие коды
+    ├── ParseDataException → JsonDecodeException, UnexpectedFormatException
+    └── UnexpectedContentTypeException                  сервер вернул не JSON
+```
+
+Каждая ошибка хранит запрос (`getRequest()`), а ошибки ответа — ещё и сам ответ (`getResponse()`).
+У `HttpException` есть `getError()`: разобранное описание ошибки API или `null`, если тело ответа
+разобрать не удалось — тогда описание остаётся в теле ответа.
+
+**Повторные попытки.** Временные сбои помечены интерфейсом `HttpClient\Exception\TemporaryExceptionInterface`:
+это все ошибки клиента плюс коды `429`, `500`, `502`, `503` и `504`. Запросы с такими ошибками `MaxHttpClient`
+повторяет по расписанию из `MaxApiConfig::setRetryAttempts()`. Отдельно `sendMessage()` повторяет отправку,
+когда сервер отвечает `400` с ошибкой `attachment.not.ready` — вложение ещё не обработано
+(проверка `Error::isAttachmentNotReady()`).
 
 ## Методы API
 
 ### addMembers
 
-> **Устарело.** С 9 сентября 2026 г. работа метода ограничена, а с 30 сентября 2026 г. он будет удалён.
-> После этого API MAX не предоставляет готовой возможности для добавления участников в групповой чат.
+> **Устарело.** С 30 сентября 2026 г. метод будет удалён. После этого API MAX не предоставляет готовой
+> возможности для добавления участников в групповой чат.
 
 Добавляет участников в групповой чат. Для этого могут потребоваться дополнительные права.
 Подписчиков в канал с помощью этого метода добавить нельзя.
@@ -81,10 +183,6 @@ $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 **Ограничения:** можно отправлять не более двух ответов в секунду в один диалог, групповой чат или канал.
 При превышении этого лимита сообщения следует ставить в очередь или делать задержку перед отправкой.
 
-> **Внимание:** с 21 июля 2026 г. поле `notification` удалено из официальной схемы API и больше
-> не передаётся на сервер, а поле `message` стало обязательным — ответ на callback должен содержать
-> обновлённое сообщение.
-
 **Параметры:**
 
 | Параметр              | Тип                                        | Описание                                                                                                                                                                                                                                                                |
@@ -94,6 +192,21 @@ $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 | `$disableLinkPreview` | `bool`                                     | Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения или поста. По умолчанию: `false`.                                                                                                                                                        |
 
 **Документация API:** [POST /answers](https://dev.max.ru/docs-api/methods/POST/answers)
+
+---
+
+### deleteAdmin
+
+Отменяет права администратора в групповом чате или канале. Псевдоним `deleteAdmins()` — метод вызывает его.
+
+**Параметры:**
+
+| Параметр  | Тип   | Описание                                                            |
+|-----------|-------|---------------------------------------------------------------------|
+| `$chatId` | `int` | ID группового чата или канала.                                      |
+| `$userId` | `int` | Идентификатор пользователя или бота, которого надо лишить прав. |
+
+**Документация API:** [DELETE /chats/-chatId-/members/admins/-userId-](https://dev.max.ru/docs-api/methods/DELETE/chats/-chatId-/members/admins/-userId-)
 
 ---
 
@@ -120,9 +233,9 @@ $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 
 Удаляет групповой чат для всех участников.
 
-Удалить чат может только его владелец: у бота это чаты, созданные пользователем по кнопке `ChatButton`
-в сообщении бота. В остальных случаях, даже с правами администратора, сервер отвечает ошибкой
-`Insufficient access rights to perform this action`.
+Удалить чат может только его владелец: у бота это чаты, созданные по кнопке `ChatButton` в его сообщении —
+владельцем такого чата становится сам бот. В остальных случаях, даже с правами администратора, сервер
+отвечает ошибкой `Insufficient access rights to perform this action`.
 
 **Параметры:**
 
@@ -431,11 +544,14 @@ $apiClient->editMyCommands(BotCommandsPatch::make([]));
 
 ---
 
-### getHttpClient
+### getMaxHttpClient
 
 HTTP-клиент для прямых запросов к Max Messenger API. Для использования необходимо знать формат запросов и ответов API.
 
-**Возвращает:** `MaxHttpClient`
+Сам транспорт (`CurlHttpClient` или `PsrHttpClient`) доступен уровнем ниже —
+`$client->getMaxHttpClient()->getHttpClient()`.
+
+**Возвращает:** `MaxHttpClientInterface`
 
 ---
 

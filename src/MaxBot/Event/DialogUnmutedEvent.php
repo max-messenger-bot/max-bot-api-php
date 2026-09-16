@@ -11,13 +11,11 @@ use MaxMessenger\Bot\Model\Response\User;
  * Событие включения уведомлений в диалоге, чате или канале.
  *
  * @property-read DialogUnmutedUpdate $update
- * @psalm-suppress DeprecatedTrait {@see UserEventTrait} подключён для совместимости.
  */
 final class DialogUnmutedEvent extends BaseEvent
 {
     use SendMessageToChatTrait;
     use SendMessageToUserTrait;
-    use UserEventTrait;
 
     /**
      * @return int ID диалога, чата или канала, где произошло событие.

@@ -39,7 +39,7 @@ if ($update['update_type'] === 'message_created' && isset($update['message'])) {
             'mid' => $mid,
         ]
     ];
-    $bot->apiClient->getHttpClient()->post('/messages', (object)$message, ['chat_id' => $chatId]);
+    $bot->apiClient->getMaxHttpClient()->post('/messages', (object)$message, ['chat_id' => $chatId]);
 }
 ```
 

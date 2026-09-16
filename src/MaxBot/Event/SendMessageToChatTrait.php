@@ -25,33 +25,17 @@ trait SendMessageToChatTrait
     /**
      * Отправить действие бота в чат события.
      *
-     * @param SenderAction $action Действие бота.
-     * @return bool Всегда `true`.
-     * @deprecated Метод будет удалён в следующих версиях. Используйте {@see sendActionToChat()}.
-     */
-    public function sendAction(SenderAction $action): bool
-    {
-        return $this->sendActionToChat($action);
-    }
-
-    /**
-     * Отправить действие бота в чат события.
-     *
      * Отправляет такие действия бота, как «набор текста» или «отправка фото», а также отметку о прочтении сообщений.
      *
      * - Действие отображается в диалогах и групповых чатах. Для каналов сервер принимает запрос,
      *   но участникам действие не показывается.
      *
      * @param SenderAction $action Действие бота.
-     * @return bool Всегда `true`. Deprecated: тип возвращаемого значения устарел — в следующих версиях
-     *     он будет заменён на `void`.
      * @see MaxApiClient::sendAction()
      */
-    public function sendActionToChat(SenderAction $action): bool
+    public function sendActionToChat(SenderAction $action): void
     {
         $this->apiClient->sendAction($this->getChatId(), $action);
-
-        return true;
     }
 
     /**
@@ -72,19 +56,5 @@ trait SendMessageToChatTrait
         bool $disableLinkPreview = false,
     ): SendMessageResult {
         return $this->apiClient->sendMessageToChat($this->requireChatId(), $message, $disableLinkPreview);
-    }
-
-    /**
-     * Отправить сообщение в чат события.
-     *
-     * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
-     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
-     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
-     * @return SendMessageResult Информация о созданном сообщении.
-     * @deprecated Метод будет удалён в следующих версиях. Используйте {@see sendMessageToChat()}.
-     */
-    public function sendToChat(NewMessageBody|string $message, bool $disableLinkPreview = false): SendMessageResult
-    {
-        return $this->sendMessageToChat($message, $disableLinkPreview);
     }
 }

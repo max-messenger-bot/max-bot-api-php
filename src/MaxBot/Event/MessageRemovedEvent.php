@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\MaxBot\Event;
 
-use MaxMessenger\Bot\Model\Request\NewMessageBody;
 use MaxMessenger\Bot\Model\Response\MessageRemovedUpdate;
-use MaxMessenger\Bot\Model\Response\SendMessageResult;
 
 /**
  * Событие удаления сообщения.
@@ -14,13 +12,11 @@ use MaxMessenger\Bot\Model\Response\SendMessageResult;
  * На свои действия бот события не получает.
  *
  * @property-read MessageRemovedUpdate $update
- * @psalm-suppress DeprecatedTrait {@see UserEventTrait} подключён для совместимости.
  */
 final class MessageRemovedEvent extends BaseEvent
 {
     use SendMessageToChatTrait;
     use SendMessageToUserTrait;
-    use UserEventTrait;
 
     /**
      * @return int ID чата, где сообщение было удалено.
@@ -51,17 +47,4 @@ final class MessageRemovedEvent extends BaseEvent
         return $this->update->getUserId();
     }
 
-    /**
-     * Отправить сообщение пользователю, удалившему сообщение.
-     *
-     * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
-     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
-     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
-     * @return SendMessageResult Информация о созданном сообщении.
-     * @deprecated Используйте {@see SendMessageToUserTrait::sendMessageToUser()} — метод дублирует его поведение.
-     */
-    public function sendMessage(NewMessageBody|string $message, bool $disableLinkPreview = false): SendMessageResult
-    {
-        return $this->sendMessageToUser($message, $disableLinkPreview);
-    }
 }

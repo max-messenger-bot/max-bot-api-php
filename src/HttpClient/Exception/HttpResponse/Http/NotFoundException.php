@@ -7,4 +7,4 @@ namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
 /**
  * Ресурс не найден.
  */
-final class NotFoundException extends MaxHttpException {}
+final class NotFoundException extends HttpException {}

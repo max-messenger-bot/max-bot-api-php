@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Contract;
 
-use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
+use MaxMessenger\Bot\Contract\Http\HttpClientInterface;
 
 /**
  * An interface that implements requests to the MAX API.
@@ -26,6 +26,9 @@ interface MaxHttpClientInterface
      */
     public function get(string $path, ?array $query = null, int $timeout = null): array;
 
+    /**
+     * @return HttpClientInterface Клиент, выполняющий запросы.
+     */
     public function getHttpClient(): HttpClientInterface;
 
     /**

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit;
 
 use Codeception\Test\Unit;
+use MaxMessenger\Bot\Contract\Http\HttpClientInterface;
+use MaxMessenger\Bot\CurlHttpClient\CurlHttpClient;
 use MaxMessenger\Bot\MaxApiConfig;
-use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
-use Mj4444\SimpleHttpClient\CurlHttpClient;
 use SensitiveParameterValue;
 
 use const CURLOPT_CAINFO;
@@ -148,8 +148,8 @@ final class MaxApiConfigTest extends Unit
 
         self::assertInstanceOf(CurlHttpClient::class, $httpClient);
         $options = $httpClient->getOptions();
-        self::assertArrayNotHasKey(CURLOPT_SSL_VERIFYPEER, $options);
-        self::assertArrayNotHasKey(CURLOPT_SSL_VERIFYHOST, $options);
+        self::assertTrue($options[CURLOPT_SSL_VERIFYPEER] ?? null);
+        self::assertSame(2, $options[CURLOPT_SSL_VERIFYHOST] ?? null);
         self::assertArrayNotHasKey(CURLOPT_CAINFO, $options);
         self::assertArrayNotHasKey(CURLOPT_CAPATH, $options);
     }

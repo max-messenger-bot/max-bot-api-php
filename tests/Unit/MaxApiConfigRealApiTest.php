@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit;
 
 use Codeception\Test\Unit;
+use MaxMessenger\Bot\HttpClient\Exception\HttpClientException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\HttpException;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxApiConfig;
-use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
-use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\HttpException;
 
 use function stripos;
 

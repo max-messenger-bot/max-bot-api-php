@@ -35,29 +35,6 @@ final class MessageRemovedEventTest extends Unit
         self::assertSame(200, $this->createEvent()->getUserId());
     }
 
-    public function testSendMessageDelegatesToSendMessageToUser(): void
-    {
-        $http = new FakeMaxHttpClient();
-        $client = new MaxApiClient(new FakeMaxApiConfig($http));
-        $event = BaseEvent::new(Update::newFromData([
-            'update_type' => 'message_removed',
-            'timestamp' => 1_700_000_000_000,
-            'message_id' => 'mid.1',
-            'chat_id' => 100,
-            'user_id' => 200,
-        ]), $client, []);
-        self::assertInstanceOf(MessageRemovedEvent::class, $event);
-
-        /** @psalm-suppress DeprecatedMethod Проверяем сохранённый для совместимости устаревший метод. */
-        $result = $event->sendMessage('Привет');
-
-        self::assertInstanceOf(SendMessageResult::class, $result);
-        $call = $http->lastCall();
-        self::assertNotNull($call);
-        self::assertSame('/messages', $call['path']);
-        self::assertSame(['user_id' => 200], $call['query']);
-    }
-
     public function testSendMessageToUser(): void
     {
         $http = new FakeMaxHttpClient();

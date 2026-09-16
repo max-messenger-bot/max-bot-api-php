@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit\HttpClient;
 
 use Codeception\Test\Unit;
+use MaxMessenger\Bot\Contract\Http\HttpClientInterface;
+use MaxMessenger\Bot\Contract\Http\HttpRequestInterface;
 use MaxMessenger\Bot\Contract\MaxApiConfigInterface;
 use MaxMessenger\Bot\Exception\AccessTokenException;
-use MaxMessenger\Bot\Exception\HttpClient\HttpResponse\UnexpectedFormatException;
-use MaxMessenger\Bot\HttpClient\JsonRequest;
-use MaxMessenger\Bot\HttpClient\JsonResponse;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\UnexpectedFormatException;
+use MaxMessenger\Bot\HttpClient\HttpRequest;
+use MaxMessenger\Bot\HttpClient\HttpResponse;
 use MaxMessenger\Bot\HttpClient\MaxHttpClient;
-use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
-use Mj4444\SimpleHttpClient\Contracts\HttpRequestInterface;
 use SensitiveParameterValue;
 
 final class MaxHttpClientTest extends Unit
@@ -36,11 +36,11 @@ final class MaxHttpClientTest extends Unit
 
     public function testBaseUrlUsedInRequest(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             $url = $request->getUrl();
             self::assertStringStartsWith(self::BASE_URL, $url);
             self::assertStringContainsString('/test/base', $url);
-            return $this->createJsonResponse($request, 200, '{"ok":true}');
+            return $this->createResponse($request, 200, '{"ok":true}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -53,9 +53,9 @@ final class MaxHttpClientTest extends Unit
     public function testDelete(): void
     {
         $capturedRequest = null;
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) use (&$capturedRequest) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) use (&$capturedRequest) {
             $capturedRequest = $request;
-            return $this->createJsonResponse($request, 200, '{"result":"deleted"}');
+            return $this->createResponse($request, 200, '{"result":"deleted"}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -72,10 +72,10 @@ final class MaxHttpClientTest extends Unit
 
     public function testDeleteWithQuery(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             $url = $request->getUrl();
             self::assertStringContainsString('foo=bar', $url);
-            return $this->createJsonResponse($request, 200, '{"result":"ok"}');
+            return $this->createResponse($request, 200, '{"result":"ok"}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -87,8 +87,8 @@ final class MaxHttpClientTest extends Unit
 
     public function testDoRequestReturnsEmptyArrayForEmptyObjectResponse(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
-            return $this->createJsonResponse($request, 200, '{}');
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
+            return $this->createResponse($request, 200, '{}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -100,8 +100,8 @@ final class MaxHttpClientTest extends Unit
 
     public function testDoRequestReturnsValidResponseWithNestedEmptyArray(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
-            return $this->createJsonResponse($request, 200, '{"data":[]}');
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
+            return $this->createResponse($request, 200, '{"data":[]}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -115,8 +115,8 @@ final class MaxHttpClientTest extends Unit
 
     public function testDoRequestThrowsUnexpectedFormatExceptionForNonArrayResponse(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
-            return $this->createJsonResponse($request, 200, '"string"');
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
+            return $this->createResponse($request, 200, '"string"');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -132,10 +132,10 @@ final class MaxHttpClientTest extends Unit
 
     public function testGet(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             self::assertSame('GET', $request->getMethod());
             self::assertStringContainsString('/test/get', $request->getUrl());
-            return $this->createJsonResponse($request, 200, '{"data":"value"}');
+            return $this->createResponse($request, 200, '{"data":"value"}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -149,11 +149,11 @@ final class MaxHttpClientTest extends Unit
 
     public function testGetWithQuery(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             $url = $request->getUrl();
             self::assertStringContainsString('id=123', $url);
             self::assertStringContainsString('type=test', $url);
-            return $this->createJsonResponse($request, 200, '{"item":{"id":123}}');
+            return $this->createResponse($request, 200, '{"item":{"id":123}}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -166,9 +166,9 @@ final class MaxHttpClientTest extends Unit
 
     public function testGetWithTimeout(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             self::assertSame(30, $request->getTimeout());
-            return $this->createJsonResponse($request, 200, '{"timeout":true}');
+            return $this->createResponse($request, 200, '{"timeout":true}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -180,10 +180,12 @@ final class MaxHttpClientTest extends Unit
 
     public function testPatch(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             self::assertSame('PATCH', $request->getMethod());
-            self::assertSame('{"name":"updated"}', $request->getBody()->getBody());
-            return $this->createJsonResponse($request, 200, '{"status":"patched"}');
+            $body = $request->getBody();
+            self::assertNotNull($body);
+            self::assertSame('{"name":"updated"}', $body->getBody());
+            return $this->createResponse($request, 200, '{"status":"patched"}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -196,10 +198,10 @@ final class MaxHttpClientTest extends Unit
 
     public function testPatchWithQuery(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             $url = $request->getUrl();
             self::assertStringContainsString('param=value', $url);
-            return $this->createJsonResponse($request, 200, '{"status":"ok"}');
+            return $this->createResponse($request, 200, '{"status":"ok"}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -211,10 +213,12 @@ final class MaxHttpClientTest extends Unit
 
     public function testPost(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             self::assertSame('POST', $request->getMethod());
-            self::assertSame('{"message":"hello"}', $request->getBody()->getBody());
-            return $this->createJsonResponse($request, 200, '{"id":42}');
+            $body = $request->getBody();
+            self::assertNotNull($body);
+            self::assertSame('{"message":"hello"}', $body->getBody());
+            return $this->createResponse($request, 200, '{"id":42}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -228,9 +232,9 @@ final class MaxHttpClientTest extends Unit
 
     public function testPostWithNullBody(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             self::assertSame('POST', $request->getMethod());
-            return $this->createJsonResponse($request, 200, '{"created":true}');
+            return $this->createResponse($request, 200, '{"created":true}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -242,10 +246,10 @@ final class MaxHttpClientTest extends Unit
 
     public function testPostWithQuery(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             $url = $request->getUrl();
             self::assertStringContainsString('chat_id=123', $url);
-            return $this->createJsonResponse($request, 200, '{"sent":true}');
+            return $this->createResponse($request, 200, '{"sent":true}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -257,10 +261,12 @@ final class MaxHttpClientTest extends Unit
 
     public function testPut(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             self::assertSame('PUT', $request->getMethod());
-            self::assertSame('{"title":"new title"}', $request->getBody()->getBody());
-            return $this->createJsonResponse($request, 200, '{"updated":true}');
+            $body = $request->getBody();
+            self::assertNotNull($body);
+            self::assertSame('{"title":"new title"}', $body->getBody());
+            return $this->createResponse($request, 200, '{"updated":true}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -273,10 +279,10 @@ final class MaxHttpClientTest extends Unit
 
     public function testPutWithQuery(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             $url = $request->getUrl();
             self::assertStringContainsString('force=true', $url);
-            return $this->createJsonResponse($request, 200, '{"replaced":true}');
+            return $this->createResponse($request, 200, '{"replaced":true}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -288,10 +294,10 @@ final class MaxHttpClientTest extends Unit
 
     public function testVersionIncludedInQueryForGet(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             $url = $request->getUrl();
             self::assertStringContainsString('v=0.0.10', $url);
-            return $this->createJsonResponse($request, 200, '{"versioned":true}');
+            return $this->createResponse($request, 200, '{"versioned":true}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -303,11 +309,11 @@ final class MaxHttpClientTest extends Unit
 
     public function testVersionIncludedInQueryForGetWithExistingQuery(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             $url = $request->getUrl();
             self::assertStringContainsString('foo=bar', $url);
             self::assertStringContainsString('v=0.0.10', $url);
-            return $this->createJsonResponse($request, 200, '{"ok":true}');
+            return $this->createResponse($request, 200, '{"ok":true}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -319,11 +325,11 @@ final class MaxHttpClientTest extends Unit
 
     public function testVersionNotOverwrittenIfAlreadySet(): void
     {
-        $mockHttpClient = $this->createMockHttpClient(function (JsonRequest $request) {
+        $mockHttpClient = $this->createMockHttpClient(function (HttpRequest $request) {
             $url = $request->getUrl();
             self::assertStringContainsString('v=1.0.0', $url);
             self::assertStringNotContainsString('v=0.0.10', $url);
-            return $this->createJsonResponse($request, 200, '{"ok":true}');
+            return $this->createResponse($request, 200, '{"ok":true}');
         });
         $config = $this->createMockConfig(mockHttpClient: $mockHttpClient);
 
@@ -355,10 +361,9 @@ final class MaxHttpClientTest extends Unit
         self::assertNull($clientWithoutVersion->version);
     }
 
-    private function createJsonResponse(JsonRequest $request, int $httpCode, string $body): JsonResponse
+    private function createResponse(HttpRequest $request, int $httpCode, string $body): HttpResponse
     {
-        return new JsonResponse(
-            $request,
+        return new HttpResponse(
             $httpCode,
             $request->getUrl(),
             'application/json',
@@ -384,14 +389,14 @@ final class MaxHttpClientTest extends Unit
     }
 
     /**
-     * @param callable(JsonRequest): JsonResponse $handler
+     * @param callable(HttpRequest): HttpResponse $handler
      */
     private function createMockHttpClient(callable $handler): HttpClientInterface
     {
         $mock = $this->createMock(HttpClientInterface::class);
         $mock->method('request')
             ->willReturnCallback(function (HttpRequestInterface $request) use ($handler) {
-                self::assertInstanceOf(JsonRequest::class, $request);
+                self::assertInstanceOf(HttpRequest::class, $request);
                 return $handler($request);
             });
 

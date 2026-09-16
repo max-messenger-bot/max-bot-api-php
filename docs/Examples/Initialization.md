@@ -22,7 +22,7 @@ $apiClient = new MaxApiClient('your-access-token');
 ```php
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxApiConfig;
-use Mj4444\SimpleHttpClient\CurlHttpClient;
+use MaxMessenger\Bot\CurlHttpClient\CurlHttpClient;
 
 $apiConfig = new MaxApiConfig(
     accessToken: 'your-access-token',
@@ -71,10 +71,14 @@ $apiConfig->setVerifySslCertificate(false);
 #### Добавление логгера исключений
 
 ```php
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\BadRequestException;
+use MaxMessenger\Bot\HttpClient\Exception\TemporaryExceptionInterface;
 use MaxMessenger\Bot\MaxApiClient;
-use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
 
-$exceptionLogger = static function (string $method, HttpClientException $exception): void {
+$exceptionLogger = static function (
+    string $method,
+    TemporaryExceptionInterface|BadRequestException $exception,
+): void {
     echo sprintf("%s [%s] %s\n", date('H:i:s'), $method, $exception->getMessage());
 };
 $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
@@ -95,7 +99,7 @@ $bot = new MaxBot('your-access-token', 'your-secret');
 ```php
 use MaxMessenger\Bot\MaxApiConfig;
 use MaxMessenger\Bot\MaxBot;
-use Mj4444\SimpleHttpClient\CurlHttpClient;
+use MaxMessenger\Bot\CurlHttpClient\CurlHttpClient;
 
 $apiConfig = new MaxApiConfig(
     accessToken: 'your-access-token',

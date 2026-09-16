@@ -29,15 +29,6 @@ final class MessageCallbackEventTest extends Unit
         self::assertSame(['callback_id' => 'cb.1'], $call['query']);
     }
 
-    public function testAnswerNotification(): void
-    {
-        $http = new FakeMaxHttpClient();
-        /** @psalm-suppress DeprecatedMethod Проверяем, что устаревший метод больше не делает запрос. */
-        $this->createEventWithHttp($http)->answerNotification('Уведомление');
-
-        self::assertNull($http->lastCall());
-    }
-
     public function testAnswerWithDisableLinkPreview(): void
     {
         $http = new FakeMaxHttpClient();

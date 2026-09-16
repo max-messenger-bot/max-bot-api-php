@@ -11,6 +11,7 @@ use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
 use MaxMessenger\Bot\Exception\RequiredArgumentsException;
 use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\BadRequestException;
+use MaxMessenger\Bot\HttpClient\Exception\TemporaryExceptionInterface;
 use MaxMessenger\Bot\HttpClient\MaxHttpClient;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
@@ -56,7 +57,6 @@ use MaxMessenger\Bot\Model\Response\Update;
 use MaxMessenger\Bot\Model\Response\UpdateList;
 use MaxMessenger\Bot\Model\Response\UploadEndpoint;
 use MaxMessenger\Bot\Model\Response\VideoAttachmentDetails;
-use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
 use SensitiveParameter;
 
 use function array_filter;
@@ -85,7 +85,7 @@ final class MaxApiClient
 
     /**
      * @param non-empty-string|MaxApiConfigInterface $accessTokenOrConfig
-     * @param Closure(non-empty-string $method, HttpClientException $exception): void|null $exceptionLogger
+     * @param Closure(non-empty-string $method, TemporaryExceptionInterface|BadRequestException $exception): void|null $exceptionLogger
      */
     public function __construct(
         #[SensitiveParameter]
@@ -112,8 +112,8 @@ final class MaxApiClient
      *     в групповой чат. При использованнии массива, смотрите ограничения в {@see UserIdsList}.
      * @return ModifyMembersResult Результат запроса на изменение списка участников чата.
      * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members
-     * @deprecated С 9 сентября 2026 г. работа метода ограничена, а с 30 сентября 2026 г. он будет удалён.
-     *     После этого API MAX не предоставляет готовой возможности для добавления участников в групповой чат.
+     * @deprecated С 30 сентября 2026 г. метод будет удалён. После этого API MAX не предоставляет готовой
+     *     возможности для добавления участников в групповой чат.
      */
     public function addMembers(int $chatId, UserIdsList|RawModel|array $userIds): ModifyMembersResult
     {
@@ -137,7 +137,7 @@ final class MaxApiClient
      * @param non-empty-string|Callback $callbackId Идентификатор кнопки, на которую нажал пользователь
      *     (pattern: '^[\x21-\x7E]+$'). Бот получает идентификатор как часть {@see Update} с типом `message_callback`.
      *     Пример получения идентификатора: `$update->getCallback()->getCallbackId()`.
-     * @param CallbackAnswer|RawModel|NewMessageBody $answer Ответ на callback: обновленное сообщение и/или уведомление.
+     * @param CallbackAnswer|RawModel|NewMessageBody $answer Ответ на callback: обновлённое сообщение.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения
      *     или поста.
      * @link https://dev.max.ru/docs-api/methods/POST/answers
@@ -210,9 +210,9 @@ final class MaxApiClient
      *
      * Удаляет групповой чат для всех участников.
      *
-     * Удалить чат может только его владелец: у бота это чаты, созданные пользователем по кнопке
-     * {@see ChatButton} в сообщении бота. В остальных случаях, даже с правами администратора, сервер
-     * отвечает ошибкой `Insufficient access rights to perform this action`.
+     * Удалить чат может только его владелец: у бота это чаты, созданные по кнопке {@see ChatButton}
+     * в его сообщении — владельцем такого чата становится сам бот. В остальных случаях, даже с правами
+     * администратора, сервер отвечает ошибкой `Insufficient access rights to perform this action`.
      *
      * @param int $chatId ID чата.
      * @link https://dev.max.ru/docs-api/methods/DELETE/chats/-chatId-
@@ -441,26 +441,6 @@ final class MaxApiClient
     }
 
     /**
-     * Получает информацию о канале по его ссылке.
-     *
-     * Возвращает информацию о канале по его публичной ссылке.
-     * Метод доступен только для каналов — получить информацию о чате по публичной ссылке не получится.
-     *
-     * @param non-empty-string $chatLink Публичная ссылка на канал (pattern: '^@?[a-zA-Z]+[\w-]*$').
-     * @return Chat Информация о канале.
-     * @link https://dev.max.ru/docs-api/methods/GET/chats/-chatLink-
-     * @deprecated С 10 июля 2026 г. метод удалён из API и не работает: сервер отвечает `404 chat.not.found`.
-     */
-    public function getChatByLink(string $chatLink): Chat
-    {
-        self::validateString('chatLink', $chatLink, minLength: 1, pattern: '/^@?[a-zA-Z]+[\w-]*$/');
-
-        $data = $this->httpClient->get("/chats/$chatLink");
-
-        return Chat::newFromData($data);
-    }
-
-    /**
      * Получает список всех групповых чатов и каналов.
      *
      * Возвращает список групповых чатов и каналов, в которые добавлен бот,
@@ -632,7 +612,7 @@ final class MaxApiClient
      *
      * Для использования необходимо знать формат запросов и ответов API.
      */
-    public function getHttpClient(): MaxHttpClientInterface
+    public function getMaxHttpClient(): MaxHttpClientInterface
     {
         return $this->httpClient;
     }
@@ -1168,7 +1148,7 @@ final class MaxApiClient
 
                 return SendMessageResult::newFromData($data);
             } catch (BadRequestException $e) {
-                if (!$retryAttempts || !$e->isAttachmentNotReady()) {
+                if (!$retryAttempts || $e->getError()?->isAttachmentNotReady() !== true) {
                     throw $e;
                 }
                 if ($this->exceptionLogger !== null) {

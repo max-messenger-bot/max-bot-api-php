@@ -246,6 +246,4 @@ $apiClient->sendAction($chatId, SenderAction::SendingVideo);
 
 В обработчиках событий удобнее вызывать `$event->sendActionToChat()` — он сам подставляет чат события.
 Этот метод есть у событий, после которых бот может написать в тот же чат или диалог
-(трейд `SendMessageToChatTrait`; метод `sendAction()` устарел и будет удалён в следующих версиях), и отсутствует
-у `BotStoppedEvent`, `BotRemovedFromChatEvent`, `DialogRemovedEvent`, событий комментариев и `UnknownEvent`.
-Подробнее — в разделе [Обработка событий бота](../ProcessingEvents.md).
+(трейд `SendMessageToChatTrait`). Подробнее — в разделе [Обработка событий бота](../ProcessingEvents.md).

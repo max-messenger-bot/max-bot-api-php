@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot;
 
+use MaxMessenger\Bot\Contract\Http\HttpClientInterface;
 use MaxMessenger\Bot\Contract\MaxApiConfigInterface;
-use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
-use Mj4444\SimpleHttpClient\CurlHttpClient;
+use MaxMessenger\Bot\CurlHttpClient\CurlHttpClient;
 use SensitiveParameter;
 use SensitiveParameterValue;
 
 use function dirname;
-
-use const CURLOPT_CAINFO;
-use const CURLOPT_CAPATH;
-use const CURLOPT_SSL_VERIFYHOST;
-use const CURLOPT_SSL_VERIFYPEER;
 
 final class MaxApiConfig implements MaxApiConfigInterface
 {
@@ -146,25 +141,13 @@ final class MaxApiConfig implements MaxApiConfigInterface
      */
     private function makeHttpClient(): CurlHttpClient
     {
-        $httpClient = (new CurlHttpClient())
+        return (new CurlHttpClient())
             ->setConnectTimeout($this->connectTimeout)
             ->setTimeout($this->timeout)
-            ->setUserAgent('mj4444-MaxMessenger-Bot');
-
-        if (!$this->verifySslCertificate) {
-            $httpClient->setOption(CURLOPT_SSL_VERIFYPEER, false)
-                ->setOption(CURLOPT_SSL_VERIFYHOST, 0);
-        }
-
-        if ($this->caCertificatePath !== null) {
-            $httpClient->setOption(CURLOPT_CAINFO, $this->caCertificatePath);
-        }
-
-        if ($this->caCertificateDir !== null) {
-            $httpClient->setOption(CURLOPT_CAPATH, $this->caCertificateDir);
-        }
-
-        return $httpClient;
+            ->setUserAgent('mj4444-MaxMessenger-Bot')
+            ->setVerifySslCertificate($this->verifySslCertificate)
+            ->setCaCertificatePath($this->caCertificatePath)
+            ->setCaCertificateDir($this->caCertificateDir);
     }
 
     /**

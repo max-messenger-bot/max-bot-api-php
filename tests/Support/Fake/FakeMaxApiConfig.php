@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Support\Fake;
 
 use LogicException;
+use MaxMessenger\Bot\Contract\Http\HttpClientInterface;
 use MaxMessenger\Bot\Contract\MaxApiConfigInterface;
 use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
 use MaxMessenger\Bot\MaxApiClient;
-use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
 use SensitiveParameterValue;
 
 /**

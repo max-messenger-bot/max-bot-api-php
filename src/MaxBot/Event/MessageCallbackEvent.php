@@ -32,32 +32,18 @@ final class MessageCallbackEvent extends BaseEvent
      *   При превышении этого лимита сообщения следует ставить в очередь или делать задержку перед отправкой.
      *
      * @param NewMessageBody|non-empty-string $message
-     * @param non-empty-string|null $notification Устарело: с 21 июля 2026 г. поле удалено из официальной
-     *     схемы API — на сервер не передаётся и игнорируется.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте
      *     сообщения или поста.
      * @see MaxApiClient::answerOnCallback()
      */
-    public function answer(
-        NewMessageBody|string $message,
-        ?string $notification = null,
-        bool $disableLinkPreview = false,
-    ): void {
+    public function answer(NewMessageBody|string $message, bool $disableLinkPreview = false): void
+    {
         if (is_string($message)) {
             $message = new NewMessageBody($message);
         }
 
-        $answer = new CallbackAnswer($message, $notification);
-
-        $this->apiClient->answerOnCallback($this->getCallback(), $answer, $disableLinkPreview);
+        $this->apiClient->answerOnCallback($this->getCallback(), new CallbackAnswer($message), $disableLinkPreview);
     }
-
-    /**
-     * @param non-empty-string $notification
-     * @deprecated С 21 июля 2026 г. поле notification удалено из официальной схемы API — метод ничего не делает.
-     * @psalm-suppress UnusedParam Параметр сохранён для обратной совместимости сигнатуры.
-     */
-    public function answerNotification(string $notification): void {}
 
     /**
      * @return Callback Объект, отправленный боту, когда пользователь нажал кнопку.

@@ -5,7 +5,7 @@
 ### Получение информации о боте
 
 ```php
-$response = $apiClient->getHttpClient()->get('/me');
+$response = $apiClient->getMaxHttpClient()->get('/me');
 ```
 
 ### Обновление списка команд бота
@@ -22,7 +22,7 @@ $body = [
     ],
 ];
 
-$response = $apiClient->getHttpClient()->patch('/me/commands', (object)$body);
+$response = $apiClient->getMaxHttpClient()->patch('/me/commands', (object)$body);
 ```
 
 ### Подписка на обновления
@@ -34,5 +34,5 @@ $body = [
     'secret' => 'your_secret',
 ];
 
-$response = $apiClient->getHttpClient()->post('/subscriptions', (object)$body);
+$response = $apiClient->getMaxHttpClient()->post('/subscriptions', (object)$body);
 ```

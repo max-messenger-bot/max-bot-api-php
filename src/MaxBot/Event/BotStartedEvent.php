@@ -14,13 +14,11 @@ use MaxMessenger\Bot\Model\Response\User;
  * например нажал кнопку «Начать» в интерфейсе МАКС.
  *
  * @property-read BotStartedUpdate $update
- * @psalm-suppress DeprecatedTrait {@see UserEventTrait} подключён для совместимости.
  */
 final class BotStartedEvent extends BaseEvent
 {
     use SendMessageToChatTrait;
     use SendMessageToUserTrait;
-    use UserEventTrait;
 
     /**
      * @return int ID диалога, где произошло событие.

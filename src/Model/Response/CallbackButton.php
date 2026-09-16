@@ -4,46 +4,20 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
-use MaxMessenger\Bot\Model\Enum\Intent;
-
 /**
  * Callback-кнопка.
  *
  * После нажатия на такую кнопку клиент отправляет на сервер полезную нагрузку, которая содержит.
- *
- * @psalm-suppress DeprecatedClass, DeprecatedMethod Поддержка устаревшего {@see Intent}
- *     сохранена для совместимости.
  */
 class CallbackButton extends Button
 {
     /**
      * @var array{
-     *     payload: non-empty-string,
-     *     intent?: string
+     *     payload: non-empty-string
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
-
-    /**
-     * @return Intent Намерение кнопки. Влияет на представление в клиентах.
-     * @deprecated С 24 июля 2026 г. поле удалено из официальной схемы API — сервер его не возвращает,
-     *     поэтому метод всегда отдаёт {@see Intent::Default}.
-     */
-    public function getIntent(): Intent
-    {
-        return Intent::from($this->data['intent'] ?? 'default');
-    }
-
-    /**
-     * @return string Намерение кнопки. Влияет на представление в клиентах.
-     * @deprecated С 24 июля 2026 г. поле удалено из официальной схемы API — сервер его не возвращает,
-     *     поэтому метод всегда отдаёт `default`.
-     */
-    public function getIntentRaw(): string
-    {
-        return $this->data['intent'] ?? 'default';
-    }
 
     /**
      * @return non-empty-string Токен кнопки (maxLength: 1024).

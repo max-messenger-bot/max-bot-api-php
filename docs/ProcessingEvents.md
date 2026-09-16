@@ -301,6 +301,7 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 | `getTimestampRaw()` | `non-negative-int`  | Время, когда произошло событие (Unix-время в миллисекундах)   |
 | `getUser()`         | `User\|null`        | Пользователь события (`null`, если его у события нет)         |
 | `getUserId()`       | `int\|null`         | ID пользователя события (`null`, если его у события нет)      |
+| `handle($handler)`  | `bool`              | Обработать событие заданным обработчиком                      |
 | `markAsHandled()`   | `void`              | Отметить событие как обработанное                             |
 | `markAsUnhandled()` | `void`              | Отметить событие как не обработанное                          |
 | `requireChatId()`   | `int`               | ID чата события, `ChatIdMissingException` вместо `null`       |
@@ -327,12 +328,8 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 
 | Метод                         | Возвращает          | Описание                                                                                     |
 |-------------------------------|---------------------|----------------------------------------------------------------------------------------------|
-| `sendAction($action)`         | `bool`              | **Устарело.** Будет удалён; используйте `sendActionToChat()`                                 |
-| `sendActionToChat($action)`   | `bool`              | Отправить действие бота («набор текста», «отправка фото», отметку о прочтении) в чат события |
+| `sendActionToChat($action)`   | `void`              | Отправить действие бота («набор текста», «отправка фото», отметку о прочтении) в чат события |
 | `sendMessageToChat($message)` | `SendMessageResult` | Отправить сообщение в чат события                                                            |
-| `sendToChat($message)`        | `SendMessageResult` | **Устарело.** Будет удалён; используйте `sendMessageToChat()`                                |
-
-`sendActionToChat()` всегда возвращает `true`; тип `bool` устарел и в следующих версиях станет `void`.
 
 Действие отображается в диалогах и групповых чатах. Для каналов сервер принимает запрос,
 но участникам действие не показывается.
@@ -349,10 +346,9 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 
 Предоставляет один метод:
 
-| Метод                         | Возвращает          | Описание                                                      |
-|-------------------------------|---------------------|---------------------------------------------------------------|
-| `sendMessageToUser($message)` | `SendMessageResult` | Отправить сообщение в диалог с пользователем                  |
-| `sendToUser($message)`        | `SendMessageResult` | **Устарело.** Будет удалён; используйте `sendMessageToUser()` |
+| Метод                         | Возвращает          | Описание                                     |
+|-------------------------------|---------------------|----------------------------------------------|
+| `sendMessageToUser($message)` | `SendMessageResult` | Отправить сообщение в диалог с пользователем |
 
 Если у события нет пользователя, метод выбросит `UserMissingException`.
 
@@ -360,16 +356,6 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 `CommentCreatedEvent`, `CommentEditedEvent`, `CommentRemovedEvent`, `DialogClearedEvent`, `DialogMutedEvent`,
 `DialogUnmutedEvent`, `MessageCallbackEvent`, `MessageCreatedEvent`, `MessageEditedEvent`,
 `MessageRemovedEvent`, `UserAddedToChatEvent`, `UserRemovedFromChatEvent`.
-
-### UserEventTrait (трейд пользователя)
-
-> **Устарело.** Трейд будет удалён в следующих версиях: он разделён на `SendMessageToChatTrait`
-> и `SendMessageToUserTrait`, которые события подключают самостоятельно. Сам трейд методов
-> больше не добавляет.
-
-**Используют:** `BotAddedToChatEvent`, `BotStartedEvent`, `ChatTitleChangedEvent`, `DialogClearedEvent`,
-`DialogMutedEvent`, `DialogUnmutedEvent`, `MessageRemovedEvent`, `UserAddedToChatEvent`,
-`UserRemovedFromChatEvent`.
 
 ### MessageEventTrait (трейд сообщения)
 
@@ -464,15 +450,14 @@ if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
 
 ### MessageRemovedEvent
 
-| Метод                   | Возвращает          | Описание                                                              |
-|-------------------------|---------------------|-----------------------------------------------------------------------|
-| `getChatId()`           | `int`               | ID чата, где сообщение было удалено                                   |
-| `getMessageId()`        | `non-empty-string`  | ID удалённого сообщения                                               |
-| `getUser()`             | `null`              | Всегда `null`: событие не содержит объекта пользователя               |
-| `getUserId()`           | `int`               | ID пользователя, удалившего сообщение                                 |
-| `sendMessage($message)` | `SendMessageResult` | **Устарело.** Используйте `sendMessageToUser()` — метод дублирует его |
+| Метод            | Возвращает         | Описание                                                |
+|------------------|--------------------|---------------------------------------------------------|
+| `getChatId()`    | `int`              | ID чата, где сообщение было удалено                     |
+| `getMessageId()` | `non-empty-string` | ID удалённого сообщения                                 |
+| `getUser()`      | `null`             | Всегда `null`: событие не содержит объекта пользователя |
+| `getUserId()`    | `int`              | ID пользователя, удалившего сообщение                   |
 
-**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`
 
 ### CommentCreatedEvent
 
@@ -509,7 +494,7 @@ if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
 
 | Метод                                                          | Возвращает          | Описание                                     |
 |----------------------------------------------------------------|---------------------|----------------------------------------------|
-| `answer($message, $notification, $disableLinkPreview = false)` | `void`              | Ответить на callback с обновлением сообщения |
+| `answer($message, $disableLinkPreview = false)`                | `void`              | Ответить на callback с обновлением сообщения |
 | `deleteMessage()`                                              | `void`              | Удалить сообщение                            |
 | `forwardToChat($chatId)`                                       | `SendMessageResult` | Переслать сообщение в указанный чат          |
 | `forwardToUser($userId)`                                       | `SendMessageResult` | Переслать сообщение в диалог с пользователем |
@@ -538,7 +523,7 @@ if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
 | `getUserId()`     | `int`                    | ID пользователя                       |
 | `getUserLocale()` | `string\|null`           | Язык пользователя (IETF BCP 47)       |
 
-**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`
 
 ### BotStoppedEvent
 
@@ -558,7 +543,7 @@ if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
 | `getUserId()` | `int`      | ID пользователя, добавившего бота    |
 | `isChannel()` | `bool`     | `true`, если бот добавлен в канал    |
 
-**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`
 
 ### BotRemovedFromChatEvent
 
@@ -582,7 +567,7 @@ if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
 | `getUser()`   | `User`             | Пользователь, изменивший название     |
 | `getUserId()` | `int`              | ID пользователя, изменившего название |
 
-**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`
 
 ### DialogClearedEvent
 
@@ -593,7 +578,7 @@ if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
 | `getUserId()`     | `int`          | ID пользователя, очистившего историю |
 | `getUserLocale()` | `string\|null` | Язык пользователя (IETF BCP 47)      |
 
-**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`
 
 ### DialogMutedEvent
 
@@ -606,7 +591,7 @@ if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
 | `getUserId()`        | `int`               | ID пользователя, отключившего уведомления                             |
 | `getUserLocale()`    | `string\|null`      | Язык пользователя (IETF BCP 47)                                       |
 
-**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`
 
 ### DialogUnmutedEvent
 
@@ -617,7 +602,7 @@ if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
 | `getUserId()`     | `int`          | ID пользователя, включившего уведомления |
 | `getUserLocale()` | `string\|null` | Язык пользователя (IETF BCP 47)          |
 
-**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`
 
 ### DialogRemovedEvent
 
@@ -638,7 +623,7 @@ if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
 | `getUserId()`    | `int`       | ID пользователя, добавленного в чат                     |
 | `isChannel()`    | `bool`      | `true`, если пользователь добавлен в канал              |
 
-**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`
 
 ### UserRemovedFromChatEvent
 
@@ -650,7 +635,7 @@ if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
 | `getUserId()`  | `int`       | ID пользователя, удалённого из чата                              |
 | `isChannel()`  | `bool`      | `true`, если пользователь удалён из канала                       |
 
-**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`, `UserEventTrait`
+**Трейды:** `SendMessageToChatTrait`, `SendMessageToUserTrait`
 
 ### UnknownEvent
 

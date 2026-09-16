@@ -394,6 +394,9 @@ $keyboard->addChatButton(
 );
 ```
 
+Чат создаётся, когда на кнопку нажимает первый пользователь. Владельцем чата станет бот, отправивший
+сообщение с кнопкой, а нажавший кнопку — обычным участником.
+
 Пример запуска мини-приложения:
 
 ```php
@@ -447,8 +450,6 @@ $event->sendMessageToChat('Всем привет!');
 // Отключение превью ссылок
 $event->sendMessageToUser('https://example.com', disableLinkPreview: true);
 ```
-
-Методы `sendToChat()` и `sendToUser()` устарели и будут удалены в следующих версиях.
 
 ### Методы forwardToChat / forwardToUser
 
@@ -518,10 +519,7 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event) {
 ```
 
 Метод `sendActionToChat()` есть у событий, после которых бот может написать в тот же чат или диалог
-(трейд `SendMessageToChatTrait`; метод `sendAction()` устарел и будет удалён в следующих версиях).
-Его нет у событий, после которых отправка невозможна или бессмысленна: `BotStoppedEvent`, `BotRemovedFromChatEvent`,
-`DialogRemovedEvent`, события комментариев и `UnknownEvent`. В этих случаях используйте API-клиент напрямую:
-`$event->apiClient->sendAction()`. Подробнее — в разделе [Обработка событий бота](ProcessingEvents.md).
+(трейд `SendMessageToChatTrait`). Подробнее — в разделе [Обработка событий бота](ProcessingEvents.md).
 
 Или через объект:
 

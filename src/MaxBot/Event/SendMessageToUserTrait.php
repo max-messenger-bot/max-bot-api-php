@@ -42,18 +42,4 @@ trait SendMessageToUserTrait
     ): SendMessageResult {
         return $this->apiClient->sendMessageToUser($this->requireUserId(), $message, $disableLinkPreview);
     }
-
-    /**
-     * Отправить сообщение лично в диалоге с пользователем.
-     *
-     * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
-     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
-     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
-     * @return SendMessageResult Информация о созданном сообщении.
-     * @deprecated Метод будет удалён в следующих версиях. Используйте {@see sendMessageToUser()}.
-     */
-    public function sendToUser(NewMessageBody|string $message, bool $disableLinkPreview = false): SendMessageResult
-    {
-        return $this->sendMessageToUser($message, $disableLinkPreview);
-    }
 }

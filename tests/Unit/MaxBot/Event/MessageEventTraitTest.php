@@ -156,24 +156,11 @@ final class MessageEventTraitTest extends Unit
         $event->requireUser();
     }
 
-    public function testSendActionDelegatesToSendActionToChat(): void
-    {
-        $http = new FakeMaxHttpClient();
-        /** @psalm-suppress DeprecatedMethod Проверяем сохранённый для совместимости устаревший метод. */
-        $result = $this->createEvent($http)->sendAction(SenderAction::TypingOn);
-
-        self::assertTrue($result);
-        $call = $http->lastCall();
-        self::assertNotNull($call);
-        self::assertSame('/chats/100/actions', $call['path']);
-    }
-
     public function testSendActionToChat(): void
     {
         $http = new FakeMaxHttpClient();
-        $result = $this->createEvent($http)->sendActionToChat(SenderAction::TypingOn);
+        $this->createEvent($http)->sendActionToChat(SenderAction::TypingOn);
 
-        self::assertTrue($result);
         $call = $http->lastCall();
         self::assertNotNull($call);
         self::assertSame('post', $call['method']);

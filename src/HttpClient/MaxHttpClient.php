@@ -5,25 +5,34 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\HttpClient;
 
 use Closure;
+use JsonException;
+use MaxMessenger\Bot\Contract\Http\HttpClientInterface;
+use MaxMessenger\Bot\Contract\Http\HttpRequestInterface;
+use MaxMessenger\Bot\Contract\Http\HttpResponseInterface;
 use MaxMessenger\Bot\Contract\MaxApiConfigInterface;
 use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
 use MaxMessenger\Bot\Exception\AccessTokenException;
-use MaxMessenger\Bot\Exception\HttpClient\HttpResponse\UnexpectedFormatException;
-use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\InternalHttpException;
-use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\ServiceUnavailableException;
-use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\TooManyRequestsException;
-use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
-use Mj4444\SimpleHttpClient\Contracts\HttpResponseInterface;
-use Mj4444\SimpleHttpClient\Exceptions\HttpClientErrorException;
-use Mj4444\SimpleHttpClient\Exceptions\HttpClientException;
-use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\InternalServerErrorException;
-use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\ServiceUnavailableException as ServiceUnavailableException2;
-use Mj4444\SimpleHttpClient\Exceptions\HttpResponse\Http\TooManyRequestsException as TooManyRequestsException2;
-use Mj4444\SimpleHttpClient\HttpRequest\HttpMethod;
+use MaxMessenger\Bot\HttpClient\Body\StringBody;
+use MaxMessenger\Bot\HttpClient\Exception\HttpRequest\JsonEncodeException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\HttpException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\JsonDecodeException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\UnexpectedContentTypeException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\UnexpectedFormatException;
+use MaxMessenger\Bot\HttpClient\Exception\TemporaryExceptionInterface;
+use MaxMessenger\Bot\Model\Response\Error;
+use Throwable;
 
 use function array_shift;
+use function http_build_query;
 use function is_array;
+use function is_string;
+use function json_decode;
+use function json_encode;
+use function str_starts_with;
 use function usleep;
+
+use const JSON_THROW_ON_ERROR;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * HTTP-клиент для API Max.
@@ -33,7 +42,7 @@ final class MaxHttpClient implements MaxHttpClientInterface
     private ?HttpClientInterface $httpClient = null;
 
     /**
-     * @param Closure(non-empty-string $method, HttpClientException $exception): void|null $exceptionLogger
+     * @param Closure(non-empty-string $method, TemporaryExceptionInterface $exception): void|null $exceptionLogger
      */
     public function __construct(
         private readonly MaxApiConfigInterface $config,
@@ -43,32 +52,27 @@ final class MaxHttpClient implements MaxHttpClientInterface
 
     public function delete(string $path, ?array $query = null): array
     {
-        return $this->doRequest($this->makeRequest($path, $query, HttpMethod::Delete));
+        return $this->doRequest($this->makeRequest($path, $query, 'DELETE'));
     }
 
     public function get(string $path, ?array $query = null, int $timeout = null): array
     {
-        return $this->doRequest($this->makeRequest($path, $query, HttpMethod::Get, null, $timeout));
-    }
-
-    public function getHttpClient(): HttpClientInterface
-    {
-        return $this->httpClient ??= $this->config->getHttpClient();
+        return $this->doRequest($this->makeRequest($path, $query, 'GET', null, $timeout));
     }
 
     public function patch(string $path, object $body, ?array $query = null): array
     {
-        return $this->doRequest($this->makeRequest($path, $query, HttpMethod::Patch, $body));
+        return $this->doRequest($this->makeRequest($path, $query, 'PATCH', $body));
     }
 
     public function post(string $path, ?object $body, ?array $query = null): array
     {
-        return $this->doRequest($this->makeRequest($path, $query, HttpMethod::Post, $body));
+        return $this->doRequest($this->makeRequest($path, $query, 'POST', $body));
     }
 
     public function put(string $path, object $body, ?array $query = null): array
     {
-        return $this->doRequest($this->makeRequest($path, $query, HttpMethod::Put, $body));
+        return $this->doRequest($this->makeRequest($path, $query, 'PUT', $body));
     }
 
     public function withVersion(?string $version): static
@@ -76,32 +80,25 @@ final class MaxHttpClient implements MaxHttpClientInterface
         return new self($this->config, $version, $this->exceptionLogger);
     }
 
-    private function doRequest(JsonRequest $request): array
+    private function doRequest(HttpRequest $request): array
     {
         $retryAttempts = $this->config->getRetryAttempts();
         do {
             try {
                 $response = $this->getHttpClient()->request($request);
 
-                $response->checkHttpCode();
+                if ($response->getHttpCode() !== 200) {
+                    HttpException::throw($request, $response, $this->parseError($request, $response));
+                }
 
-                $responseData = $response->getData();
+                $responseData = $this->decodeBody($request, $response);
 
                 if (!is_array($responseData)) {
-                    /** @psalm-var HttpResponseInterface $response Psalm bug */
-                    throw new UnexpectedFormatException($response);
+                    throw new UnexpectedFormatException($request, $response);
                 }
 
                 return $responseData;
-            } catch (
-                HttpClientErrorException
-                |TooManyRequestsException
-                |TooManyRequestsException2
-                |InternalHttpException
-                |InternalServerErrorException
-                |ServiceUnavailableException
-                |ServiceUnavailableException2 $e
-            ) {
+            } catch (TemporaryExceptionInterface $e) {
                 if (!$retryAttempts) {
                     throw $e;
                 }
@@ -114,19 +111,78 @@ final class MaxHttpClient implements MaxHttpClientInterface
     }
 
     /**
-     * @param non-empty-string $path
-     * @param array<string|int>|null $query
-     * @param positive-int|null $timeout
+     * @return HttpClientInterface Клиент, выполняющий запросы.
+     */
+    public function getHttpClient(): HttpClientInterface
+    {
+        return $this->httpClient ??= $this->config->getHttpClient();
+    }
+
+    /**
+     * Разбирает тело ответа.
+     *
+     * @param HttpRequestInterface $request Запрос, на который получен ответ.
+     * @param HttpResponseInterface $response Ответ сервера.
+     * @return mixed Разобранное тело ответа.
+     * @throws UnexpectedContentTypeException Если сервер вернул не JSON.
+     * @throws JsonDecodeException Если тело ответа не удалось разобрать.
+     */
+    private function decodeBody(HttpRequestInterface $request, HttpResponseInterface $response): mixed
+    {
+        if (!str_starts_with($response->getContentType() ?? '', 'application/json')) {
+            throw new UnexpectedContentTypeException($request, $response);
+        }
+
+        try {
+            return json_decode($response->getBody(), true, 32, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new JsonDecodeException($request, $response, $e);
+        }
+    }
+
+    /**
+     * Разбирает описание ошибки из тела ответа.
+     *
+     * @param HttpRequestInterface $request Запрос, на который получен ответ.
+     * @param HttpResponseInterface $response Ответ сервера.
+     * @return Error|null Описание ошибки или `null`, если тело ответа разобрать не удалось.
+     */
+    private function parseError(HttpRequestInterface $request, HttpResponseInterface $response): ?Error
+    {
+        try {
+            $error = Error::newFromData((array) $this->decodeBody($request, $response));
+        } catch (Throwable) {
+            return null;
+        }
+
+        return $error->isValid() ? $error : null;
+    }
+
+    /**
+     * Готовит запрос к API: собирает адрес со строкой параметров, заголовки и тело.
+     *
+     * @param non-empty-string $path Путь запроса относительно базового адреса.
+     * @param array<string|int>|null $query Параметры строки запроса.
+     * @param non-empty-string $method Метод запроса.
+     * @param object|null $body Тело запроса. Кодируется в JSON.
+     * @param positive-int|null $timeout Максимальное время выполнения запроса в миллисекундах.
+     * @throws AccessTokenException Если токен доступа не задан.
+     * @throws JsonEncodeException Если тело запроса не удалось закодировать в JSON.
      */
     private function makeRequest(
         string $path,
         ?array $query,
-        HttpMethod $method,
+        string $method,
         ?object $body = null,
         int $timeout = null,
-    ): JsonRequest {
-        $url = $this->config->getBaseUrl() . $path;
+    ): HttpRequest {
         $accessToken = $this->config->getAccessToken() ?? throw new AccessTokenException();
+        $accessTokenValue = $accessToken->getValue();
+
+        /** @psalm-suppress DocblockTypeContradiction Значение токена приходит извне. */
+        if (!is_string($accessTokenValue) || $accessTokenValue === '') {
+            throw new AccessTokenException();
+        }
 
         /** @psalm-suppress RiskyTruthyFalsyComparison */
         if ($this->version) {
@@ -137,6 +193,36 @@ final class MaxHttpClient implements MaxHttpClientInterface
             }
         }
 
-        return new JsonRequest($url, $query, $method, $body, $timeout, $accessToken);
+        $url = $this->config->getBaseUrl() . $path;
+
+        /** @psalm-suppress RiskyTruthyFalsyComparison */
+        if ($query) {
+            $url .= '?' . http_build_query($query);
+        }
+
+        return new HttpRequest(
+            $method,
+            $url,
+            [
+                'Accept' => 'application/json; charset=utf-8',
+                'Authorization' => $accessTokenValue,
+            ],
+            $body !== null ? new StringBody($this->encodeBody($body), 'application/json; charset=utf-8') : null,
+            $timeout,
+        );
+    }
+
+    /**
+     * @param object $body Тело запроса.
+     * @return string Тело запроса, закодированное в JSON.
+     * @throws JsonEncodeException Если тело запроса не удалось закодировать.
+     */
+    private function encodeBody(object $body): string
+    {
+        try {
+            return json_encode($body, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new JsonEncodeException($body, $e);
+        }
     }
 }

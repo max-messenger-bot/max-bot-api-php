@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Support\Fake;
 
 use LogicException;
+use MaxMessenger\Bot\Contract\Http\HttpClientInterface;
 use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
-use Mj4444\SimpleHttpClient\Contracts\HttpClientInterface;
 
 use function array_key_last;
 

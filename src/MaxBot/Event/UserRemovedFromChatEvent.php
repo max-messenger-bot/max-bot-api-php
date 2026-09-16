@@ -15,13 +15,11 @@ use MaxMessenger\Bot\Model\Response\UserRemovedFromChatUpdate;
  * На свои действия бот события не получает.
  *
  * @property-read UserRemovedFromChatUpdate $update
- * @psalm-suppress DeprecatedTrait {@see UserEventTrait} подключён для совместимости.
  */
 final class UserRemovedFromChatEvent extends BaseEvent
 {
     use SendMessageToChatTrait;
     use SendMessageToUserTrait;
-    use UserEventTrait;
 
     /**
      * @return int|null Администратор, который удалил пользователя из чата.

@@ -13,13 +13,11 @@ use MaxMessenger\Bot\Model\Response\User;
  * На свои действия бот события не получает.
  *
  * @property-read ChatTitleChangedUpdate $update
- * @psalm-suppress DeprecatedTrait {@see UserEventTrait} подключён для совместимости.
  */
 final class ChatTitleChangedEvent extends BaseEvent
 {
     use SendMessageToChatTrait;
     use SendMessageToUserTrait;
-    use UserEventTrait;
 
     /**
      * @return int ID чата, где произошло событие.

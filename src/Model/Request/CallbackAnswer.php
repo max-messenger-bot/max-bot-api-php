@@ -23,14 +23,9 @@ final class CallbackAnswer extends BaseRequestModel
 
     /**
      * @param NewMessageBody|null $message Данные для обновления текущего сообщения.
-     * @param non-empty-string|null $notification Устарело: с 21 июля 2026 г. поле удалено из официальной
-     *     схемы API — на сервер не передаётся и игнорируется.
-     * @psalm-suppress UnusedParam Параметр сохранён для обратной совместимости сигнатуры.
      */
-    public function __construct(
-        ?NewMessageBody $message = null,
-        ?string $notification = null,
-    ) {
+    public function __construct(?NewMessageBody $message = null)
+    {
         $this->required = ['message'];
 
         if ($message !== null) {
@@ -43,51 +38,25 @@ final class CallbackAnswer extends BaseRequestModel
         return $this->data['message'] ?? null;
     }
 
-    /**
-     * @return null Всегда `null`.
-     * @deprecated С 21 июля 2026 г. поле удалено из официальной схемы API — на сервер не передаётся.
-     */
-    public function getNotification(): null
-    {
-        return null;
-    }
-
     public function issetMessage(): bool
     {
         return array_key_exists('message', $this->data);
     }
 
     /**
-     * @return false Всегда `false`.
-     * @deprecated С 21 июля 2026 г. поле удалено из официальной схемы API — на сервер не передаётся.
+     * @param NewMessageBody $message Данные для обновления текущего сообщения.
      */
-    public function issetNotification(): false
+    public static function make(NewMessageBody $message): self
     {
-        return false;
+        return new self($message);
     }
 
     /**
      * @param NewMessageBody|null $message Данные для обновления текущего сообщения.
-     * @param non-empty-string|null $notification Устарело: с 21 июля 2026 г. поле удалено из официальной
-     *     схемы API — на сервер не передаётся и игнорируется.
      */
-    public static function make(
-        ?NewMessageBody $message = null,
-        ?string $notification = null,
-    ): self {
-        return new self($message, $notification);
-    }
-
-    /**
-     * @param NewMessageBody|null $message Данные для обновления текущего сообщения.
-     * @param non-empty-string|null $notification Устарело: с 21 июля 2026 г. поле удалено из официальной
-     *     схемы API — на сервер не передаётся и игнорируется.
-     */
-    public static function new(
-        ?NewMessageBody $message = null,
-        ?string $notification = null,
-    ): self {
-        return new self($message, $notification);
+    public static function new(?NewMessageBody $message = null): self
+    {
+        return new self($message);
     }
 
     /**
@@ -98,37 +67,6 @@ final class CallbackAnswer extends BaseRequestModel
     {
         $this->data['message'] = $message;
 
-        return $this;
-    }
-
-    /**
-     * @param non-empty-string $notification Устарело: с 21 июля 2026 г. поле удалено из официальной
-     *     схемы API — на сервер не передаётся и игнорируется.
-     * @return $this
-     * @deprecated С 21 июля 2026 г. поле удалено из официальной схемы API — метод ничего не делает.
-     * @psalm-suppress UnusedParam Параметр сохранён для обратной совместимости сигнатуры.
-     */
-    public function setNotification(string $notification): self
-    {
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function unsetMessage(): self
-    {
-        unset($this->data['message']);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     * @deprecated С 21 июля 2026 г. поле удалено из официальной схемы API — метод ничего не делает.
-     */
-    public function unsetNotification(): self
-    {
         return $this;
     }
 }

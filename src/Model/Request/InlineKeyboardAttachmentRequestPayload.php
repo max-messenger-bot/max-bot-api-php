@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Request;
 
 use MaxMessenger\Bot\Exception\Validation\KeyboardException;
-use MaxMessenger\Bot\Model\Enum\Intent;
 
 use function array_key_exists;
 use function array_key_last;
@@ -78,20 +77,19 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
      *
      * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string|array $payload Токен кнопки (maxLength: 1024).
-     * @param Intent|null $intent Намерение кнопки. Влияет на представление в клиентах.
-     *     Устарело: С 24 июля 2026 г. поле удалено из официальной схемы API.
-     *     Сервер принимает намерение кнопки, но игнорирует его и не возвращает в ответе.
-     * @psalm-suppress DeprecatedClass Поддержка устаревшего {@see Intent} сохранена для совместимости.
      */
-    public function addCallbackButton(string $text, string|array $payload, ?Intent $intent = null): self
+    public function addCallbackButton(string $text, string|array $payload): self
     {
-        $this->addButton(CallbackButton::make($text, $payload, $intent));
+        $this->addButton(CallbackButton::make($text, $payload));
 
         return $this;
     }
 
     /**
      * Добавить кнопку создания чата.
+     *
+     * Чат создаётся, когда на кнопку нажимает первый пользователь. Владельцем чата станет бот,
+     * отправивший сообщение с кнопкой, а нажавший кнопку — обычным участником.
      *
      * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string $chatTitle Название чата, который будет создан (maxLength: 200).
