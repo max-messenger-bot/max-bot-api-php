@@ -8,7 +8,9 @@ use MaxMessenger\Bot\Exception\MaxBot\Event\PostIdMissingException;
 use MaxMessenger\Bot\Exception\MaxBot\Event\SenderUnknownException;
 use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\ForbiddenException;
 use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\NotFoundException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\UnprocessableEntityException;
 use MaxMessenger\Bot\MaxApiClient;
+use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
 use MaxMessenger\Bot\Model\Enum\ChatType;
 use MaxMessenger\Bot\Model\Request\NewCommentBody;
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
@@ -36,12 +38,12 @@ trait CommentEventTrait
      * Удалить комментарий.
      *
      * Удаляет комментарий пользователя или бота: можно удалять как свои комментарии, так и чужие.
-     * Восстановить удалённый комментарий нельзя.
      *
-     * - Бот должен быть администратором канала с правами `read_all_messages` и `delete`, иначе
-     *   Вы получите ошибку {@see ForbiddenException}.
-     * - Вы получите ошибку {@see PostIdMissingException}, если в комментарии нет идентификатора поста.
+     * Для удаления чужих комментариев бот должен быть администратором канала с правом
+     * {@see ChatAdminPermission::Delete}.
      *
+     * @throws ForbiddenException Если у бота нет прав на удаление комментария.
+     * @throws PostIdMissingException Если в комментарии нет идентификатора поста.
      * @see MaxApiClient::deleteComment()
      */
     public function deleteComment(): void
@@ -53,11 +55,13 @@ trait CommentEventTrait
      * Редактировать комментарий.
      *
      * Бот может редактировать свои комментарии; комментарии, опубликованные от имени канала, —
-     * только если ему назначено право администратора `edit`.
-     *
-     * - Вы получите ошибку {@see PostIdMissingException}, если в комментарии нет идентификатора поста.
+     * только если ему назначено право администратора {@see ChatAdminPermission::Edit}.
+     * Комментарий можно редактировать в течение 26 часов после публикации.
      *
      * @param NewCommentBody|non-empty-string $comment Тело нового комментария.
+     * @throws PostIdMissingException Если в комментарии нет идентификатора поста.
+     * @throws UnprocessableEntityException Если прошло больше 26 часов после публикации комментария
+     *     (HTTP 422, код `comments.timeout_exceeded`).
      * @see MaxApiClient::editComment()
      */
     public function editComment(NewCommentBody|string $comment): void
@@ -69,11 +73,17 @@ trait CommentEventTrait
         );
     }
 
+    /**
+     * @return int Идентификатор канала, в котором размещён пост с комментарием.
+     */
     public function getChatId(): int
     {
         return $this->getComment()->getRecipient()->getChatId();
     }
 
+    /**
+     * @return CommentMessage Комментарий события.
+     */
     abstract public function getComment(): CommentMessage;
 
     /**
@@ -95,7 +105,7 @@ trait CommentEventTrait
     }
 
     /**
-     * @return int|null ID пользователя, отправившего комментарий.
+     * @return int|null Идентификатор пользователя, отправившего комментарий.
      *     Может быть `null`, если комментарий опубликован от имени канала.
      */
     public function getUserId(): ?int
@@ -123,14 +133,13 @@ trait CommentEventTrait
      * Ответить комментарием к тому же посту.
      *
      * Для отправки комментария в настройках канала должны быть включены комментарии, а бот должен
-     * быть администратором этого канала с правами `read_all_messages` и `write`.
-     *
-     * - Вы можете получить ошибку {@see NotFoundException}, если пост на момент ответа будет удалён.
-     * - Вы получите ошибку {@see PostIdMissingException}, если в комментарии нет идентификатора поста.
+     * быть администратором этого канала с правом {@see ChatAdminPermission::Write}.
      *
      * @param NewCommentBody|non-empty-string $comment Тело нового комментария.
      * @param bool $asReply Требуется ли ответить с цитированием комментария.
      * @return SendCommentResult Информация о созданном комментарии.
+     * @throws NotFoundException Если пост удалён к моменту ответа.
+     * @throws PostIdMissingException Если в комментарии нет идентификатора поста.
      * @see MaxApiClient::sendComment()
      */
     public function reply(NewCommentBody|string $comment, bool $asReply = false): SendCommentResult
@@ -148,16 +157,13 @@ trait CommentEventTrait
     /**
      * Ответить на комментарий лично в диалоге с пользователем.
      *
-     * - Вы получите ошибку {@see SenderUnknownException}, если комментарий опубликован от имени канала.
-     * - Чтобы бот мог отправить сообщение пользователю, пользователь должен запустить бота.
-     *   Иначе запрос завершится ошибкой.
-     * - Можно отправлять не более двух сообщений в секунду в один диалог. При превышении этого лимита
-     *   сообщения следует ставить в очередь или делать задержку перед отправкой.
+     * Чтобы бот мог отправить сообщение пользователю, пользователь должен запустить бота.
      *
      * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
      *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
+     * @throws SenderUnknownException Если комментарий опубликован от имени канала.
      * @see MaxApiClient::sendMessageToUser()
      */
     public function replyToUser(
@@ -168,10 +174,6 @@ trait CommentEventTrait
     }
 
     /**
-     * Пользователь, отправивший комментарий.
-     *
-     * В отличие от {@see getUser()}, вместо `null` выбрасывает исключение.
-     *
      * @return User Пользователь, отправивший комментарий.
      * @throws SenderUnknownException Если комментарий опубликован от имени канала.
      */
@@ -181,11 +183,7 @@ trait CommentEventTrait
     }
 
     /**
-     * ID пользователя, отправившего комментарий.
-     *
-     * В отличие от {@see getUserId()}, вместо `null` выбрасывает исключение.
-     *
-     * @return int ID пользователя, отправившего комментарий.
+     * @return int Идентификатор пользователя, отправившего комментарий.
      * @throws SenderUnknownException Если комментарий опубликован от имени канала.
      */
     public function requireUserId(): int

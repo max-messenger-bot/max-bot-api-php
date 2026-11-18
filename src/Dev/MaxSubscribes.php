@@ -17,6 +17,8 @@ use function sprintf;
  * - Токен доступа
  *
  * Выводит список всех подписок в виде двухуровневого списка
+ *
+ * @psalm-cli-only
  */
 final class MaxSubscribes
 {
@@ -25,6 +27,11 @@ final class MaxSubscribes
      */
     public static function main(): void
     {
+        Utils::handleHelp(
+            'max-subscribes',
+            'Выводит список активных Webhook-подписок с датой создания, версией API и типами событий.',
+        );
+
         Utils::printHeader('Просмотр Webhook подписок Max Bot API');
 
         // Шаг 1: Токен доступа
@@ -32,7 +39,7 @@ final class MaxSubscribes
         echo "✓ Токен доступа принят\n";
 
         // Создание API клиента
-        $client = new MaxApiClient($accessToken);
+        $client = Utils::createApiClient($accessToken);
 
         // Получение списка подписок
         self::listSubscriptions($client);

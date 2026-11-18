@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Информация о созданном сообщении.
+ *
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
  */
 class SendMessageResult extends BaseResponseModel
 {

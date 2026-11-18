@@ -7,11 +7,15 @@ namespace MaxMessenger\Bot\Model\Enum;
 /**
  * Статус чата.
  *
- * Возможные значения:
+ * Статус для текущего бота:
  * - `active` — Бот является активным участником чата.
  * - `removed` — Бот был удалён из чата.
- * - `left` — Бот покинул чат.
+ * - `left` — Бот самостоятельно покинул чат.
  * - `closed` — Чат был закрыт.
+ * - `suspended` — Пользователь остановил бота. Только для диалогов.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Chat
+ * @link https://dev.max.ru/docs-api/methods/GET/chats/-chatId-/
  */
 enum ChatStatus: string
 {
@@ -19,4 +23,5 @@ enum ChatStatus: string
     case Closed = 'closed';
     case Left = 'left';
     case Removed = 'removed';
+    case Suspended = 'suspended';
 }

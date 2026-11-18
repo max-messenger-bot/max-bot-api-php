@@ -5,6 +5,6 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
 
 /**
- * Неизвестная ошибка сервера.
+ * Ошибка с HTTP-кодом, для которого нет отдельного класса исключения.
  */
 final class UnknownException extends HttpException {}

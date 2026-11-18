@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+use MaxMessenger\Bot\MaxApiClient;
+
 /**
- * Точка доступа, куда следует загружать ваши бинарные файлы.
+ * Данные для загрузки медиафайла.
+ *
+ * @link https://dev.max.ru/docs-api/methods/POST/uploads/
  */
 class UploadEndpoint extends BaseResponseModel
 {
@@ -19,7 +23,7 @@ class UploadEndpoint extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return non-empty-string|null Токен для отправки медиафайла во вложении к сообщению с помощью
+     * @return non-empty-string|null Токен для отправки аудио или видео во вложении к сообщению с помощью
      *     {@see MaxApiClient::sendMessage()} или {@see MaxApiClient::editMessage()}.
      */
     public function getToken(): ?string

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit\MaxBot\Event;
 
 use Codeception\Test\Unit;
+use MaxMessenger\Bot\Exception\MaxBot\Event\PostIdMissingException;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\MaxBot\Event\CommentRemovedEvent;
 use MaxMessenger\Bot\Model\Response\SendCommentResult;
-use MaxMessenger\Bot\Model\Response\SendMessageResult;
 use MaxMessenger\Bot\Model\Response\Update;
 use MaxMessenger\Bot\Tests\Support\Fake\FakeMaxApiConfig;
 use MaxMessenger\Bot\Tests\Support\Fake\FakeMaxHttpClient;
@@ -49,24 +49,33 @@ final class CommentRemovedEventTest extends Unit
         );
     }
 
-    public function testSendMessageToUser(): void
+    public function testReplyWithoutPostIdThrowsBeforeRequest(): void
     {
-        $http = new FakeMaxHttpClient(['message' => FakeMaxHttpClient::messageData()]);
-        $event = $this->createEvent($http);
+        $http = new FakeMaxHttpClient();
+        $client = new MaxApiClient(new FakeMaxApiConfig(), httpClient: $http);
+        foreach ([[], ['post_id' => null]] as $postData) {
+            $event = BaseEvent::new(Update::newFromData($postData + [
+                'update_type' => 'comment_removed',
+                'timestamp' => 1,
+                'message_id' => 'mid.comment',
+                'chat_id' => 100,
+                'user_id' => 200,
+            ]), $client, []);
+            self::assertInstanceOf(CommentRemovedEvent::class, $event);
+            self::assertNull($event->getPostId());
 
-        $result = $event->sendMessageToUser('Комментарий удалён');
-
-        self::assertInstanceOf(SendMessageResult::class, $result);
-        $call = $http->lastCall();
-        self::assertNotNull($call);
-        self::assertSame('post', $call['method']);
-        self::assertSame('/messages', $call['path']);
-        self::assertSame(['user_id' => 200], $call['query']);
+            try {
+                $event->reply('Ответ');
+                self::fail('Ожидалась ошибка об отсутствии ID поста');
+            } catch (PostIdMissingException) {
+                self::assertSame([], $http->calls);
+            }
+        }
     }
 
     private function createEvent(?FakeMaxHttpClient $http = null): CommentRemovedEvent
     {
-        $client = new MaxApiClient(new FakeMaxApiConfig($http ?? new FakeMaxHttpClient()));
+        $client = new MaxApiClient(new FakeMaxApiConfig(), httpClient: $http ?? new FakeMaxHttpClient());
         $data = [
             'update_type' => 'comment_removed',
             'timestamp' => 1_700_000_000_000,

@@ -4,8 +4,16 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
+
 /**
- * Вы получите это событие, как только сообщение будет удалено.
+ * Событие удаления сообщения.
+ *
+ * В групповом чате бот получает событие, только если он администратор с правом
+ * {@see ChatAdminPermission::ReadAllMessages}.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class MessageRemovedUpdate extends Update
 {
@@ -20,7 +28,7 @@ class MessageRemovedUpdate extends Update
     protected readonly array $data;
 
     /**
-     * @return int ID чата, где сообщение было удалено.
+     * @return int Идентификатор чата, где сообщение было удалено.
      */
     public function getChatId(): int
     {
@@ -28,7 +36,7 @@ class MessageRemovedUpdate extends Update
     }
 
     /**
-     * @return non-empty-string ID удалённого сообщения.
+     * @return non-empty-string Идентификатор удалённого сообщения.
      */
     public function getMessageId(): string
     {
@@ -36,7 +44,15 @@ class MessageRemovedUpdate extends Update
     }
 
     /**
-     * @return int Пользователь, удаливший сообщение.
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['message_id', 'chat_id', 'user_id'];
+    }
+
+    /**
+     * @return int Идентификатор пользователя, удалившего сообщение.
      */
     public function getUserId(): int
     {

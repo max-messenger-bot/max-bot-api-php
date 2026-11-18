@@ -35,8 +35,25 @@ final class BotCommandsPatchTest extends Unit
         $model = BotCommandsPatch::make(self::makeCommands(32));
 
         $this->expectException(MaxItemsException::class);
+        $this->expectExceptionMessage(
+            'Argument "command" expects an array of up to 32 items, but an array of 33 items was passed.',
+        );
 
         $model->addCommand(new BotCommand('command32'));
+    }
+
+    public function testAddCommandOverLimitWithDisabledValidation(): void
+    {
+        $model = BotCommandsPatch::make(self::makeCommands(32));
+        BotCommandsPatch::$disableValidation = true;
+
+        try {
+            $model->addCommand(new BotCommand('command32'));
+        } finally {
+            BotCommandsPatch::$disableValidation = false;
+        }
+
+        self::assertCount(33, $model->getCommands());
     }
 
     public function testConstructor(): void

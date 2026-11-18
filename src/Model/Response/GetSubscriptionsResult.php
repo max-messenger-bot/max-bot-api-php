@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Список всех WebHook подписок.
+ *
+ * @link https://dev.max.ru/docs-api/methods/GET/subscriptions/
  */
 class GetSubscriptionsResult extends BaseResponseModel
 {

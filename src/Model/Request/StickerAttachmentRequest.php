@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\Model\Enum\AttachmentRequestType;
+use MaxMessenger\Bot\Model\Enum\AttachmentType;
 
 use function array_key_exists;
 
 /**
  * Запрос на прикрепление стикера.
  *
- * Должен быть единственным вложением в сообщении.
+ * В одном запросе нельзя отправить больше одного стикера.
+ * Стикер нельзя сочетать с другими вложениями, кроме клавиатуры.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody
  */
 final class StickerAttachmentRequest extends AttachmentRequest
 {
@@ -32,7 +35,7 @@ final class StickerAttachmentRequest extends AttachmentRequest
     {
         $this->required = ['payload'];
 
-        parent::__construct(AttachmentRequestType::Sticker);
+        parent::__construct(AttachmentType::Sticker);
 
         if ($payload !== null) {
             $this->setPayload($payload);

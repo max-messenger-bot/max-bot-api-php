@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Список комментариев к посту в канале.
+ *
+ * @link https://dev.max.ru/docs-api/methods/GET/messages/-messageId-/comments/
  */
 class CommentMessageList extends BaseResponseModel
 {

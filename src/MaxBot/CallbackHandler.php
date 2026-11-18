@@ -8,7 +8,6 @@ use Closure;
 use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
 use function explode;
-use function mb_strlen;
 use function str_starts_with;
 
 /**
@@ -16,43 +15,40 @@ use function str_starts_with;
  *
  * По умолчанию действия с дополнительными данными не поддерживаются, но вы можете активировать эту возможность,
  * присвоив свойству `$callbackHandler->actionSeparator` разделитель действий и данных.
- *
- * Максимальная длина действия по умолчанию соответствует 64 символам в кодировке UTF-8.
  */
 final class CallbackHandler
 {
     /**
-     * @param array<non-empty-string, list<Closure(MessageCallbackEvent): (bool|void)>> $actionHandlers
-     * @param non-empty-string|null $actionSeparator
-     * @param positive-int $actionMaxLength
+     * Создаёт обработчик нажатий Callback-кнопок с заданными действиями и настройками разбора.
+     *
+     * @param non-empty-string|null $actionSeparator Разделитель имени действия и дополнительного текста.
+     * @param array<non-empty-string, list<Closure(MessageCallbackEvent, string, ?string): (bool|void)>> $actionHandlers
+     *     Обработчики отдельных действий.
      */
     public function __construct(
-        private array $actionHandlers = [],
         public ?string $actionSeparator = null,
-        public int $actionMaxLength = 64,
+        private array $actionHandlers = [],
     ) {}
 
     /**
-     * @return positive-int
-     */
-    public function getActionMaxLength(): int
-    {
-        return $this->actionMaxLength;
-    }
-
-    /**
-     * @return non-empty-string|null
+     * @return non-empty-string|null Разделитель имени действия и дополнительного текста или `null`, если он не задан.
      */
     public function getActionSeparator(): ?string
     {
         return $this->actionSeparator;
     }
 
+    /**
+     * Обрабатывает нажатие Callback-кнопки с текстовым действием.
+     *
+     * @param MessageCallbackEvent $event Событие нажатия Callback-кнопки.
+     * @return bool `true`, если обработчик обработал действие.
+     */
     public function handle(MessageCallbackEvent $event): bool
     {
         $action = $event->getCallback()->getPayload();
 
-        if (str_starts_with($action, '{')) {
+        if ($this->actionHandlers === [] || str_starts_with($action, '{')) {
             return false;
         }
 
@@ -64,15 +60,11 @@ final class CallbackHandler
             $payload = $payloadParts[1] ?? null;
         }
 
-        if (mb_strlen($action, 'UTF-8') > $this->actionMaxLength) {
-            return false;
-        }
-
         $event->userData['__action'] = $action;
         $event->userData['__payload'] = $payload;
 
         foreach ($this->actionHandlers[$action] ?? [] as $handler) {
-            if ($event->handle($handler)) {
+            if ($event->handle(static fn(MessageCallbackEvent $event): ?bool => $handler($event, $action, $payload))) {
                 return true;
             }
         }
@@ -81,8 +73,11 @@ final class CallbackHandler
     }
 
     /**
-     * @param non-empty-string $name
-     * @param Closure(MessageCallbackEvent $event): (bool|void) $handler
+     * Регистрирует обработчик действия с указанным именем.
+     *
+     * @param non-empty-string $name Имя действия.
+     * @param Closure(MessageCallbackEvent $event, string $action, ?string $payload): (bool|void) $handler
+     *     Обработчик действия с его именем и текстом после разделителя; без дополнительных данных payload равен `null`.
      * @return $this
      */
     public function onAction(string $name, Closure $handler): static
@@ -93,18 +88,8 @@ final class CallbackHandler
     }
 
     /**
-     * @param positive-int $actionMaxLength
-     * @return $this
-     */
-    public function setActionMaxLength(int $actionMaxLength): self
-    {
-        $this->actionMaxLength = $actionMaxLength;
-
-        return $this;
-    }
-
-    /**
-     * @param non-empty-string|null $actionSeparator
+     * @param non-empty-string|null $actionSeparator Разделитель имени действия и дополнительного текста;
+     *     `null` отключает разделение.
      * @return $this
      */
     public function setActionSeparator(?string $actionSeparator): self

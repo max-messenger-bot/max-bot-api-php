@@ -8,36 +8,17 @@ use DateTimeImmutable;
 use MaxMessenger\Bot\Exception\Validation\RequiredFieldException;
 use MaxMessenger\Bot\Model\Enum\UpdateType;
 
+use function array_diff;
 use function array_key_exists;
+use function array_keys;
 
 /**
- * Объект `Update` представляет различные события в чате или канале.
+ * Объект, представляющий различные события в диалоге, групповом чате или канале.
  *
- * > Чтобы получать события из группового чата или канала, назначьте бота администратором
- * > и дайте права на чтение всех сообщений.
+ * Типы событий и особенности их получения описаны в {@see UpdateType}.
  *
- * На свои действия бот события не получает.
- *
- * Типы событий:
- * - bot_added — Бот добавлен в чат или канал.
- * - bot_started — Пользователь впервые начал общение с ботом или возобновил после остановки — нажал соответствующую
- *   кнопку в настройках бота в МАКС.
- * - bot_stopped — Пользователь остановил бота – выбрал соответствующее действие в настройках бота в МАКС
- * - bot_removed — Бот удалён из чата или канала.
- * - chat_title_changed — Пользователь изменил название чата или канала.
- * - dialog_cleared — Пользователь очистил историю диалога с ботом.
- * - dialog_muted — Пользователь отключил уведомления в диалоге с ботом.
- * - dialog_unmuted — Пользователь включил уведомления в диалоге с ботом.
- * - dialog_removed — Пользователь удалил диалог с ботом.
- * - message_callback — Пользователь нажал на кнопку в чате или канале.
- * - message_created — Пользователь отправил новое сообщение или опубликовал пост.
- * - message_edited — Пользователь отредактировал сообщение в чате или канале.
- * - message_removed — Пользователь удалил сообщение из чата или канала.
- * - comment_created — Пользователь или бот опубликовал новый комментарий.
- * - comment_edited — Пользователь или бот изменил комментарий в канале.
- * - comment_removed — Пользователь или бот удалил комментарий.
- * - user_added — В чат или канал добавлен или перешёл по ссылке новый пользователь.
- * - user_removed — Пользователь удалён или покинул чат или канал.
+ * Согласно документации, бот не получает события на собственные действия.
+ * **По результатам тестов**: в каналах бот может получать события на собственные действия.
  *
  * @link https://dev.max.ru/docs-api/objects/Update
  */
@@ -51,6 +32,14 @@ class Update extends BaseResponseModel
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
+
+    /**
+     * @return list<non-empty-string> Имена обязательных свойств обновления без update_type и timestamp.
+     */
+    public function getRequiredProperties(): array
+    {
+        return [];
+    }
 
     /**
      * @return DateTimeImmutable Время, когда произошло событие.
@@ -77,7 +66,7 @@ class Update extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Тип события.
+     * @return non-empty-string Тип события. Значения описаны в {@see UpdateType}.
      */
     public function getUpdateTypeRaw(): string
     {
@@ -85,7 +74,17 @@ class Update extends BaseResponseModel
     }
 
     /**
-     * Creates an objects using a map.
+     * Проверяет наличие всех обязательных свойств обновления независимо от их значений.
+     */
+    public function isValid(): bool
+    {
+        return array_diff($this->getRequiredProperties(), array_keys($this->data)) === [];
+    }
+
+    /**
+     * Создаёт объект обновления нужного типа по данным ответа API.
+     *
+     * @param array $data Данные обновления из ответа API.
      */
     public static function newFromData(array $data): static
     {
@@ -101,6 +100,7 @@ class Update extends BaseResponseModel
         /** @var array<string, class-string<self>> $classList */
         $classList = [
             'bot_added' => BotAddedToChatUpdate::class,
+            'bot_admin_permissions_changed' => BotAdminPermissionsChangedUpdate::class,
             'bot_removed' => BotRemovedFromChatUpdate::class,
             'bot_started' => BotStartedUpdate::class,
             'bot_stopped' => BotStoppedUpdate::class,

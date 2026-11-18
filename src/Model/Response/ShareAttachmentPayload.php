@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Данные прикреплённого к сообщению предпросмотра медиавложения.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
  */
 class ShareAttachmentPayload extends BaseResponseModel
 {

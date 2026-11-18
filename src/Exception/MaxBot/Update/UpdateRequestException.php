@@ -7,8 +7,8 @@ namespace MaxMessenger\Bot\Exception\MaxBot\Update;
 use MaxMessenger\Bot\Exception\MaxApiException;
 
 /**
- * Update request exception.
+ * Ошибка запроса с обновлением.
  *
- * Base class for exceptions related to update processing.
+ * Базовый класс исключений, связанных с обработкой обновлений.
  */
 abstract class UpdateRequestException extends MaxApiException {}

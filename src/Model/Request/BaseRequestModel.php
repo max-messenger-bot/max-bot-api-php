@@ -9,12 +9,18 @@ use MaxMessenger\Bot\Contract\ModelInterface;
 use MaxMessenger\Bot\Exception\ActionProhibited;
 use Traversable;
 
+/**
+ * Базовая модель тела запроса с сериализацией полей для API.
+ */
 abstract class BaseRequestModel implements ModelInterface
 {
+    /**
+     * @var array Поля тела запроса, подготовленные для сериализации.
+     */
     protected array $data = [];
 
     /**
-     * Returns an iterator of the model's raw data.
+     * @return Traversable<array-key, mixed> Итератор по исходным данным модели.
      */
     public function getIterator(): Traversable
     {
@@ -22,7 +28,7 @@ abstract class BaseRequestModel implements ModelInterface
     }
 
     /**
-     * Get raw model data.
+     * @return array Исходные данные модели.
      */
     final public function getRawData(): array
     {
@@ -30,7 +36,7 @@ abstract class BaseRequestModel implements ModelInterface
     }
 
     /**
-     * Get RawData model.
+     * @return RawModel Raw модель с исходными данными запроса.
      */
     final public function getRawModel(): RawModel
     {
@@ -40,7 +46,9 @@ abstract class BaseRequestModel implements ModelInterface
     }
 
     /**
-     * Returns data that should be serialized into JSON format.
+     * Возвращает данные модели для сериализации в JSON.
+     *
+     * @return object Поля тела запроса.
      */
     final public function jsonSerialize(): object
     {
@@ -52,16 +60,15 @@ abstract class BaseRequestModel implements ModelInterface
     /**
      * Создаёт экземпляр класса.
      *
-     * Используйте данный метод, если хотите создать пустой объект и наполнять его используя отдельные методы.
-     *
-     * Используйте метод `make()`, что бы установить все обязательные параметры сразу.
-     *
-     * Метод `new()` в отличие от `make()`, не требует передачи обязательных параметров сразу.
+     * В отличие от `make()`, метод `new()` позволяет создать объект без передачи обязательных параметров.
      */
     abstract public static function new(): self;
 
     /**
-     * Check if a property exists in raw data.
+     * Проверяет наличие поля в исходных данных запроса.
+     *
+     * @param mixed $offset Имя или индекс поля.
+     * @return bool Есть ли поле в исходных данных.
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -70,7 +77,10 @@ abstract class BaseRequestModel implements ModelInterface
     }
 
     /**
-     * Get a property from raw data.
+     * Возвращает поле из исходных данных запроса.
+     *
+     * @param mixed $offset Имя или индекс поля.
+     * @return mixed Значение поля или `null`, если его нет.
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -79,7 +89,10 @@ abstract class BaseRequestModel implements ModelInterface
     }
 
     /**
-     * Set a property in raw data (prohibited).
+     * Отклоняет попытку изменить исходные данные запроса через доступ по индексу.
+     *
+     * @param mixed $offset Имя или индекс поля.
+     * @param mixed $value Новое значение поля.
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
@@ -87,12 +100,17 @@ abstract class BaseRequestModel implements ModelInterface
     }
 
     /**
-     * Remove property from raw data (prohibited).
+     * Отклоняет попытку удалить поле исходных данных запроса через доступ по индексу.
+     *
+     * @param mixed $offset Имя или индекс поля.
      */
     public function offsetUnset(mixed $offset): void
     {
         throw new ActionProhibited();
     }
 
+    /**
+     * Точка расширения для проверки обязательных полей модели при сериализации.
+     */
     public function validateRequired(): void {}
 }

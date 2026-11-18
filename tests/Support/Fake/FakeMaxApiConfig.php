@@ -7,20 +7,21 @@ namespace MaxMessenger\Bot\Tests\Support\Fake;
 use LogicException;
 use MaxMessenger\Bot\Contract\Http\HttpClientInterface;
 use MaxMessenger\Bot\Contract\MaxApiConfigInterface;
-use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
-use MaxMessenger\Bot\MaxApiClient;
 use SensitiveParameterValue;
 
 /**
- * Конфигурация, подставляющая фейковый {@see MaxHttpClientInterface} в {@see MaxApiClient}.
+ * Конфигурация для тестов без реального HTTP-клиента.
  */
 final class FakeMaxApiConfig implements MaxApiConfigInterface
 {
-    public function __construct(private readonly MaxHttpClientInterface $maxHttpClient) {}
-
     public function getAccessToken(): SensitiveParameterValue
     {
         return new SensitiveParameterValue('test-token');
+    }
+
+    public function getAttachmentRetryAttempts(): array
+    {
+        return $this->getRetryAttempts();
     }
 
     public function getBaseUrl(): string
@@ -33,9 +34,19 @@ final class FakeMaxApiConfig implements MaxApiConfigInterface
         throw new LogicException('Not used in tests.');
     }
 
-    public function getMaxHttpClient(): MaxHttpClientInterface
+    public function getHttpClientForUpdates(): null
     {
-        return $this->maxHttpClient;
+        return null;
+    }
+
+    public function getHttpClientForUploader(): HttpClientInterface
+    {
+        throw new LogicException('Not used in tests.');
+    }
+
+    public function getPostRetryAttempts(): array
+    {
+        return $this->getRetryAttempts();
     }
 
     public function getRetryAttempts(): array

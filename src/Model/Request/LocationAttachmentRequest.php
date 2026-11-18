@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\Model\Enum\AttachmentRequestType;
+use MaxMessenger\Bot\Model\Enum\AttachmentType;
 
 use function array_key_exists;
 
 /**
  * Запрос на прикрепление локации к сообщению.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
  */
 final class LocationAttachmentRequest extends AttachmentRequest
 {
@@ -32,7 +35,7 @@ final class LocationAttachmentRequest extends AttachmentRequest
     {
         $this->required = ['latitude', 'longitude'];
 
-        parent::__construct(AttachmentRequestType::Location);
+        parent::__construct(AttachmentType::Location);
 
         if ($latitude !== null) {
             $this->setLatitude($latitude);

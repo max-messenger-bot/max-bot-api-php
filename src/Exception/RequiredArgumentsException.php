@@ -7,14 +7,17 @@ namespace MaxMessenger\Bot\Exception;
 use InvalidArgumentException;
 
 /**
- * At least one argument must be non-null.
+ * Хотя бы один аргумент должен отличаться от `null`.
  *
- * Exception thrown when at least one argument must be provided.
+ * Возникает, если все аргументы из обязательного набора равны `null`.
  */
 final class RequiredArgumentsException extends InvalidArgumentException
 {
+    /**
+     * @param string $message Сообщение об ошибке или пустая строка для сообщения по умолчанию.
+     */
     public function __construct(string $message = '')
     {
-        parent::__construct($message ?: 'At least one argument must be non-null.');
+        parent::__construct($message !== '' ? $message : 'At least one argument must be non-null.');
     }
 }

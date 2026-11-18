@@ -5,22 +5,23 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Enum;
 
 /**
- * Действие, отправляемое участникам чата.
+ * Действие бота.
  *
- * Возможные значения:
- * - `typing_on` — Бот набирает сообщение.
- * - `sending_photo` — Бот отправляет фото.
- * - `sending_video` — Бот отправляет видео.
+ * - `mark_seen` — Бот помечает сообщения как прочитанные.
  * - `sending_audio` — Бот отправляет аудиофайл.
  * - `sending_file` — Бот отправляет файл.
- * - `mark_seen` — Бот помечает сообщения как прочитанные.
+ * - `sending_photo` — Бот отправляет фото.
+ * - `sending_video` — Бот отправляет видео.
+ * - `typing_on` — Бот набирает сообщение.
+ *
+ * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/actions/
  */
 enum SenderAction: string
 {
-    case TypingOn = 'typing_on';
-    case SendingPhoto = 'sending_photo';
-    case SendingVideo = 'sending_video';
+    case MarkSeen = 'mark_seen';
     case SendingAudio = 'sending_audio';
     case SendingFile = 'sending_file';
-    case MarkSeen = 'mark_seen';
+    case SendingPhoto = 'sending_photo';
+    case SendingVideo = 'sending_video';
+    case TypingOn = 'typing_on';
 }

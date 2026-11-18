@@ -18,7 +18,7 @@ final class BotAddedToChatEvent extends BaseEvent
     use SendMessageToUserTrait;
 
     /**
-     * @return int ID чата, куда был добавлен бот.
+     * @return int Идентификатор чата или канала, куда был добавлен бот.
      */
     public function getChatId(): int
     {
@@ -26,7 +26,7 @@ final class BotAddedToChatEvent extends BaseEvent
     }
 
     /**
-     * @return User Пользователь, добавивший бота в чат.
+     * @return User Пользователь, добавивший бота в чат или канал.
      */
     public function getUser(): User
     {
@@ -34,7 +34,7 @@ final class BotAddedToChatEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, добавившего бота в чат.
+     * @return int Идентификатор пользователя, добавившего бота в чат или канал.
      */
     public function getUserId(): int
     {

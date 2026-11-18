@@ -16,10 +16,3 @@ trim_trailing_whitespace = false
 
 [*.yml]
 indent_size = 2
-
-[schema.yaml]
-indent_size = 2
-max_line_length = 80
-
-[QWEN.md]
-max_line_length = off

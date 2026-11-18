@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Вы получите это событие, как только пользователь очистит историю сообщений.
+ * Событие очистки пользователем истории сообщений в диалоге.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class DialogClearedUpdate extends Update
 {
@@ -21,7 +24,7 @@ class DialogClearedUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int Идентификатор диалога, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -29,7 +32,15 @@ class DialogClearedUpdate extends Update
     }
 
     /**
-     * @return User Пользователь, который очистил историю сообщений.
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['chat_id', 'user'];
+    }
+
+    /**
+     * @return User Пользователь, который очистил историю диалога.
      */
     public function getUser(): User
     {

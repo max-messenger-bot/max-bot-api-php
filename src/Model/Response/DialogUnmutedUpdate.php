@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Вы получите это событие, как только пользователь включит уведомления о новых сообщениях в диалоге, чате или канале.
+ * Событие включения пользователем уведомлений о новых сообщениях в диалоге.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class DialogUnmutedUpdate extends Update
 {
@@ -21,11 +24,19 @@ class DialogUnmutedUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID диалога, чата или канала, где произошло событие.
+     * @return int Идентификатор диалога, где произошло событие.
      */
     public function getChatId(): int
     {
         return $this->data['chat_id'];
+    }
+
+    /**
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['chat_id', 'user'];
     }
 
     /**

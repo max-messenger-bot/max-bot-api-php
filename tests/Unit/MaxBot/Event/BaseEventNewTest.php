@@ -10,6 +10,7 @@ use Codeception\Test\Unit;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotAddedToChatEvent;
+use MaxMessenger\Bot\MaxBot\Event\BotAdminPermissionsChangedEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotRemovedFromChatEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotStoppedEvent;
@@ -33,9 +34,10 @@ use function time;
 final class BaseEventNewTest extends Unit
 {
     private MaxApiClient $apiClient;
-    /** @var list<Closure(Throwable, BaseEvent): void> */
+    /**
+     * @var list<Closure(Throwable, BaseEvent): void>
+     */
     private array $exceptionHandlers = [];
-    private ArrayObject $userData;
 
     /**
      * @param class-string<BaseEvent> $expectedEventClass
@@ -86,7 +88,7 @@ final class BaseEventNewTest extends Unit
     }
 
     /**
-     * @return array<string, array{0: Update, 1: class-string}>
+     * @return array<string, array{0: Update, 1: class-string<BaseEvent>}>
      */
     public static function updateClassMappingProvider(): array
     {
@@ -100,6 +102,20 @@ final class BaseEventNewTest extends Unit
                     ['update_type' => 'bot_added', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData],
                 ),
                 BotAddedToChatEvent::class,
+            ],
+            'BotAdminPermissionsChangedUpdate' => [
+                Update::newFromData(
+                    [
+                        'update_type' => 'bot_admin_permissions_changed',
+                        'timestamp' => $timestamp,
+                        'chat_id' => 123,
+                        'user_id' => 456,
+                        'bot_id' => 789,
+                        'is_channel' => false,
+                        'is_admin' => true,
+                    ],
+                ),
+                BotAdminPermissionsChangedEvent::class,
             ],
             'BotRemovedFromChatUpdate' => [
                 Update::newFromData(
@@ -229,6 +245,5 @@ final class BaseEventNewTest extends Unit
     protected function _before(): void
     {
         $this->apiClient = new MaxApiClient('test-token');
-        $this->userData = new ArrayObject();
     }
 }

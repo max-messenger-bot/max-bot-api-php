@@ -8,7 +8,9 @@ use DateTimeImmutable;
 use MaxMessenger\Bot\Model\Enum\UpdateType;
 
 /**
- * Класс для описания подписки на WebHook.
+ * Подписка на WebHook.
+ *
+ * @link https://dev.max.ru/docs-api/methods/GET/subscriptions/
  */
 class Subscription extends BaseResponseModel
 {
@@ -48,7 +50,7 @@ class Subscription extends BaseResponseModel
     }
 
     /**
-     * @return list<non-empty-string>|null Типы событий, на которые подписан бот.
+     * @return list<non-empty-string>|null Типы событий, на которые подписан бот. Значения описаны в {@see UpdateType}.
      */
     public function getUpdateTypesRaw(): ?array
     {
@@ -64,7 +66,7 @@ class Subscription extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null Версия API (minLength: 5, pattern: '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}').
+     * @return non-empty-string|null Версия API (minLength: 5, pattern: '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$').
      */
     public function getVersion(): ?string
     {

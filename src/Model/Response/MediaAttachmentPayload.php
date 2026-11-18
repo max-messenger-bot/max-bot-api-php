@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+/**
+ * Данные прикреплённого к сообщению аудио или видео.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ */
 class MediaAttachmentPayload extends AttachmentPayload
 {
     /**
@@ -15,6 +20,9 @@ class MediaAttachmentPayload extends AttachmentPayload
      */
     protected readonly array $data;
 
+    /**
+     * @return int Идентификатор прикреплённого медиафайла.
+     */
     public function getId(): int
     {
         return $this->data['id'];

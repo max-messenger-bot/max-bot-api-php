@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\Model\Enum\AttachmentRequestType;
+use MaxMessenger\Bot\Model\Enum\AttachmentType;
 
 use function array_key_exists;
 
 /**
  * Запрос на прикрепление аудио к сообщению.
  *
- * Должен быть единственным вложением в сообщении.
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/media
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody
  */
 final class AudioAttachmentRequest extends AttachmentRequest
 {
@@ -32,7 +33,7 @@ final class AudioAttachmentRequest extends AttachmentRequest
     {
         $this->required = ['payload'];
 
-        parent::__construct(AttachmentRequestType::Audio);
+        parent::__construct(AttachmentType::Audio);
 
         if ($payload !== null) {
             $this->setPayload($payload);

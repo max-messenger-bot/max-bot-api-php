@@ -8,29 +8,37 @@ use function array_key_exists;
 use function is_array;
 
 /**
- * Raw data query model.
+ * Модель запроса для передачи данных без проверки их структуры.
  *
  * > [!CAUTION]
- * > Do not use this class if you are unfamiliar with the Max platform API data format.
- * > Do not use this class if you are not an experienced programmer.
- * > You are solely responsible for the correctness of the data passed.
- * > Incorrect data structure may result in an incorrect request format and subsequent explicit and implicit errors.
+ * > Не используйте этот класс, если не знакомы с форматом данных API платформы МАКС.
+ * > Не используйте этот класс без достаточного опыта программирования.
+ * > Вы полностью отвечаете за корректность переданных данных.
+ * > Неверная структура данных может привести к некорректному запросу и явным или скрытым ошибкам.
  */
 class RawModel extends BaseRequestModel
 {
+    /**
+     * @param array $data Данные для передачи в запросе API без проверки их структуры.
+     */
     public function __construct(array $data)
     {
         $this->data = $data;
     }
 
+    /**
+     * @param array $data Данные для передачи в запросе API без проверки их структуры.
+     */
     public static function new(array $data = []): BaseRequestModel
     {
         return new self($data);
     }
 
     /**
-     * Get a property from raw data.
+     * Возвращает поле исходных данных, преобразуя вложенные модели запроса.
      *
+     * @param mixed $offset Имя или индекс поля.
+     * @return mixed Значение поля или `null`, если его нет.
      * @noinspection PhpMissingParentCallCommonInspection
      */
     public function offsetGet(mixed $offset): mixed
@@ -40,9 +48,7 @@ class RawModel extends BaseRequestModel
             return null;
         }
 
-        /** @psalm-suppress UnsupportedPropertyReferenceUsage */
         $_value = &$this->data[$offset];
-
         if (is_array($_value)) {
             if ($_value) {
                 $this->convertToRawModelArr($_value);
@@ -55,18 +61,22 @@ class RawModel extends BaseRequestModel
     }
 
     /**
-     * Set a property in raw data.
+     * Записывает поле в исходные данные запроса.
      *
+     * @param mixed $offset Имя или индекс поля.
+     * @param mixed $value Значение поля.
      * @noinspection PhpMissingParentCallCommonInspection
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
+        /** @var array-key|null $offset */
         $this->data[$offset ?? ''] = $value;
     }
 
     /**
-     * Remove property from raw data.
+     * Удаляет поле из исходных данных запроса.
      *
+     * @param mixed $offset Имя или индекс поля.
      * @noinspection PhpMissingParentCallCommonInspection
      */
     public function offsetUnset(mixed $offset): void
@@ -76,6 +86,7 @@ class RawModel extends BaseRequestModel
     }
 
     /**
+     * @param array $data Новые исходные данные запроса.
      * @return $this
      */
     public function setRawData(array $data): self

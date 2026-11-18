@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+/**
+ * Результат запроса закреплённого сообщения чата или канала.
+ *
+ * @link https://dev.max.ru/docs-api/methods/GET/chats/-chatId-/pin/
+ */
 class GetPinnedMessageResult extends BaseResponseModel
 {
     /**
@@ -16,7 +21,7 @@ class GetPinnedMessageResult extends BaseResponseModel
     private Message|false|null $message = false;
 
     /**
-     * @return Message|null Закреплённое сообщение. Может быть `null`, если в чате нет закреплённого сообщения.
+     * @return Message|null Закреплённое сообщение. Может быть `null`, если в чате или канале нет закрепления.
      */
     public function getMessage(): ?Message
     {

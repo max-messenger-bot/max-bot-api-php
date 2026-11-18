@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 use DateTimeImmutable;
+use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Model\Enum\ChatStatus;
 use MaxMessenger\Bot\Model\Enum\ChatType;
 
 /**
- * Объект содержит общую информацию о групповом чате или канале: его тип, настройки отображения
+ * Информация о групповом чате, канале или диалоге: его тип, настройки отображения
  * (название, аватар, описание, ссылка), публичную доступность, а также информацию об участниках
  * (владельце, боте и других пользователях), времени их последней активности и событиях.
  *
@@ -20,19 +21,19 @@ class Chat extends BaseResponseModel
     /**
      * @var array{
      *     chat_id: int,
-     *     type: string,
-     *     status: string,
+     *     type: non-empty-string,
+     *     status: non-empty-string,
      *     title?: non-empty-string,
      *     icon?: array,
      *     last_event_time: non-negative-int,
-     *     participants_count: int,
+     *     participants_count: non-negative-int,
      *     owner_id?: int,
-     *     participants?: array<int, int>,
+     *     participants?: array<int, non-negative-int>,
      *     is_public: bool,
-     *     link?: string,
+     *     link?: non-empty-string,
      *     description?: non-empty-string,
      *     dialog_with_user?: array,
-     *     messages_count?: int,
+     *     messages_count?: non-negative-int,
      *     chat_message_id?: non-empty-string,
      *     pinned_message?: array
      * }
@@ -44,7 +45,7 @@ class Chat extends BaseResponseModel
     private Message|false|null $pinnedMessage = false;
 
     /**
-     * @return int ID чата или канала.
+     * @return int Идентификатор чата или канала.
      */
     public function getChatId(): int
     {
@@ -52,6 +53,23 @@ class Chat extends BaseResponseModel
     }
 
     /**
+     * Идентификатор сообщения с кнопкой, через которую был инициирован чат.
+     *
+     * Это не `mid`: значение приходит строкой base64url без выравнивающих символов `=`, которая декодируется
+     * в 26 байт — `0x01` (версия), `chat_id` (int64, big-endian), `seq` (int64, big-endian), `0x01`,
+     * `user_id` отправителя сообщения (int64, big-endian). Первые два поля — те же `chat_id` и `seq`,
+     * из которых состоит `mid` сообщения.
+     *
+     * Подставлять это значение в {@see MaxApiClient::getMessages()} нельзя: сервер вернёт пустой список
+     * без ошибки. Сначала его нужно преобразовать в `mid`.
+     *
+     * Извлечение `chat_id`, `seq`, `user_id` и `mid`:
+     * ```
+     * $raw = base64_decode(strtr($chat->getChatMessageId(), '-_', '+/'), true);
+     * ['chatId' => $chatId, 'seq' => $seq, 'userId' => $userId] = unpack('x/JchatId/Jseq/x/JuserId', $raw);
+     * $mid = 'mid.' . bin2hex(substr($raw, 1, 16));
+     * ```
+     *
      * @return non-empty-string|null Идентификатор сообщения с кнопкой, через которую был инициирован чат.
      */
     public function getChatMessageId(): ?string
@@ -104,7 +122,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return string|null Ссылка на чат.
+     * @return non-empty-string|null Ссылка на чат.
      */
     public function getLink(): ?string
     {
@@ -112,7 +130,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return int|null Количество сообщений в групповых чатах и каналах. Недоступно для диалогов.
+     * @return non-negative-int|null Количество сообщений в групповых чатах и каналах. Недоступно для диалогов.
      */
     public function getMessagesCount(): ?int
     {
@@ -120,7 +138,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return int|null ID владельца чата или канала.
+     * @return int|null Идентификатор владельца чата или канала. Доступен только администраторам чата.
      */
     public function getOwnerId(): ?int
     {
@@ -128,8 +146,9 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return int[]|null Участники чата или канала с временем последней активности.
-     *     Может отсутствовать, если запрашивается список чатов.
+     * @return array<int, non-negative-int>|null Участники чата или канала с временем последней активности.
+     *     Ключи — идентификаторы пользователей, значения — Unix-время в миллисекундах или `0`.
+     *     Доступно только администраторам.
      */
     public function getParticipants(): ?array
     {
@@ -137,7 +156,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return int Количество участников чата или канала. Для диалогов всегда 2.
+     * @return non-negative-int Количество участников чата или канала. Для диалогов всегда 2.
      */
     public function getParticipantsCount(): int
     {
@@ -164,11 +183,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return string Статус чата:
-     *   - `active` — Бот является активным участником чата.
-     *   - `removed` — Бот был удалён из чата.
-     *   - `left` — Бот покинул чат.
-     *   - `closed` — Чат был закрыт.
+     * @return non-empty-string Статус чата для текущего бота. Значения описаны в {@see ChatStatus}.
      */
     public function getStatusRaw(): string
     {
@@ -193,7 +208,7 @@ class Chat extends BaseResponseModel
     }
 
     /**
-     * @return string Тип чата.
+     * @return non-empty-string Тип чата. Значения описаны в {@see ChatType}.
      */
     public function getTypeRaw(): string
     {

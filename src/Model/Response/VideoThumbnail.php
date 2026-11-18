@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+/**
+ * Миниатюра видео.
+ *
+ * @link https://dev.max.ru/docs-api/methods/GET/videos/-videoToken-/
+ */
 class VideoThumbnail extends BaseResponseModel
 {
     /**
@@ -22,6 +27,11 @@ class VideoThumbnail extends BaseResponseModel
         return $this->data['url'];
     }
 
+    /**
+     * Создаёт объект с URL миниатюры видео.
+     *
+     * @param non-empty-string $url URL изображения миниатюры.
+     */
     public static function newFromUrl(string $url): static
     {
         /** @psalm-var static Bug? */

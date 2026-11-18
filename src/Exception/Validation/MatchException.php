@@ -7,12 +7,15 @@ namespace MaxMessenger\Bot\Exception\Validation;
 use function sprintf;
 
 /**
- * Argument has an invalid value.
+ * Недопустимое значение аргумента.
  *
- * Exception thrown when an argument does not match the expected pattern or value.
+ * Возникает, если аргумент не соответствует ожидаемому шаблону или значению.
  */
 final class MatchException extends ValidationException
 {
+    /**
+     * @param string $argumentName Имя аргумента с недопустимым значением.
+     */
     public function __construct(string $argumentName)
     {
         parent::__construct(sprintf('Argument "%s" has an invalid value.', $argumentName));

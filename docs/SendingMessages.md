@@ -47,7 +47,7 @@
 ```php
 use MaxMessenger\Bot\MaxApiClient;
 
-$client = new MaxApiClient('your-access-token');
+$client = new MaxApiClient('your-access-token', useRussianTrustedCaCertificates: true);
 
 $result = $client->sendMessageToChat($chatId, 'Привет, чат!');
 ```
@@ -137,7 +137,7 @@ $client->sendMessageToUser($userId, $message);
 
 ## Форматирование текста
 
-Поддерживается markdown-форматирование:
+Поддерживается markdown-форматирование и HTML-форматирование:
 
 ```php
 use MaxMessenger\Bot\Model\Enum\TextFormat;
@@ -149,6 +149,32 @@ $message = NewMessageBody::new()
 
 $client->sendMessageToUser($userId, $message);
 ```
+
+Заголовок в Markdown задаётся строкой `# Заголовок`. В HTML можно использовать `<h1>`:
+
+```php
+$message = NewMessageBody::make('<h1>Заголовок</h1>', format: TextFormat::Html);
+$client->sendMessageToUser($userId, $message);
+```
+
+### Цитаты в форматированном тексте
+
+В Markdown в конце цитаты должна быть завершающая пустая строка. Сервер убирает её из `body.text` ответа:
+
+```php
+$message = NewMessageBody::make("> Цитата\n\n[Ссылка](https://dev.max.ru/)", format: TextFormat::Markdown);
+```
+
+В HTML цитату завершает `</blockquote>`. Пустая строка после неё не нужна:
+
+```php
+$message = NewMessageBody::make(
+    "<blockquote>Цитата</blockquote>\n<a href=\"https://dev.max.ru/\">Ссылка</a>",
+    format: TextFormat::Html,
+);
+```
+
+Клиент показывает цитату в обоих форматах, но в проверенных ответах сервер не вернул элемент `quote` в `body.markup`.
 
 Многострочный моноширинный блок:
 
@@ -179,6 +205,7 @@ $message = NewMessageBody::new()
 Доступные форматы (`TextFormat`):
 
 - `TextFormat::Markdown` — markdown-форматирование
+- `TextFormat::Html` — HTML-форматирование
 
 ## Ссылки в сообщениях
 
@@ -222,8 +249,8 @@ $client->sendMessageToChat($chatId, $message);
 
 ## Вложения
 
-> Для загрузки файлов на сервера и получения токена вложения, используйте
-> пакет [max-messenger-bot/max-bot-uploader-php](https://github.com/max-messenger-bot/max-bot-uploader-php).
+> Загрузка медиафайлов на серверы МАКС и получение токена вложения описаны в разделе
+> [Загрузка медиафайлов](UploadingFiles.md).
 
 `NewMessageBody` поддерживает различные типы вложений через методы `add*Attachment()`.
 
@@ -259,7 +286,7 @@ $message = NewMessageBody::new()
 
 ### Аудио
 
-Аудио должно быть единственным вложением:
+Аудио можно отправить вместе с клавиатурой с кнопками:
 
 ```php
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
@@ -270,7 +297,8 @@ $message = NewMessageBody::new()
 
 ### Файлы
 
-Файл должен быть единственным вложением:
+К сообщению можно прикрепить один файл и одну клавиатуру с кнопками.
+Файл нельзя сочетать с изображениями, видео или другими файлами:
 
 ```php
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
@@ -281,7 +309,7 @@ $message = NewMessageBody::new()
 
 ### Стикеры
 
-Стикер должен быть единственным вложением:
+Стикер можно отправить с клавиатурой, в одном запросе можно отправить только один стикер:
 
 ```php
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
@@ -304,7 +332,7 @@ $message = NewMessageBody::new()
 ```php
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
-// По ID контакта
+// По ID пользователя
 $message = NewMessageBody::new()
     ->addContactAttachment(contactId: 12345);
 
@@ -327,6 +355,20 @@ $message = NewMessageBody::new()
 ### Inline-клавиатура
 
 Inline-клавиатура отображается под сообщением. Поддерживается до 210 кнопок в 30 рядах (до 7 кнопок в ряду).
+Если в ряду есть кнопка типа `link`, `open_app`, `request_geo_location` или `request_contact`, в нём может быть не
+больше 3 кнопок. Это ограничение SDK не проверяет: он следит только за числом рядов и общим лимитом в 7 кнопок.
+
+Текст кнопки должен содержать от 1 до 128 символов.
+Чтобы он отображался полностью, рекомендуется выбирать длину текста с учётом количества кнопок в ряду:
+
+| Кнопок в ряду | Рекомендуемая длина текста |
+|---------------|----------------------------|
+| Одна          | До 20 символов             |
+| Две           | До 10 символов             |
+| Три           | До 5 символов              |
+| Четыре        | До 3 символов              |
+
+SDK проверяет длину текста от 1 до 128 символов; рекомендации по отображению учитывает вызывающий код.
 
 ```php
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
@@ -375,27 +417,12 @@ $client->sendMessageToUser($userId, $message);
 | Класс                      | Где использовать | Описание                                            |
 |----------------------------|------------------|-----------------------------------------------------|
 | `CallbackButton`           | Inline           | Отправляет callback боту с payload                  |
-| `ChatButton`               | Inline           | Создаёт новый чат                                   |
 | `ClipboardButton`          | Inline           | Копирует текст в буфер обмена                       |
 | `LinkButton`               | Inline           | Открывает URL                                       |
 | `MessageButton`            | Inline           | Отправляет текст кнопки в чат от имени пользователя |
 | `OpenAppButton`            | Inline           | Запускает мини-приложение                           |
 | `RequestContactButton`     | Inline           | Запрашивает контакт пользователя                    |
 | `RequestGeoLocationButton` | Inline           | Запрашивает геолокацию                              |
-
-Пример создания чата через кнопку:
-
-```php
-$keyboard->addChatButton(
-    text: 'Создать чат',
-    chatTitle: 'Новый чат',
-    chatDescription: 'Описание чата',
-    startPayload: 'start_command'
-);
-```
-
-Чат создаётся, когда на кнопку нажимает первый пользователь. Владельцем чата станет бот, отправивший
-сообщение с кнопкой, а нажавший кнопку — обычным участником.
 
 Пример запуска мини-приложения:
 
@@ -542,27 +569,37 @@ $client->sendAction($chatId, new ActionRequestBody(SenderAction::MarkSeen));
 ## Обработка ошибок
 
 Метод `sendMessage()` автоматически повторяет запрос при ошибке неготовности вложения (`attachment.not.ready`):
+По умолчанию задержки берутся из общего расписания `$apiConfig->retryAttempts`.
+Для вложений можно задать отдельное расписание, отключить повторы или вернуться к общему:
 
 ```php
-// Настройка повторных попыток (задержки в миллисекундах)
-$client->retryAttempts = [1000, 2000, 4000, 8000, 15000];
+$apiConfig->setAttachmentRetryAttempts([1000, 2000]); // отдельное расписание, мс
+$apiConfig->setAttachmentRetryAttempts([]);           // отключить повторы
+$apiConfig->setAttachmentRetryAttempts(null);         // использовать общее расписание
 ```
 
-Для отключения повторных попыток:
+При сетевых ошибках и ответах с кодами `429`, `500`, `502`, `503`, `504` `MaxHttpClient` повторяет HTTP-запрос.
+По умолчанию задержки для всех HTTP-методов берутся из общего расписания `$apiConfig->retryAttempts`.
+Для `POST` можно задать отдельное расписание, отключить повторы или вернуться к общему:
 
 ```php
-$client->retryAttempts = [];
+$apiConfig->setPostRetryAttempts([1000, 2000]); // отдельное расписание, мс
+$apiConfig->setPostRetryAttempts([]);           // отключить повторы POST
+$apiConfig->setPostRetryAttempts(null);         // использовать общее расписание
 ```
 
-Значение по умолчанию берётся из объекта конфигурации (`MaxApiConfigInterface::getRetryAttempts()`).
+После исчерпания попыток исключение передаётся вашему коду. Расписание для `attachment.not.ready`
+не зависит от `postRetryAttempts`.
 
-При других ошибках выбрасываются исключения:
+При других ошибках исключение выбрасывается сразу:
 
 - `BadRequestException` — неверный запрос (400)
 - `UnauthorizedException` — неавторизован (401)
 - `ForbiddenException` — доступ запрещён (403)
 - `NotFoundException` — ресурс не найден (404)
-- `TooManyRequestsException` — слишком много запросов (429)
+- `TooManyRequestsException` — слишком много запросов (429), после исчерпания повторных попыток
+
+Полный список исключений — в разделе [API-клиент](ApiClient.md#ошибки).
 
 ## Ответ метода
 
@@ -601,8 +638,10 @@ $client->editMessage($result->getMessage(), 'Обновлённый текст')
 Комментарии — отдельная группа методов. Они не поддерживают вложения и пересылку,
 а текст комментария обязателен и не может быть пустой строкой.
 
-Чтобы работать с комментариями, в настройках канала должны быть включены комментарии, а бот должен быть администратором
-канала: с правом `read_all_messages` для чтения, дополнительно с `write` для отправки и с `delete` для удаления.
+Чтобы отправлять комментарии, в настройках канала должны быть включены комментарии, а бот должен быть
+администратором канала с правом `write`. Для чтения комментариев нужно право `read_all_messages`,
+для удаления чужих комментариев — право `delete`. Для редактирования комментариев, опубликованных от
+имени канала, требуется право `edit`; без него бот может редактировать только свои комментарии.
 
 ```php
 use MaxMessenger\Bot\Model\Request\NewCommentBody;

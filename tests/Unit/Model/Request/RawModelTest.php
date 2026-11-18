@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace MaxMessenger\Bot\Tests\Unit\Model\Requests;
+namespace MaxMessenger\Bot\Tests\Unit\Model\Request;
 
 use Codeception\Test\Unit;
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
+use MaxMessenger\Bot\Model\Request\NewMessageLink;
 use MaxMessenger\Bot\Model\Request\RawModel;
 
 final class RawModelTest extends Unit
@@ -15,12 +16,14 @@ final class RawModelTest extends Unit
         $data = [
             'text' => 'Привет, мир!',
             'text_format' => 'markdown',
+            'notify' => true,
         ];
 
         $model = new RawModel($data);
 
         self::assertSame('Привет, мир!', $model['text']);
         self::assertSame('markdown', $model['text_format']);
+        self::assertTrue($model['notify']);
     }
 
     public function testCustomModelExtendingRawModel(): void
@@ -66,6 +69,32 @@ final class RawModelTest extends Unit
         self::assertFalse(isset($model['non_existent']));
     }
 
+    public function testNestedArraysConvertModelsToRawModel(): void
+    {
+        $inner = new RawModel(['mid' => 'mid.raw']);
+        $model = new RawModel([
+            'attachments' => [
+                ['payload' => new NewMessageLink('mid.1'), 'raw' => $inner, 'text' => 'текст'],
+                [],
+            ],
+            'empty' => [],
+            'link' => new NewMessageLink('mid.2'),
+            'raw' => $inner,
+        ]);
+
+        $attachments = $model['attachments'];
+        self::assertIsArray($attachments);
+        self::assertIsArray($attachments[0]);
+        self::assertInstanceOf(RawModel::class, $attachments[0]['payload']);
+        self::assertSame('mid.1', $attachments[0]['payload']['mid']);
+        self::assertSame($inner, $attachments[0]['raw']);
+        self::assertSame('текст', $attachments[0]['text']);
+        self::assertSame([], $attachments[1]);
+        self::assertSame([], $model['empty']);
+        self::assertInstanceOf(RawModel::class, $model['link']);
+        self::assertSame($inner, $model['raw']);
+    }
+
     public function testNestedModelsConvertToRawModel(): void
     {
         $message = (new NewMessageBody('Текст сообщения'))
@@ -102,17 +131,6 @@ final class RawModelTest extends Unit
         self::assertInstanceOf(RawModel::class, $model);
         self::assertNull($model['text']);
         self::assertSame([], $model->getRawData());
-    }
-
-    public function testOffsetGet(): void
-    {
-        $model = new RawModel([
-            'text' => 'Test',
-            'notify' => true,
-        ]);
-
-        self::assertSame('Test', $model['text']);
-        self::assertTrue($model['notify']);
     }
 
     public function testOffsetGetNonExistent(): void

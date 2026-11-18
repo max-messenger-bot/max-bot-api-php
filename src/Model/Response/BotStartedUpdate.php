@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Вы получите это событие, как только пользователь начнёт или возобновит общение с ботом (нажмёт кнопку "Начать").
+ * Событие начала или возобновления общения пользователя с ботом (нажатия кнопки "Начать").
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class BotStartedUpdate extends Update
 {
@@ -22,7 +25,7 @@ class BotStartedUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID диалога, где произошло событие.
+     * @return int Идентификатор диалога, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -37,6 +40,14 @@ class BotStartedUpdate extends Update
     public function getPayload(): ?string
     {
         return $this->data['payload'] ?? null;
+    }
+
+    /**
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['chat_id', 'user'];
     }
 
     /**

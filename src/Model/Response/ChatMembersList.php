@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Список участников группового чата или канала и указатель на следующую страницу данных.
+ *
+ * @link https://dev.max.ru/docs-api/methods/GET/chats/-chatId-/members/
  */
 class ChatMembersList extends BaseResponseModel
 {

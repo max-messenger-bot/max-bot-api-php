@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+/**
+ * Сведения о ссылках и миниатюре прикреплённого видео.
+ *
+ * @link https://dev.max.ru/docs-api/methods/GET/videos/-videoToken-/
+ */
 class VideoAttachmentDetails extends BaseResponseModel
 {
     /**
@@ -11,9 +16,9 @@ class VideoAttachmentDetails extends BaseResponseModel
      *     token: non-empty-string,
      *     urls?: array,
      *     thumbnail?: array,
-     *     width: int,
-     *     height: int,
-     *     duration: int
+     *     width: non-negative-int,
+     *     height: non-negative-int,
+     *     duration: non-negative-int
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
@@ -22,7 +27,7 @@ class VideoAttachmentDetails extends BaseResponseModel
     private VideoUrls|false|null $urls = false;
 
     /**
-     * @return int Длина видео в секундах.
+     * @return non-negative-int Длина видео в секундах.
      */
     public function getDuration(): int
     {
@@ -30,7 +35,7 @@ class VideoAttachmentDetails extends BaseResponseModel
     }
 
     /**
-     * @return int Высота видео.
+     * @return non-negative-int Высота видео.
      */
     public function getHeight(): int
     {
@@ -66,7 +71,7 @@ class VideoAttachmentDetails extends BaseResponseModel
     }
 
     /**
-     * @return int Ширина видео.
+     * @return non-negative-int Ширина видео.
      */
     public function getWidth(): int
     {

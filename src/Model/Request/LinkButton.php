@@ -12,6 +12,10 @@ use function array_key_exists;
  * Кнопка-ссылка.
  *
  * После нажатия на такую кнопку пользователь переходит по ссылке, которую она содержит.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 final class LinkButton extends Button
 {
@@ -25,7 +29,7 @@ final class LinkButton extends Button
 
     /**
      * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
-     * @param non-empty-string|null $url URL кнопки (minLength: 4, maxLength: 2048).
+     * @param non-empty-string|null $url URL кнопки (maxLength: 2048).
      */
     public function __construct(?string $text = null, ?string $url = null)
     {
@@ -53,7 +57,7 @@ final class LinkButton extends Button
 
     /**
      * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
-     * @param non-empty-string $url URL кнопки (minLength: 4, maxLength: 2048).
+     * @param non-empty-string $url URL кнопки (maxLength: 2048).
      */
     public static function make(string $text, string $url): self
     {
@@ -62,7 +66,7 @@ final class LinkButton extends Button
 
     /**
      * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
-     * @param non-empty-string|null $url URL кнопки (minLength: 4, maxLength: 2048).
+     * @param non-empty-string|null $url URL кнопки (maxLength: 2048).
      */
     public static function new(?string $text = null, ?string $url = null): self
     {
@@ -70,12 +74,12 @@ final class LinkButton extends Button
     }
 
     /**
-     * @param non-empty-string $url URL кнопки (minLength: 4, maxLength: 2048).
+     * @param non-empty-string $url URL кнопки (maxLength: 2048).
      * @return $this
      */
     public function setUrl(string $url): self
     {
-        self::validateString('url', $url, minLength: 4, maxLength: 2048);
+        self::validateString('url', $url, minLength: 1, maxLength: 2048);
 
         $this->data['url'] = $url;
 

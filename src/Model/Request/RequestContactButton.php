@@ -10,6 +10,10 @@ use MaxMessenger\Bot\Model\Enum\ButtonType;
  * Кнопка запроса контакта.
  *
  * После нажатия на такую кнопку клиент отправляет новое сообщение с вложением текущего контакта пользователя.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 final class RequestContactButton extends Button
 {

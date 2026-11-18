@@ -1,4 +1,4 @@
 *
 !/.gitignore
-!/.polling-to-webhook.conf.example
-!/.tokens.example
+!/.max-polling-to-webhook.conf.example
+!/.max-tokens.example

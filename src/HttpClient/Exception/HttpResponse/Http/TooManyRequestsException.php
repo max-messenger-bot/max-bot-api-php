@@ -7,6 +7,6 @@ namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
 use MaxMessenger\Bot\HttpClient\Exception\TemporaryExceptionInterface;
 
 /**
- * Превышено количество запросов.
+ * Превышено количество запросов (HTTP 429).
  */
 final class TooManyRequestsException extends HttpException implements TemporaryExceptionInterface {}

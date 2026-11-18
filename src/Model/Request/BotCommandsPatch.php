@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\Exception\Validation\MaxItemsException;
-
 use function array_key_exists;
 use function array_values;
-use function count;
 
 /**
  * Объект для обновления команд бота.
+ *
+ * @link https://dev.max.ru/docs-api/methods/PATCH/me/commands/
  */
 final class BotCommandsPatch extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{
@@ -40,7 +39,9 @@ final class BotCommandsPatch extends BaseRequestModel
     }
 
     /**
-     * @param BotCommand $command
+     * Добавляет команду в список команд бота.
+     *
+     * @param BotCommand $command Добавляемая команда.
      * @return $this
      */
     public function addCommand(BotCommand $command): self
@@ -51,11 +52,11 @@ final class BotCommandsPatch extends BaseRequestModel
             return $this;
         }
 
-        if (count($this->data['commands']) >= 32) {
-            throw new MaxItemsException('commands', 33, 32);
-        }
+        $commands = [...$this->data['commands'], $command];
 
-        $this->data['commands'][] = $command;
+        self::validateArray('command', $commands, maxItems: 32);
+
+        $this->data['commands'] = $commands;
 
         return $this;
     }

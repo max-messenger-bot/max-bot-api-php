@@ -7,12 +7,17 @@ namespace MaxMessenger\Bot\Exception\Validation;
 use function sprintf;
 
 /**
- * Array has insufficient items.
+ * В массиве недостаточно элементов.
  *
- * Exception thrown when an array argument contains fewer items than required.
+ * Возникает, если аргумент-массив содержит меньше элементов, чем требуется.
  */
 final class MinItemsException extends ValidationException
 {
+    /**
+     * @param string $argumentName Имя аргумента-массива.
+     * @param int $countItems Фактическое число элементов.
+     * @param int $minItems Минимально допустимое число элементов.
+     */
     public function __construct(string $argumentName, int $countItems, int $minItems)
     {
         $part1 = $minItems === 1

@@ -9,6 +9,9 @@ namespace MaxMessenger\Bot\Model\Response;
  *
  * После нажатия на такую кнопку клиент отправляет новое сообщение с вложением
  * текущего географического положения пользователя.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 class RequestGeoLocationButton extends Button
 {

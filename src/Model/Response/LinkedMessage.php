@@ -6,12 +6,23 @@ namespace MaxMessenger\Bot\Model\Response;
 
 use MaxMessenger\Bot\Model\Enum\MessageLinkType;
 
+use function filter_var;
+use function is_int;
+use function is_string;
+
+use const FILTER_VALIDATE_INT;
+
+/**
+ * Связанное сообщение, на которое отвечают или которое пересылают.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ */
 class LinkedMessage extends BaseResponseModel
 {
     /**
      * @var array{
-     *     type: string,
-     *     sender?: array,
+     *     type: non-empty-string,
+     *     sender?: array|string|int,
      *     chat_id: int,
      *     message: array
      * }
@@ -22,11 +33,8 @@ class LinkedMessage extends BaseResponseModel
     private User|false|null $sender = false;
 
     /**
-     * ID чата или канала, в котором опубликовано связанное сообщение.
-     *
-     * Для {@see isForward()} это чат-источник, для {@see isReply()} — чат самого сообщения.
-     *
-     * @return int|null ID чата или канала, в котором опубликовано связанное сообщение.
+     * @return int|null Идентификатор чата или канала, в котором опубликовано связанное сообщение.
+     *     Для {@see isForward()} это чат-источник, для {@see isReply()} — чат самого сообщения.
      *     `null`, если у бота нет доступа к чату-источнику.
      */
     public function getChatId(): ?int
@@ -52,12 +60,23 @@ class LinkedMessage extends BaseResponseModel
     /**
      * @return User|null Пользователь или бот, отправивший сообщение.
      *     Может быть `null`, если сообщение опубликовано от имени канала.
+     *     Если API вернул только идентификатор, имя будет `**HIDDEN**`, а `is_bot` — `false`.
      */
     public function getSender(): ?User
     {
-        return $this->sender === false
-            ? ($this->sender = User::newFromNullableData($this->data['sender'] ?? null))
-            : $this->sender;
+        if ($this->sender !== false) {
+            return $this->sender;
+        }
+
+        $sender = $this->data['sender'] ?? null;
+        if (is_string($sender) || is_int($sender)) {
+            $senderId = filter_var($sender, FILTER_VALIDATE_INT);
+            $sender = is_int($senderId) && $senderId !== 0
+                ? ['user_id' => $senderId, 'first_name' => '**HIDDEN**', 'is_bot' => false]
+                : null;
+        }
+
+        return $this->sender = User::newFromNullableData($sender);
     }
 
     /**
@@ -69,18 +88,24 @@ class LinkedMessage extends BaseResponseModel
     }
 
     /**
-     * @return string Тип связанного сообщения.
+     * @return non-empty-string Тип связанного сообщения. Значения описаны в {@see MessageLinkType}.
      */
     public function getTypeRaw(): string
     {
         return $this->data['type'];
     }
 
+    /**
+     * @return bool Является ли связанное сообщение пересланным.
+     */
     public function isForward(): bool
     {
         return $this->data['type'] === MessageLinkType::Forward->value;
     }
 
+    /**
+     * @return bool Является ли связанное сообщение ответом.
+     */
     public function isReply(): bool
     {
         return $this->data['type'] === MessageLinkType::Reply->value;

@@ -18,8 +18,15 @@ use MaxMessenger\Bot\Model\Response\SendMessageResult;
  */
 trait SendMessageToChatTrait
 {
+    /**
+     * @return int Идентификатор чата события.
+     */
     abstract public function getChatId(): int;
 
+    /**
+     * @return int Идентификатор чата события.
+     * @throws ChatIdMissingException Если у события нет чата.
+     */
     abstract public function requireChatId(): int;
 
     /**
@@ -41,14 +48,11 @@ trait SendMessageToChatTrait
     /**
      * Отправить сообщение в чат события.
      *
-     * - Вы получите ошибку {@see ChatIdMissingException}, если у события нет чата.
-     * - Можно отправлять не более двух сообщений в секунду в один диалог, групповой чат или канал.
-     *   При превышении этого лимита сообщения следует ставить в очередь или делать задержку перед отправкой.
-     *
      * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
      *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
+     * @throws ChatIdMissingException Если у события нет чата.
      * @see MaxApiClient::sendMessageToChat()
      */
     public function sendMessageToChat(

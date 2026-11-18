@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\Model\Enum\AttachmentRequestType;
+use MaxMessenger\Bot\Model\Enum\AttachmentType;
 
 use function array_key_exists;
 
 /**
  * Запрос на прикрепление карточки контакта к сообщению.
  *
- * Должен быть единственным вложением в сообщении.
+ * Нельзя прикреплять несколько контактов или сочетать контакт с другими вложениями, кроме клавиатуры.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody
  */
 final class ContactAttachmentRequest extends AttachmentRequest
 {
@@ -32,7 +34,7 @@ final class ContactAttachmentRequest extends AttachmentRequest
     {
         $this->required = ['payload'];
 
-        parent::__construct(AttachmentRequestType::Contact);
+        parent::__construct(AttachmentType::Contact);
 
         if ($payload !== null) {
             $this->setPayload($payload);

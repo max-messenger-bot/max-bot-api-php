@@ -8,6 +8,8 @@ use DateTimeImmutable;
 
 /**
  * Объект, отправленный боту, когда пользователь нажимает кнопку.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
  */
 class Callback extends BaseResponseModel
 {
@@ -24,7 +26,7 @@ class Callback extends BaseResponseModel
     private User|false $user = false;
 
     /**
-     * @return non-empty-string Текущий ID клавиатуры.
+     * @return non-empty-string Идентификатор кнопки, на которую нажал пользователь.
      */
     public function getCallbackId(): string
     {
@@ -32,7 +34,7 @@ class Callback extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Токен кнопки (maxLength: 1024).
+     * @return non-empty-string Данные кнопки (maxLength: 1024).
      */
     public function getPayload(): string
     {

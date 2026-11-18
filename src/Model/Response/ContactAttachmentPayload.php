@@ -10,6 +10,11 @@ use function preg_match_all;
 use function preg_replace;
 use function str_replace;
 
+/**
+ * Данные прикреплённого к сообщению контакта.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ */
 class ContactAttachmentPayload extends BaseResponseModel
 {
     /**
@@ -24,9 +29,8 @@ class ContactAttachmentPayload extends BaseResponseModel
     private User|false|null $maxInfo = false;
 
     /**
-     * @return non-empty-string|null Хеш информации о пользователе в формате VCF.
-     *     Используется для проверки того, что пользователь поделился номером телефона,
-     *     привязанным к его аккаунту в МАКС.
+     * @return non-empty-string|null Хеш информации о пользователе в формате VCF. Используется для проверки того,
+     *     что пользователь поделился номером телефона, привязанным к его профилю в МАКС.
      * @see MaxApiClient::validateContactAttachmentHash()
      */
     public function getHash(): ?string
@@ -45,7 +49,7 @@ class ContactAttachmentPayload extends BaseResponseModel
     }
 
     /**
-     * @return string[]|null
+     * @return string[]|null Номера телефонов, извлечённые из данных VCF, или `null`, если их нет.
      */
     public function getPhones(): ?array
     {
@@ -59,7 +63,7 @@ class ContactAttachmentPayload extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null Информация о пользователе в формате VCF (minLength: 20).
+     * @return non-empty-string|null Информация о пользователе в формате VCF.
      */
     public function getVcfInfo(): ?string
     {

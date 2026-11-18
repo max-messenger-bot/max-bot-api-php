@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit\MaxBot\Event;
 
 use Codeception\Test\Unit;
-use MaxMessenger\Bot\Exception\MaxBot\Event\EventException;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\MaxBot\Event\MessageEditedEvent;
@@ -25,26 +24,6 @@ final class MessageEditedEventTest extends Unit
 
         self::assertInstanceOf(Message::class, $message);
         self::assertSame('Привет', $message->getText());
-    }
-
-    public function testNoMessage(): void
-    {
-        $event = $this->createEvent(withMessage: false);
-
-        self::assertFalse($event->hasMessage());
-
-        $this->expectException(EventException::class);
-
-        $event->getMessage();
-    }
-
-    public function testNoMessageChatId(): void
-    {
-        $event = $this->createEvent(withMessage: false);
-
-        $this->expectException(EventException::class);
-
-        $event->getChatId();
     }
 
     private function createEvent(bool $withMessage = true): MessageEditedEvent

@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Вы получите это событие, как только пользователь остановит бота в его настройках в МАКС.
+ * Событие остановки бота пользователем в его настройках в МАКС.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class BotStoppedUpdate extends Update
 {
@@ -21,11 +24,19 @@ class BotStoppedUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID диалога, где произошло событие.
+     * @return int Идентификатор диалога, где произошло событие.
      */
     public function getChatId(): int
     {
         return $this->data['chat_id'];
+    }
+
+    /**
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['chat_id', 'user'];
     }
 
     /**

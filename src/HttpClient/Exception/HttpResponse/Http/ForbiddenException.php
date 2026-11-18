@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
 
 /**
- * Ошибка доступа.
+ * Ошибка доступа (HTTP 403).
  *
  * У вас нет прав доступа к этому ресурсу.
  */

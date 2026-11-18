@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+/**
+ * Ссылки на варианты воспроизведения видео.
+ *
+ * @link https://dev.max.ru/docs-api/methods/GET/videos/-videoToken-/
+ */
 class VideoUrls extends BaseResponseModel
 {
     /**

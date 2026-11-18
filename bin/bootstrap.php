@@ -2,32 +2,27 @@
 
 declare(strict_types=1);
 
-if (PHP_VERSION_ID < 80200) {
-    fwrite(STDERR, sprintf("Для запуска требуется PHP версии не ниже 8.2. Текущая версия: %s\n", PHP_VERSION));
-    exit(1);
-}
+if (isset($GLOBALS['_composer_autoload_path']) && is_string($GLOBALS['_composer_autoload_path'])) {
+    $autoload = $GLOBALS['_composer_autoload_path'];
+} else {
+    $isAbsolute = static fn(string $path): bool
+        => str_starts_with($path, DIRECTORY_SEPARATOR)
+        || (DIRECTORY_SEPARATOR === '\\' && isset($path[1]) && $path[1] === ':');
 
-if (PHP_SAPI !== 'cli') {
-    fwrite(STDERR, "Скрипт предназначен только для запуска из командной строки.\n");
-    exit(1);
-}
-
-$autoload = null;
-$candidates = [
-    dirname(__DIR__) . '/vendor/autoload.php',
-    dirname(__DIR__, 3) . '/autoload.php',
-];
-foreach ($candidates as $candidate) {
-    if (file_exists($candidate)) {
-        $autoload = $candidate;
-        break;
+    $autoload = dirname(__DIR__, 3) . '/autoload.php';
+    if (!is_file($autoload)) {
+        $root = dirname(__DIR__);
+        /** @var array{config?: array{vendor-dir?: string}}|null $composerConfig */
+        $composerConfig = json_decode((string) @file_get_contents($root . '/composer.json'), true);
+        $vendorDir = $composerConfig['config']['vendor-dir'] ?? 'vendor';
+        $vendorPath = $isAbsolute($vendorDir) ? $vendorDir : $root . '/' . $vendorDir;
+        $autoload = rtrim($vendorPath, '/\\') . '/autoload.php';
     }
 }
 
-if ($autoload === null) {
+if (!is_file($autoload)) {
     fwrite(STDERR, "Зависимости Composer не установлены. Для установки выполните:\n\n    composer install\n\n");
     exit(1);
 }
 
-/** @psalm-suppress UnresolvableInclude */
 require_once $autoload;

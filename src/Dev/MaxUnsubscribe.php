@@ -22,6 +22,8 @@ use function trim;
  * - Выбор подписки для удаления
  *
  * Выводит список всех подписок, удаляет выбранную и показывает обновлённый список
+ *
+ * @psalm-cli-only
  */
 final class MaxUnsubscribe
 {
@@ -30,6 +32,12 @@ final class MaxUnsubscribe
      */
     public static function main(): void
     {
+        Utils::handleHelp(
+            'max-unsubscribe',
+            "Выводит список Webhook-подписок и удаляет выбранную после подтверждения (yes).\n"
+            . 'После удаления выводит обновлённый список подписок.',
+        );
+
         Utils::printHeader('Удаление Webhook подписки Max Bot API');
 
         // Шаг 1: Токен доступа
@@ -37,7 +45,7 @@ final class MaxUnsubscribe
         echo "✓ Токен доступа принят\n";
 
         // Создание API клиента
-        $client = new MaxApiClient($accessToken);
+        $client = Utils::createApiClient($accessToken);
 
         // Получение списка подписок и удаление выбранной
         self::unsubscribe($client);

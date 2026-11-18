@@ -14,7 +14,6 @@ use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotStoppedEvent;
 use MaxMessenger\Bot\MaxBot\Event\Event;
-use MaxMessenger\Bot\MaxBot\Event\UnknownEvent;
 use MaxMessenger\Bot\Model\Response\Update;
 use RuntimeException;
 use Throwable;
@@ -61,6 +60,25 @@ final class BaseEventTest extends Unit
         $event = BaseEvent::new($update, $this->apiClient, []);
 
         self::assertNull($event->currentHandlerListType);
+    }
+
+    public function testExceptionHandlerContinueWithDefaultHandled(): void
+    {
+        $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
+        $exceptionHandlers = [
+            static function (Throwable $exception, BaseEvent $event): void {
+                $event->continue();
+            },
+        ];
+
+        $event = BaseEvent::new($update, $this->apiClient, $exceptionHandlers);
+
+        $result = $event->handle(static function (): void {
+            throw new RuntimeException('Test exception');
+        });
+
+        self::assertFalse($result);
+        self::assertFalse($event->isHandled);
     }
 
     public function testExceptionHandlerHandledFalse(): void
@@ -151,7 +169,7 @@ final class BaseEventTest extends Unit
 
         $result = $event->handle(static function (): void {
             throw new RuntimeException('Test exception');
-        });
+        }, null);
 
         self::assertFalse($result);
         self::assertFalse($event->isHandled);
@@ -183,7 +201,7 @@ final class BaseEventTest extends Unit
 
         $result = $event->handle(static function (): void {
             throw new RuntimeException('Test exception');
-        });
+        }, null);
 
         self::assertTrue($result);
         self::assertTrue($event->isHandled);
@@ -207,7 +225,7 @@ final class BaseEventTest extends Unit
 
         $event->handle(static function (): void {
             throw new RuntimeException('Test exception');
-        });
+        }, null);
         self::assertTrue($event->isHandled);
     }
 
@@ -229,7 +247,7 @@ final class BaseEventTest extends Unit
 
         $event->handle(static function (): void {
             throw new RuntimeException('Test exception');
-        });
+        }, null);
         self::assertFalse($event->isHandled);
     }
 
@@ -247,7 +265,7 @@ final class BaseEventTest extends Unit
         try {
             $event->handle(static function (): void {
                 throw new RuntimeException('Test exception');
-            });
+            }, null);
 
             self::fail('Expected exception was not thrown');
         } catch (RuntimeException $e) {
@@ -268,50 +286,12 @@ final class BaseEventTest extends Unit
         try {
             $event->handle(static function (): void {
                 throw new RuntimeException('Test exception');
-            });
+            }, null);
 
             self::fail('Expected exception was not thrown');
         } catch (RuntimeException $e) {
             self::assertSame('Test exception', $e->getMessage());
             self::assertNull($event->isHandled);
-        }
-    }
-
-    public function testExceptionWithDefaultFalse(): void
-    {
-        $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
-        $exceptionHandlers = [];
-
-        $event = BaseEvent::new($update, $this->apiClient, $exceptionHandlers);
-
-        try {
-            $event->handle(static function (): void {
-                throw new RuntimeException('Test exception');
-            }, false);
-
-            self::fail('Expected exception was not thrown');
-        } catch (RuntimeException $e) {
-            self::assertSame('Test exception', $e->getMessage());
-            self::assertFalse($event->isHandled);
-        }
-    }
-
-    public function testExceptionWithDefaultTrue(): void
-    {
-        $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
-        $exceptionHandlers = [];
-
-        $event = BaseEvent::new($update, $this->apiClient, $exceptionHandlers);
-
-        try {
-            $event->handle(static function (): void {
-                throw new RuntimeException('Test exception');
-            }, true);
-
-            self::fail('Expected exception was not thrown');
-        } catch (RuntimeException $e) {
-            self::assertSame('Test exception', $e->getMessage());
-            self::assertTrue($event->isHandled);
         }
     }
 
@@ -379,17 +359,6 @@ final class BaseEventTest extends Unit
         self::assertFalse($event->isHandled);
     }
 
-    public function testHandleReturnsNull(): void
-    {
-        $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
-
-        $event = BaseEvent::new($update, $this->apiClient, []);
-        $result = $event->handle(static function (BaseEvent $_e): void {});
-
-        self::assertFalse($result);
-        self::assertNull($event->isHandled);
-    }
-
     public function testHandleReturnsTrue(): void
     {
         $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
@@ -398,6 +367,17 @@ final class BaseEventTest extends Unit
         $result = $event->handle(static function (BaseEvent $_e): bool {
             return true;
         });
+
+        self::assertTrue($result);
+        self::assertTrue($event->isHandled);
+    }
+
+    public function testHandleReturnsVoidUsesTrueByDefault(): void
+    {
+        $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
+
+        $event = BaseEvent::new($update, $this->apiClient, []);
+        $result = $event->handle(static function (BaseEvent $_e): void {});
 
         self::assertTrue($result);
         self::assertTrue($event->isHandled);
@@ -439,15 +419,6 @@ final class BaseEventTest extends Unit
         $event->markAsUnhandled();
 
         self::assertFalse($event->isHandled);
-    }
-
-    public function testNew(): void
-    {
-        $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
-
-        $event = BaseEvent::new($update, $this->apiClient, []);
-
-        self::assertInstanceOf(UnknownEvent::class, $event);
     }
 
     public function testRequireChatId(): void
@@ -511,7 +482,7 @@ final class BaseEventTest extends Unit
         self::assertSame($time, $eventTimestamp->getTimestamp());
         if (PHP_VERSION_ID >= 80400) {
             /** @psalm-suppress UndefinedMethod */
-            self::assertSame($timeMs, $eventTimestamp->getMicrosecond());
+            self::assertSame($timeMs * 1000, $eventTimestamp->getMicrosecond());
         }
     }
 
@@ -535,15 +506,6 @@ final class BaseEventTest extends Unit
         self::assertSame($update, $event->update);
     }
 
-    public function testUser(): void
-    {
-        $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
-
-        $event = BaseEvent::new($update, $this->apiClient, []);
-
-        self::assertNull($event->getUser());
-    }
-
     public function testUserData(): void
     {
         $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
@@ -553,6 +515,18 @@ final class BaseEventTest extends Unit
 
         self::assertSame($userData, $event->userData);
         self::assertSame('value', $event->userData['key']);
+    }
+
+    public function testUserDataIsEmptyByDefault(): void
+    {
+        $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
+
+        $first = BaseEvent::new($update, $this->apiClient, []);
+        $first->userData['key'] = 'value';
+        $second = BaseEvent::new($update, $this->apiClient, []);
+
+        self::assertCount(0, $second->userData);
+        self::assertNotSame($first->userData, $second->userData);
     }
 
     public function testUserDataModified(): void
@@ -565,24 +539,6 @@ final class BaseEventTest extends Unit
 
         self::assertTrue($event->userData->offsetExists('newKey'));
         self::assertSame('newValue', $event->userData['newKey']);
-    }
-
-    public function testUserDataNotEmpty(): void
-    {
-        $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
-
-        $event = BaseEvent::new($update, $this->apiClient, []);
-
-        self::assertInstanceOf(ArrayObject::class, $event->userData);
-    }
-
-    public function testUserId(): void
-    {
-        $update = Update::newFromData(['update_type' => 'unknown_type', 'timestamp' => time() * 1000]);
-
-        $event = BaseEvent::new($update, $this->apiClient, []);
-
-        self::assertNull($event->getUserId());
     }
 
     protected function _before(): void

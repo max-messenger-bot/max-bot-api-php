@@ -5,18 +5,22 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Enum;
 
 /**
- * Тип вложения для сообщения.
+ * Тип вложения.
  *
- * Кроме текста сообщения и посты могут содержать следующие типы вложений:
- * - `image` — изображение (JPG, JPEG, PNG, GIF, TIFF, BMP, HEIC).
- * - `video` — видео (MP4, MOV, MKV, WEBM, MATROSKA).
- * - `audio` — аудио (MP3, WAV, M4A и другие).
- * - `file` — файл (TXT, DOC и другие).
- * - `sticker` — стикер.
- * - `contact` — контакт (данные контакта из телефонного справочника).
- * - `inline_keyboard` — сообщение или пост с кнопкой.
- * - `share` — контент, прикреплённый по-внешнему URL.
- * - `location` — локация.
+ * - `image` — Изображение (JPG, JPEG, PNG, GIF, TIFF, BMP, HEIC).
+ * - `video` — Видео (MP4, MOV, MKV, WEBM, MATROSKA).
+ * - `audio` — Аудио (MP3, M4A и другие).
+ * - `file` — Файл (TXT, DOC, PDF и другие).
+ * - `sticker` — Стикер.
+ * - `contact` — Контактные данные.
+ * - `inline_keyboard` — Клавиатура с кнопками.
+ * - `share` — Предпросмотр контента по внешнему URL.
+ * - `location` — Геолокация.
+ *
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/attachment-types
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
+ * @link https://dev.max.ru/docs-api/objects/Message
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody
  */
 enum AttachmentType: string
 {
@@ -24,7 +28,6 @@ enum AttachmentType: string
 
     case Audio = 'audio';
     case Contact = 'contact';
-    case Data = 'data';
     case File = 'file';
     case Image = 'image';
     case InlineKeyboard = 'inline_keyboard';

@@ -9,7 +9,7 @@ use IteratorAggregate;
 use JsonSerializable;
 
 /**
- * Interface for models with Raw data.
+ * Интерфейс модели с доступом к исходным данным.
  *
  * @template-extends ArrayAccess<array-key, mixed>
  * @template-extends IteratorAggregate<array-key, mixed>
@@ -17,7 +17,7 @@ use JsonSerializable;
 interface ModelInterface extends JsonSerializable, ArrayAccess, IteratorAggregate
 {
     /**
-     * @return array Get raw model data.
+     * @return array Исходные данные модели.
      */
     public function getRawData(): array;
 }

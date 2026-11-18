@@ -11,25 +11,82 @@ use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 use MaxMessenger\Bot\Model\Response\Update;
 
+use function str_repeat;
+
 final class CallbackJsonHandlerTest extends Unit
 {
-    public function testActionTooLong(): void
+    public function testActionLongerThan64Characters(): void
     {
-        $event = $this->createEvent('{"cmd":"abc"}');
-        $handler = (new CallbackJsonHandler('cmd'))->setActionMaxLength(2);
+        $action = str_repeat('a', 65);
+        $event = $this->createEvent('{"cmd":"' . $action . '"}');
+        $handler = new CallbackJsonHandler('cmd');
+        $handler->onAction($action, static fn(): bool => true);
 
-        self::assertFalse($handler->handle($event));
+        self::assertTrue($handler->handle($event));
     }
 
-    public function testGetters(): void
+    public function testActionZeroString(): void
     {
-        $handler = new CallbackJsonHandler('cmd');
+        $event = $this->createEvent('{"cmd":"0"}');
+        $handler = (new CallbackJsonHandler('cmd'))
+            ->onAction('0', static fn(MessageCallbackEvent $_e): bool => true);
 
+        self::assertTrue($handler->handle($event));
+        self::assertSame('0', $event->userData['__action']);
+    }
+
+    public function testEmptyHandlerLeavesUserDataUnchanged(): void
+    {
+        $event = $this->createEvent('{"action":"act","id":7}');
+        $handler = new CallbackJsonHandler();
+
+        self::assertFalse($handler->handle($event));
+        self::assertArrayNotHasKey('__action', $event->userData);
+        self::assertArrayNotHasKey('__payload', $event->userData);
+    }
+
+    public function testEmptyOrNonStringActionReturnsFalse(): void
+    {
+        $handler = (new CallbackJsonHandler('cmd'))
+            ->onAction('0', static fn(MessageCallbackEvent $_e): bool => true);
+
+        self::assertFalse($handler->handle($this->createEvent('{"cmd":""}')));
+        self::assertFalse($handler->handle($this->createEvent('{"cmd":0}')));
+        self::assertFalse($handler->handle($this->createEvent('{"cmd":null}')));
+    }
+
+    public function testGettersAndSetters(): void
+    {
+        $handler = new CallbackJsonHandler();
+
+        self::assertSame('action', $handler->getActionKey());
+
+        self::assertSame($handler, $handler->setActionKey('cmd'));
         self::assertSame('cmd', $handler->getActionKey());
-        self::assertSame(64, $handler->getActionMaxLength());
+        $handler->onAction('act', static fn(): bool => true);
+        self::assertTrue($handler->handle($this->createEvent('{"cmd":"act"}')));
+        self::assertFalse($handler->handle($this->createEvent('{"action":"act"}')));
+    }
 
-        self::assertSame($handler, $handler->setActionMaxLength(5));
-        self::assertSame(5, $handler->getActionMaxLength());
+    public function testHandleFallsThroughHandlers(): void
+    {
+        $event = $this->createEvent('{"cmd":"act","id":7}');
+        $calls = [];
+        $handler = (new CallbackJsonHandler('cmd'))
+            ->onAction('act', static function (MessageCallbackEvent $_e) use (&$calls): bool {
+                $calls[] = 'first';
+
+                return false;
+            })
+            ->onAction('act', static function (MessageCallbackEvent $_e) use (&$calls): bool {
+                $calls[] = 'second';
+
+                return true;
+            });
+
+        self::assertTrue($handler->handle($event));
+        self::assertSame(['first', 'second'], $calls);
+        self::assertSame(['cmd' => 'act', 'id' => 7], $event->userData['__payload']);
     }
 
     public function testHandleMatchingAction(): void
@@ -42,6 +99,16 @@ final class CallbackJsonHandlerTest extends Unit
         self::assertSame('act', $event->userData['__action']);
     }
 
+    public function testHandleMatchingActionWithVoidHandler(): void
+    {
+        $event = $this->createEvent('{"cmd":"act"}');
+        $handler = (new CallbackJsonHandler('cmd'))
+            ->onAction('act', static function (MessageCallbackEvent $_e): void {});
+
+        self::assertTrue($handler->handle($event));
+        self::assertTrue($event->isHandled);
+    }
+
     public function testHandleMissingKeyReturnsFalse(): void
     {
         $event = $this->createEvent('{"other":"x"}');
@@ -51,9 +118,49 @@ final class CallbackJsonHandlerTest extends Unit
         self::assertFalse($handler->handle($event));
     }
 
+    public function testHandleNoHandlerAcceptedReturnsFalse(): void
+    {
+        $event = $this->createEvent('{"cmd":"act"}');
+        $handler = (new CallbackJsonHandler('cmd'))
+            ->onAction('act', static fn(MessageCallbackEvent $_e): bool => false);
+
+        self::assertFalse($handler->handle($event));
+        self::assertSame('act', $event->userData['__action']);
+    }
+
     public function testHandleNonJsonReturnsFalse(): void
     {
         $event = $this->createEvent('plain');
+        $handler = (new CallbackJsonHandler('cmd'))
+            ->onAction('act', static fn(MessageCallbackEvent $_e): bool => true);
+
+        self::assertFalse($handler->handle($event));
+    }
+
+    public function testHandlePassesActionAndDecodedPayload(): void
+    {
+        $event = $this->createEvent('{"cmd":"act","data":{"id":0,"enabled":false},"optional":null}');
+        $received = [];
+        $handler = new CallbackJsonHandler('cmd');
+        $handler->onAction('act', static function (
+            MessageCallbackEvent $event,
+            string $action,
+            array $payload,
+        ) use (&$received): void {
+            $received = [$event, $action, $payload];
+        });
+
+        self::assertTrue($handler->handle($event));
+        self::assertSame([
+            $event,
+            'act',
+            ['cmd' => 'act', 'data' => ['id' => 0, 'enabled' => false], 'optional' => null],
+        ], $received);
+    }
+
+    public function testHandleUnknownActionReturnsFalse(): void
+    {
+        $event = $this->createEvent('{"cmd":"other"}');
         $handler = (new CallbackJsonHandler('cmd'))
             ->onAction('act', static fn(MessageCallbackEvent $_e): bool => true);
 

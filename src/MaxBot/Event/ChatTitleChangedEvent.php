@@ -8,9 +8,7 @@ use MaxMessenger\Bot\Model\Response\ChatTitleChangedUpdate;
 use MaxMessenger\Bot\Model\Response\User;
 
 /**
- * Событие изменения названия чата или канала.
- *
- * На свои действия бот события не получает.
+ * Событие изменения названия чата.
  *
  * @property-read ChatTitleChangedUpdate $update
  */
@@ -20,7 +18,7 @@ final class ChatTitleChangedEvent extends BaseEvent
     use SendMessageToUserTrait;
 
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int Идентификатор чата, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -44,7 +42,7 @@ final class ChatTitleChangedEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, который изменил название.
+     * @return int Идентификатор пользователя, который изменил название.
      */
     public function getUserId(): int
     {

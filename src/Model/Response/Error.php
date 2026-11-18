@@ -8,7 +8,9 @@ use function is_string;
 use function str_contains;
 
 /**
- * Сервер возвращает это, если возникло исключение при вашем запросе.
+ * Ошибка, возвращаемая сервером при обработке запроса.
+ *
+ * @link https://dev.max.ru/docs-api/
  */
 class Error extends BaseResponseModel
 {
@@ -47,11 +49,7 @@ class Error extends BaseResponseModel
     }
 
     /**
-     * Проверяет, что ошибка связана с неготовностью вложения.
-     *
-     * Возвращает `true`, если файл ещё не обработан сервером и отправку стоит повторить.
-     *
-     * @return bool `true`, если вложение ещё не готово.
+     * @return bool `true`, если вложение ещё не готово: медиафайл не обработан сервером и отправку стоит повторить.
      */
     public function isAttachmentNotReady(): bool
     {
@@ -60,7 +58,7 @@ class Error extends BaseResponseModel
     }
 
     /**
-     * Checks that the data passed to the model is correct for the given model.
+     * @return bool Содержит ли ответ код и сообщение об ошибке ожидаемых типов.
      */
     public function isValid(): bool
     {

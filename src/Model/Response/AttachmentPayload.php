@@ -6,6 +6,11 @@ namespace MaxMessenger\Bot\Model\Response;
 
 use MaxMessenger\Bot\MaxApiClient;
 
+/**
+ * Данные прикреплённого к сообщению медиафайла.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ */
 abstract class AttachmentPayload extends BaseResponseModel
 {
     /**
@@ -17,9 +22,8 @@ abstract class AttachmentPayload extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return non-empty-string URL медиа-вложения. Этот URL будет получен в объекте {@see Update}
-     *     после отправки сообщения в чат. Прямую ссылку на видео также можно получить с помощью
-     *     метода {@see MaxApiClient::getVideoAttachmentDetails()}.
+     * @return non-empty-string URL медиа-вложения. Для получения прямых ссылок на видео используйте
+     *     {@see MaxApiClient::getVideoAttachmentDetails()}.
      */
     public function getUrl(): string
     {

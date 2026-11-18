@@ -7,7 +7,10 @@ namespace MaxMessenger\Bot\Model\Response;
 use MaxMessenger\Bot\Model\Enum\ButtonType;
 
 /**
- * Базовый класс кнопки.
+ * Базовый класс кнопки встроенной клавиатуры.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 class Button extends BaseResponseModel
 {
@@ -22,8 +25,8 @@ class Button extends BaseResponseModel
 
     /**
      * @return non-empty-string Видимый текст кнопки (maxLength: 128). Чтобы он отображался полностью, рекомендуем
-     *     не превышать заданное количество символов в зависимости от размещения текста: `20` символов —
-     *     при 1 кнопке в ряду, `10` — при 2, `5` — при 3, `3` — при 4.
+     *     не превышать заданное количество символов в зависимости от размещения текста:
+     *     `20` символов — при одной кнопке в ряду, `10` — при двух, `5` — при трёх, `3` — при четырёх.
      */
     public function getText(): string
     {
@@ -39,7 +42,7 @@ class Button extends BaseResponseModel
     }
 
     /**
-     * @return string Тип кнопки.
+     * @return non-empty-string Тип кнопки. Значения описаны в {@see ButtonType}.
      */
     public function getTypeRaw(): string
     {
@@ -47,7 +50,9 @@ class Button extends BaseResponseModel
     }
 
     /**
-     * Creates an object using a map.
+     * Создаёт кнопку нужного типа по данным ответа API.
+     *
+     * @param array $data Данные кнопки из ответа API.
      */
     public static function newFromData(array $data): static
     {
@@ -59,10 +64,10 @@ class Button extends BaseResponseModel
         /** @var array<string, class-string<self>> $classList */
         $classList = [
             'callback' => CallbackButton::class,
-            'chat' => ChatButton::class,
             'clipboard' => ClipboardButton::class,
             'link' => LinkButton::class,
             'message' => MessageButton::class,
+            'open_app' => OpenAppButton::class,
             'request_contact' => RequestContactButton::class,
             'request_geo_location' => RequestGeoLocationButton::class,
         ];

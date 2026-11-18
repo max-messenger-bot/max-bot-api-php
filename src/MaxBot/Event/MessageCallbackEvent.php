@@ -15,7 +15,7 @@ use MaxMessenger\Bot\Model\Response\User;
 use function is_string;
 
 /**
- * Событие нажатия кнопки в чате или канале.
+ * Событие нажатия callback-кнопки в диалоге, чате или канале.
  *
  * @property-read MessageCallbackUpdate $update
  */
@@ -28,10 +28,10 @@ final class MessageCallbackEvent extends BaseEvent
      *
      * Ответом является обновлённое сообщение.
      *
-     * - Можно отправлять не более двух ответов в секунду в один диалог, групповой чат или канал.
-     *   При превышении этого лимита сообщения следует ставить в очередь или делать задержку перед отправкой.
+     * В отличие от обычного редактирования сообщения, при ответе на callback сервер автоматически удаляет
+     * вложения, включая клавиатуру, если они не переданы в обновлённом сообщении.
      *
-     * @param NewMessageBody|non-empty-string $message
+     * @param NewMessageBody|non-empty-string $message Тело обновлённого сообщения.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте
      *     сообщения или поста.
      * @see MaxApiClient::answerOnCallback()
@@ -70,7 +70,7 @@ final class MessageCallbackEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, нажавшего на кнопку.
+     * @return int Идентификатор пользователя, нажавшего на кнопку.
      */
     public function getUserId(): int
     {
@@ -78,18 +78,10 @@ final class MessageCallbackEvent extends BaseEvent
     }
 
     /**
-     * @return string|null Текущий язык пользователя в формате IETF BCP 47.
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47.
      */
     public function getUserLocale(): ?string
     {
         return $this->update->getUserLocale();
-    }
-
-    /**
-     * @return bool Всегда `true`: событие всегда содержит сообщение.
-     */
-    public function hasMessage(): bool
-    {
-        return true;
     }
 }

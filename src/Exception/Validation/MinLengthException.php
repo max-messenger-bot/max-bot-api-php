@@ -7,12 +7,17 @@ namespace MaxMessenger\Bot\Exception\Validation;
 use function sprintf;
 
 /**
- * String is too short.
+ * Строка слишком короткая.
  *
- * Exception thrown when a string argument is shorter than the minimum required length.
+ * Возникает, если длина строкового аргумента меньше допустимого минимума.
  */
 final class MinLengthException extends ValidationException
 {
+    /**
+     * @param string $argumentName Имя строкового аргумента.
+     * @param int $length Фактическая длина строки.
+     * @param int $minLength Минимально допустимая длина строки.
+     */
     public function __construct(string $argumentName, int $length, int $minLength)
     {
         $part1 = $minLength === 1

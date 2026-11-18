@@ -7,8 +7,8 @@ namespace MaxMessenger\Bot\Model\Response;
 /**
  * Кнопки в сообщении.
  *
- * Подробнее о типах кнопок и клавиатуре в ботах —
- * {@link https://dev.max.ru/docs-api#Клавиатура%20для%20чат-бота в разделе «Клавиатура для чат-бота»}.
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 class InlineKeyboardAttachment extends Attachment
 {
@@ -21,6 +21,9 @@ class InlineKeyboardAttachment extends Attachment
     protected readonly array $data;
     private Keyboard|false $payload = false;
 
+    /**
+     * @return Keyboard Кнопки встроенной клавиатуры.
+     */
     public function getPayload(): Keyboard
     {
         return $this->payload === false

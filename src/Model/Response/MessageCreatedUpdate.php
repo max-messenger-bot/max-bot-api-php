@@ -4,33 +4,45 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
+
 /**
- * Вы получите это событие, как только сообщение будет создано.
+ * Событие создания сообщения.
  *
- * Событие может относиться к объекту, который не поддерживается MAX API.
- * В этом случае {@see getMessage()} вернёт `null`.
+ * В групповом чате бот получает событие, только если он администратор с правом
+ * {@see ChatAdminPermission::ReadAllMessages}.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class MessageCreatedUpdate extends Update
 {
     /**
      * @var array{
-     *     message?: array,
+     *     message: array,
      *     user_locale?: non-empty-string
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
-    private Message|false|null $message = false;
+    private Message|false $message = false;
 
     /**
-     * @return Message|null Новое созданное сообщение.
-     *     `null`, если событие относится к объекту, который не поддерживается MAX API.
+     * @return Message Новое созданное сообщение.
      */
-    public function getMessage(): ?Message
+    public function getMessage(): Message
     {
         return $this->message === false
-            ? $this->message = Message::newFromNullableData($this->data['message'] ?? null)
+            ? $this->message = Message::newFromData($this->data['message'])
             : $this->message;
+    }
+
+    /**
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['message'];
     }
 
     /**

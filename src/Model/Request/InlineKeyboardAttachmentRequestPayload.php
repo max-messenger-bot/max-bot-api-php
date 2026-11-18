@@ -14,17 +14,23 @@ use function count;
 /**
  * Запрос на прикрепление клавиатуры к сообщению.
  *
- * Вы можете подключить к чат-боту в MAX inline-клавиатуру. Она позволяет разместить под сообщением бота до 210 кнопок,
+ * Вы можете подключить к чат-боту в МАКС inline-клавиатуру. Она позволяет разместить под сообщением бота до 210 кнопок,
  * сгруппированных в 30 рядов — до 7 кнопок в каждом (до 3, если это кнопки типа `link`, `open_app`,
  * `request_geo_location` или `request_contact`).
+ *
+ * Ограничение в 3 кнопки модель не проверяет: при сборке клавиатуры за ним следит вызывающий код.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
-    public const MAX_ROWS = 30;
     public const MAX_BUTTONS_IN_ROW = 7;
+    public const MAX_ROWS = 30;
 
     /**
      * @var array{
@@ -47,6 +53,11 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
         }
     }
 
+    /**
+     * Добавляет кнопку в текущий ряд встроенной клавиатуры.
+     *
+     * @param Button $button Кнопка для добавления.
+     */
     public function addButton(Button $button): void
     {
         if (isset($this->data['buttons'])) {
@@ -76,38 +87,12 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
      * Добавить Callback-кнопку.
      *
      * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
-     * @param non-empty-string|array $payload Токен кнопки (maxLength: 1024).
+     * @param non-empty-string|array $payload Данные кнопки (maxLength: 1024).
+     * @return $this
      */
     public function addCallbackButton(string $text, string|array $payload): self
     {
         $this->addButton(CallbackButton::make($text, $payload));
-
-        return $this;
-    }
-
-    /**
-     * Добавить кнопку создания чата.
-     *
-     * Чат создаётся, когда на кнопку нажимает первый пользователь. Владельцем чата станет бот,
-     * отправивший сообщение с кнопкой, а нажавший кнопку — обычным участником.
-     *
-     * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
-     * @param non-empty-string $chatTitle Название чата, который будет создан (maxLength: 200).
-     * @param non-empty-string|null $chatDescription Описание чата (maxLength: 400).
-     * @param non-empty-string|null $startPayload Стартовая полезная нагрузка будет отправлена боту,
-     *     как только чат будет создан (maxLength: 512).
-     * @param int|null $uuid Уникальный ID кнопки среди всех кнопок чата на клавиатуре.
-     * @deprecated
-     */
-    public function addChatButton(
-        string $text,
-        string $chatTitle,
-        ?string $chatDescription = null,
-        ?string $startPayload = null,
-        ?int $uuid = null,
-    ): self {
-        /** @psalm-suppress DeprecatedClass */
-        $this->addButton(ChatButton::make($text, $chatTitle, $chatDescription, $startPayload, $uuid));
 
         return $this;
     }
@@ -118,6 +103,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
      * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      * @param non-empty-string $payload Текст, который копируется в буфер обмена после нажатия на кнопку
      *     (maxLength: 1024).
+     * @return $this
      */
     public function addClipboardButton(string $text, string $payload): self
     {
@@ -130,7 +116,8 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
      * Добавить Кнопку-ссылку.
      *
      * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
-     * @param non-empty-string $url URL кнопки (minLength: 4, maxLength: 2048).
+     * @param non-empty-string $url URL кнопки (maxLength: 2048).
+     * @return $this
      */
     public function addLinkButton(string $text, string $url): self
     {
@@ -143,6 +130,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
      * Добавить кнопку сообщения.
      *
      * @param non-empty-string $text Текст кнопки, который будет отправлен в чат от лица пользователя (maxLength: 128).
+     * @return $this
      */
     public function addMessageButton(string $text): self
     {
@@ -155,14 +143,16 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
      * Добавить кнопку запуска мини-приложения.
      *
      * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
-     * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
-     *     чьё мини-приложение надо запустить (minLength: 5).
+     * @param non-empty-string $webApp Публичное имя (username) бота,
+     *     чьё мини-приложение надо запустить.
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения.
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения
+     *     (maxLength: 512, pattern: '^[\w-]*$').
+     * @return $this
      */
     public function addOpenAppButton(
         string $text,
-        ?string $webApp = null,
+        string $webApp,
         ?int $contactId = null,
         ?string $payload = null,
     ): self {
@@ -175,6 +165,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
      * Добавить кнопку запроса контакта.
      *
      * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
+     * @return $this
      */
     public function addRequestContactButton(string $text): self
     {
@@ -189,6 +180,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
      * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
      * @param bool $quick Если `true`, отправляет местоположение без запроса подтверждения пользователя.
      *     Если `false`, возвращает модальное окно с дополнительным уточнением об отправке местоположения.
+     * @return $this
      */
     public function addRequestGeoLocationButton(string $text, bool $quick = false): self
     {
@@ -198,7 +190,7 @@ final class InlineKeyboardAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @return list<list<Button>>
+     * @return non-empty-list<non-empty-list<Button>>
      */
     public function getButtons(): array
     {

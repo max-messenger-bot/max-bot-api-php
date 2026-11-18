@@ -10,25 +10,29 @@ use function array_key_exists;
 
 /**
  * Кнопка для запуска мини-приложения.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 final class OpenAppButton extends Button
 {
     /**
      * @var array{
-     *     web_app?: non-empty-string,
+     *     web_app: non-empty-string,
      *     contact_id?: int,
      *     payload?: non-empty-string
      * }
-     * @psalm-suppress NonInvariantDocblockPropertyType
+     * @psalm-suppress NonInvariantDocblockPropertyType, InvalidPropertyAssignmentValue
      */
     protected array $data = [];
 
     /**
      * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
-     * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
-     *     чьё мини-приложение надо запустить (minLength: 5).
+     * @param non-empty-string|null $webApp Публичное имя (username) бота, чьё мини-приложение надо запустить.
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения.
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения
+     *     (maxLength: 512, pattern: '^[\w-]*$').
      */
     public function __construct(
         ?string $text = null,
@@ -37,6 +41,8 @@ final class OpenAppButton extends Button
         ?string $payload = null,
     ) {
         parent::__construct(ButtonType::OpenApp, $text);
+
+        $this->required[] = 'web_app';
 
         if ($webApp !== null) {
             $this->setWebApp($webApp);
@@ -54,17 +60,20 @@ final class OpenAppButton extends Button
         return $this->data['contact_id'] ?? null;
     }
 
+    /**
+     * @return non-empty-string|null
+     */
     public function getPayload(): ?string
     {
         return $this->data['payload'] ?? null;
     }
 
     /**
-     * @return non-empty-string|null
+     * @return non-empty-string
      */
-    public function getWebApp(): ?string
+    public function getWebApp(): string
     {
-        return $this->data['web_app'] ?? null;
+        return $this->data['web_app'];
     }
 
     public function issetContactId(): bool
@@ -84,14 +93,14 @@ final class OpenAppButton extends Button
 
     /**
      * @param non-empty-string $text Видимый текст кнопки (maxLength: 128).
-     * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
-     *     чьё мини-приложение надо запустить (minLength: 5).
+     * @param non-empty-string $webApp Публичное имя (username) бота, чьё мини-приложение надо запустить.
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения.
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения
+     *     (maxLength: 512, pattern: '^[\w-]*$').
      */
     public static function make(
         string $text,
-        ?string $webApp = null,
+        string $webApp,
         ?int $contactId = null,
         ?string $payload = null,
     ): self {
@@ -100,10 +109,10 @@ final class OpenAppButton extends Button
 
     /**
      * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128).
-     * @param non-empty-string|null $webApp Публичное имя (username) бота или ссылка на него,
-     *     чьё мини-приложение надо запустить (minLength: 5).
+     * @param non-empty-string|null $webApp Публичное имя (username) бота, чьё мини-приложение надо запустить.
      * @param int|null $contactId Идентификатор бота, чьё мини-приложение надо запустить.
-     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения.
+     * @param non-empty-string|null $payload Параметр запуска, который будет передан в `initData` мини-приложения
+     *     (maxLength: 512, pattern: '^[\w-]*$').
      */
     public static function new(
         ?string $text = null,
@@ -126,12 +135,13 @@ final class OpenAppButton extends Button
     }
 
     /**
-     * @param non-empty-string $payload Параметр запуска, который будет передан в `initData` мини-приложения.
+     * @param non-empty-string $payload Параметр запуска, который будет передан в `initData` мини-приложения
+     *     (maxLength: 512, pattern: '^[\w-]*$').
      * @return $this
      */
     public function setPayload(string $payload): self
     {
-        self::validateString('payload', $payload, minLength: 1);
+        self::validateString('payload', $payload, minLength: 1, maxLength: 512, pattern: '/^[\w-]*$/');
 
         $this->data['payload'] = $payload;
 
@@ -139,13 +149,12 @@ final class OpenAppButton extends Button
     }
 
     /**
-     * @param non-empty-string $webApp Публичное имя (username) бота или ссылка на него,
-     *     чьё мини-приложение надо запустить (minLength: 5).
+     * @param non-empty-string $webApp Публичное имя (username) бота, чьё мини-приложение надо запустить.
      * @return $this
      */
     public function setWebApp(string $webApp): self
     {
-        self::validateString('webApp', $webApp, minLength: 5);
+        self::validateString('webApp', $webApp, minLength: 1);
 
         $this->data['web_app'] = $webApp;
 
@@ -168,16 +177,6 @@ final class OpenAppButton extends Button
     public function unsetPayload(): self
     {
         unset($this->data['payload']);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function unsetWebApp(): self
-    {
-        unset($this->data['web_app']);
 
         return $this;
     }

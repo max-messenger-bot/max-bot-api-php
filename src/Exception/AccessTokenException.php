@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Exception;
 
 /**
- * Access token not set.
+ * Токен доступа не задан.
  *
- * Exception thrown when the access token is not configured.
+ * Возникает, если токен доступа не настроен.
  */
 final class AccessTokenException extends MaxApiException
 {

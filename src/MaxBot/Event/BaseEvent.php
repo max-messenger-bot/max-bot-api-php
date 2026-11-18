@@ -13,6 +13,7 @@ use MaxMessenger\Bot\Exception\MaxBot\Event\UserMissingException;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\HandlerListType;
 use MaxMessenger\Bot\Model\Response\BotAddedToChatUpdate;
+use MaxMessenger\Bot\Model\Response\BotAdminPermissionsChangedUpdate;
 use MaxMessenger\Bot\Model\Response\BotRemovedFromChatUpdate;
 use MaxMessenger\Bot\Model\Response\BotStartedUpdate;
 use MaxMessenger\Bot\Model\Response\BotStoppedUpdate;
@@ -51,7 +52,7 @@ abstract class BaseEvent
      */
     public ?HandlerListType $currentHandlerListType = null;
     /**
-     * @var HandlerListType|null Указывает на список, в рамках которого было сообщение обработано
+     * @var HandlerListType|null Список, в котором событие было обработано.
      */
     public ?HandlerListType $handledIn = null;
     /**
@@ -60,7 +61,13 @@ abstract class BaseEvent
     public ?bool $isHandled = null;
 
     /**
-     * @param list<Closure(Throwable $exception, BaseEvent $event): (bool|void)> $exceptionHandlers
+     * Создаёт событие из обновления и контекста бота.
+     *
+     * @param Update $update Полученное обновление.
+     * @param MaxApiClient $apiClient API-клиент бота.
+     * @param list<Closure(Throwable $exception, BaseEvent $event): (bool|void)> $exceptionHandlers Обработчики
+     *     исключений.
+     * @param ArrayObject $userData Пользовательские данные события.
      */
     protected function __construct(
         public readonly Update $update,
@@ -70,7 +77,7 @@ abstract class BaseEvent
     ) {}
 
     /**
-     * Прерывает обработку **события** или **исключения**, установить **событию** статус `обработано`.
+     * Прерывает обработку **события** или **исключения** и устанавливает **событию** статус `обработано`.
      */
     public function break(): never
     {
@@ -78,7 +85,7 @@ abstract class BaseEvent
     }
 
     /**
-     * Прерывает обработку **события** или **исключения**, установить **событию** статус `не обработано`.
+     * Прерывает обработку **события** или **исключения** и устанавливает **событию** статус `не обработано`.
      */
     public function continue(): never
     {
@@ -86,13 +93,16 @@ abstract class BaseEvent
     }
 
     /**
-     * Прерывает обработку **события** или **исключения**, статус **события** не менять.
+     * Прерывает обработку **события** или **исключения**, не меняя статус **события**.
      */
     public function exit(): never
     {
         throw new EventException();
     }
 
+    /**
+     * @return int|null Идентификатор чата события или `null`, если у события нет чата.
+     */
     abstract public function getChatId(): ?int;
 
     /**
@@ -111,24 +121,35 @@ abstract class BaseEvent
         return $this->update->getTimestampRaw();
     }
 
+    /**
+     * @return User|null Пользователь события или `null`, если у события нет пользователя.
+     */
     abstract public function getUser(): ?User;
 
+    /**
+     * @return int|null Идентификатор пользователя события или `null`, если у события нет пользователя.
+     */
     abstract public function getUserId(): ?int;
 
     /**
      * Обработать событие заданным обработчиком.
      *
-     * @param Closure(static $event): (bool|void) $handler Обработчик события.
+     * @param Closure(static $event): (bool|void) $handler Обработчик события. При возврате `true`
+     *     событие отмечается как обработанное, при обходе списка следующие обработчики не вызываются.
+     *     Если обработчик завершился без возвращаемого значения, сохраняется установленный им статус,
+     *     а при отсутствии явного изменения используется `$defaultIsHandled`.
+     * @param bool|null $defaultIsHandled Статус события при завершении обработчика без возвращаемого значения.
      * @return bool `true`, если событие обработано и дальнейшая обработка должна быть остановлена.
      */
-    public function handle(Closure $handler, ?bool $defaultIsHandled = null): bool
+    public function handle(Closure $handler, ?bool $defaultIsHandled = true): bool
     {
         try {
-            $this->isHandled = $defaultIsHandled;
+            $this->isHandled = null;
 
-            $this->isHandled = $handler($this) ?? $this->isHandled;
+            /** @psalm-suppress TypeDoesNotContainType Обработчик может изменить статус события. */
+            $this->isHandled = $handler($this) ?? $this->isHandled ?? $defaultIsHandled;
         } catch (EventException $exception) {
-            $this->isHandled = $exception->isHandled ?? $this->isHandled;
+            $this->isHandled = $exception->isHandled ?? $this->isHandled ?? $defaultIsHandled;
         } catch (Throwable $exception) {
             $this->handleException($exception);
         }
@@ -136,18 +157,29 @@ abstract class BaseEvent
         return $this->isHandled === true;
     }
 
+    /**
+     * Отмечает событие обработанным.
+     */
     public function markAsHandled(): void
     {
         $this->isHandled = true;
     }
 
+    /**
+     * Отмечает событие не обработанным.
+     */
     public function markAsUnhandled(): void
     {
         $this->isHandled = false;
     }
 
     /**
-     * @param list<Closure(Throwable $exception, BaseEvent $event): void> $exceptionHandlers Обработчики исключений.
+     * Создаёт объект события, соответствующий типу обновления.
+     *
+     * @param Update $update Полученное обновление.
+     * @param MaxApiClient $maxApiClient API-клиент бота.
+     * @param list<Closure(Throwable $exception, BaseEvent $event): (bool|void)> $exceptionHandlers Обработчики
+     *     исключений.
      * @param ArrayObject $userData Массив для хранения любых пользовательских данных.
      */
     public static function new(
@@ -158,6 +190,7 @@ abstract class BaseEvent
     ): self {
         $classMap = [
             BotAddedToChatUpdate::class => BotAddedToChatEvent::class,
+            BotAdminPermissionsChangedUpdate::class => BotAdminPermissionsChangedEvent::class,
             BotRemovedFromChatUpdate::class => BotRemovedFromChatEvent::class,
             BotStartedUpdate::class => BotStartedEvent::class,
             BotStoppedUpdate::class => BotStoppedEvent::class,
@@ -184,11 +217,7 @@ abstract class BaseEvent
     }
 
     /**
-     * ID чата события.
-     *
-     * В отличие от {@see getChatId()}, вместо `null` выбрасывает исключение.
-     *
-     * @return int ID чата события.
+     * @return int Идентификатор чата события.
      * @throws ChatIdMissingException Если у события нет чата.
      */
     public function requireChatId(): int
@@ -197,10 +226,6 @@ abstract class BaseEvent
     }
 
     /**
-     * Пользователь события.
-     *
-     * В отличие от {@see getUser()}, вместо `null` выбрасывает исключение.
-     *
      * @return User Пользователь события.
      * @throws UserMissingException Если у события нет пользователя.
      */
@@ -210,11 +235,7 @@ abstract class BaseEvent
     }
 
     /**
-     * ID пользователя события.
-     *
-     * В отличие от {@see getUserId()}, вместо `null` выбрасывает исключение.
-     *
-     * @return int ID пользователя события.
+     * @return int Идентификатор пользователя события.
      * @throws UserMissingException Если у события нет пользователя.
      */
     public function requireUserId(): int
@@ -242,9 +263,11 @@ abstract class BaseEvent
         $saveIsHandled = $this->isHandled;
         $newIsHandled = $saveIsHandled;
         $exceptionIsHandled = false;
+
         try {
             foreach ($this->exceptionHandlers as $exceptionHandler) {
                 $this->isHandled = $saveIsHandled;
+
                 try {
                     $result = $exceptionHandler($exception, $this);
                 } catch (EventException $eventException) {

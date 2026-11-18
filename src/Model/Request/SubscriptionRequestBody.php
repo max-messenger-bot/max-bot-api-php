@@ -7,15 +7,20 @@ namespace MaxMessenger\Bot\Model\Request;
 use MaxMessenger\Bot\Model\Enum\UpdateType;
 
 use function array_key_exists;
+use function array_unique;
 use function array_values;
+
+use const SORT_REGULAR;
 
 /**
  * Запрос на настройку подписки WebHook.
+ *
+ * @link https://dev.max.ru/docs-api/methods/POST/subscriptions/
  */
 final class SubscriptionRequestBody extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{
@@ -34,8 +39,8 @@ final class SubscriptionRequestBody extends BaseRequestModel
      *     `X-Max-Bot-Api-Secret` в каждом запросе Webhook (minLength: 5, maxLength: 256).
      *     Разрешены только символы `A-Z`, `a-z`, `0-9`, `_` и `-`.
      * @param UpdateType[]|null $update_types Список типов событий, которые хочет получать ваш бот.
-     * @param non-empty-string|null $version Версия API (pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
-     *     Влияет на представление модели.
+     * @param non-empty-string|null $version Версия API
+     *     (minLength: 5, pattern: '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'). Влияет на представление модели.
      */
     public function __construct(
         ?string $url = null,
@@ -117,7 +122,8 @@ final class SubscriptionRequestBody extends BaseRequestModel
      *     `X-Max-Bot-Api-Secret` в каждом запросе Webhook (minLength: 5, maxLength: 256).
      *     Разрешены только символы `A-Z`, `a-z`, `0-9`, `_` и `-`.
      * @param UpdateType[]|null $update_types Список типов событий, которые хочет получать ваш бот.
-     * @param non-empty-string|null $version Версия API (pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
+     * @param non-empty-string|null $version Версия API
+     *     (minLength: 5, pattern: '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$').
      *     Влияет на представление модели.
      */
     public static function make(
@@ -135,8 +141,8 @@ final class SubscriptionRequestBody extends BaseRequestModel
      *     `X-Max-Bot-Api-Secret` в каждом запросе Webhook (minLength: 5, maxLength: 256).
      *     Разрешены только символы `A-Z`, `a-z`, `0-9`, `_` и `-`.
      * @param UpdateType[]|null $update_types Список типов событий, которые хочет получать ваш бот.
-     * @param non-empty-string|null $version Версия API (pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
-     *     Влияет на представление модели.
+     * @param non-empty-string|null $version Версия API
+     *     (minLength: 5, pattern: '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'). Влияет на представление модели.
      */
     public static function new(
         ?string $url = null,
@@ -155,7 +161,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
      */
     public function setSecret(string $secret): self
     {
-        self::validateString('secret', $secret, minLength: 5, maxLength: 256, pattern: '/^[a-zA-Z0-9_-]{5,256}$/');
+        self::validateString('secret', $secret, minLength: 5, maxLength: 256, pattern: '/^[\w-]+$/');
 
         $this->data['secret'] = $secret;
 
@@ -168,7 +174,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
      */
     public function setUpdateTypes(array $update_types): self
     {
-        $this->data['update_types'] = array_values($update_types);
+        $this->data['update_types'] = array_values(array_unique($update_types, SORT_REGULAR));
 
         return $this;
     }
@@ -179,7 +185,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
      */
     public function setUrl(string $url): self
     {
-        self::validateString('url', $url, minLength: 12);
+        self::validateSubscriptionUrl('url', $url);
 
         $this->data['url'] = $url;
 
@@ -187,13 +193,13 @@ final class SubscriptionRequestBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $version Версия API (pattern: `[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`).
-     *     Влияет на представление модели.
+     * @param non-empty-string $version Версия API
+     *     (minLength: 5, pattern: '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'). Влияет на представление модели.
      * @return $this
      */
     public function setVersion(string $version): self
     {
-        self::validateString('version', $version, minLength: 1, pattern: '/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/');
+        self::validateApiVersion('version', $version);
 
         $this->data['version'] = $version;
 

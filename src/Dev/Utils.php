@@ -4,24 +4,27 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Dev;
 
+use Composer\InstalledVersions;
 use MaxMessenger\Bot\Exception\SimpleQueryError;
 use MaxMessenger\Bot\MaxApiClient;
-use MaxMessenger\Bot\Model\Response\BotInfo;
-use MaxMessenger\Bot\Model\Response\Chat;
 use MaxMessenger\Bot\Model\Response\Subscription;
 use Throwable;
 
+use function array_intersect;
 use function array_keys;
+use function array_slice;
 use function count;
 use function dirname;
 use function explode;
 use function fgets;
 use function file_get_contents;
+use function is_array;
 use function mb_strlen;
 use function preg_match;
 use function printf;
+use function realpath;
+use function rtrim;
 use function sprintf;
-use function str_ends_with;
 use function str_pad;
 use function str_repeat;
 use function str_replace;
@@ -38,10 +41,21 @@ final class Utils
     /**
      * Имя файла с токенами доступа
      */
-    private const TOKENS_NAME = '.tokens';
+    private const TOKENS_NAME = '.max-tokens';
 
     /**
-     * Получение токена доступа из файла .tokens
+     * Создание API-клиента
+     *
+     * @param non-empty-string $accessToken Токен доступа
+     * @return MaxApiClient API-клиент
+     */
+    public static function createApiClient(string $accessToken): MaxApiClient
+    {
+        return new MaxApiClient($accessToken, useRussianTrustedCaCertificates: true);
+    }
+
+    /**
+     * Получение токена доступа из файла .max-tokens
      *
      * Ищет файл в корне проекта и его папке dev/. Если файл найден и содержит
      * токены, предлагает выбрать из списка. Иначе выводит подсказку, как его создать.
@@ -61,7 +75,7 @@ final class Utils
 
         if (empty($tokens)) {
             echo "\n";
-            echo "⚠️  Файл .tokens пуст или содержит некорректные данные\n";
+            echo "⚠️  Файл .max-tokens пуст или содержит некорректные данные\n";
             echo "   Добавьте токены в формате: token-name=access-token\n";
             echo "\n";
 
@@ -69,6 +83,30 @@ final class Utils
         }
 
         return self::selectTokenFromList($tokens);
+    }
+
+    /**
+     * Выводит справку и завершает работу, если среди аргументов командной строки есть `-h` или `--help`.
+     *
+     * @param non-empty-string $command Имя утилиты.
+     * @param non-empty-string $description Описание утилиты и её параметров.
+     */
+    public static function handleHelp(string $command, string $description): void
+    {
+        /** @var mixed $argv */
+        $argv = $_SERVER['argv'] ?? [];
+        if (!is_array($argv) || array_intersect(array_slice($argv, 1), ['-h', '--help']) === []) {
+            return;
+        }
+
+        echo sprintf("Использование: %s [-h|--help]\n\n%s\n", $command, rtrim($description));
+        echo sprintf(
+            "\nТокен доступа запрашивается интерактивно или выбирается из файла %s\n"
+            . "в корне проекта либо в его папке dev/.\n",
+            self::TOKENS_NAME,
+        );
+
+        exit(0);
     }
 
     /**
@@ -96,72 +134,11 @@ final class Utils
     }
 
     /**
-     * Вывод списка чатов
+     * Выводит двойную разделительную линию.
      *
-     * @param list<Chat> $chats
+     * @param bool $addEmptyLineAfter Добавить пустую строку после линии.
+     * @param bool $addEmptyLineBefore Добавить пустую строку перед линией.
      */
-    public static function printChatList(array $chats, BotInfo $botInfo): void
-    {
-        if (empty($chats)) {
-            echo "ℹ️  Чаты не найдены\n\n";
-
-            return;
-        }
-
-        self::printLine();
-        echo sprintf("Чатов на странице: %d\n", count($chats));
-        self::printLine(true);
-
-        foreach ($chats as $index => $chat) {
-            $number = $index + 1;
-
-            // Заголовок чата
-            $title = $chat->getTitle();
-            $admin = $chat->getOwnerId() === $botInfo->getUserId() ? ' (Owner)' : '';
-            if ($title !== null) {
-                echo sprintf("%d. %s (%d)%s\n", $number, $title, $chat->getChatId(), $admin);
-            } else {
-                echo sprintf("%d. (%d)%s\n", $number, $chat->getChatId(), $admin);
-            }
-
-            // Тип чата
-            $chatType = $chat->getType()?->value ?? $chat->getTypeRaw() ?: 'unknown';
-            echo sprintf('   • Тип: %s', $chatType);
-
-            // Статус чата
-            $status = $chat->getStatus()?->value ?? $chat->getStatusRaw() ?: 'unknown';
-            echo sprintf(', статус: %s', $status);
-
-            // Время последнего события
-            $lastEventTime = $chat->getLastEventTime();
-            $lastEventTimeFormatted = $lastEventTime->format('Y-m-d H:i:s');
-            echo sprintf(", Последнее событие: %s\n", $lastEventTimeFormatted);
-
-            // Количество участников
-            echo sprintf('   • Участников: %d', $chat->getParticipantsCount());
-
-            // Публичный ли чат
-            $public = $chat->isPublic() ? 'публичный' : 'приватный';
-            echo sprintf(" (%s)\n", $public);
-
-            // Описание чата
-            $description = $chat->getDescription();
-            if ($description !== null) {
-                echo sprintf("   • Описание: %s\n", $description);
-            }
-
-            // Ссылка на чат
-            $link = $chat->getLink();
-            if ($link !== null) {
-                echo sprintf("   • Ссылка: %s\n", $link);
-            }
-
-            echo "\n";
-        }
-
-        self::printLine();
-    }
-
     public static function printDoubleLine(bool $addEmptyLineAfter = false, bool $addEmptyLineBefore = false): void
     {
         if ($addEmptyLineBefore) {
@@ -174,7 +151,9 @@ final class Utils
     }
 
     /**
-     * @param non-empty-string $title
+     * Выводит заголовок раздела в рамке.
+     *
+     * @param non-empty-string $title Текст заголовка.
      */
     public static function printHeader(string $title): void
     {
@@ -186,6 +165,12 @@ final class Utils
         echo sprintf("%s\n", str_repeat('█', 50));
     }
 
+    /**
+     * Выводит одинарную разделительную линию.
+     *
+     * @param bool $addEmptyLineAfter Добавить пустую строку после линии.
+     * @param bool $addEmptyLineBefore Добавить пустую строку перед линией.
+     */
     public static function printLine(bool $addEmptyLineAfter = false, bool $addEmptyLineBefore = false): void
     {
         if ($addEmptyLineBefore) {
@@ -198,7 +183,10 @@ final class Utils
     }
 
     /**
-     * @param list<Subscription> $subscriptions
+     * Выводит список Webhook-подписок или сообщение об их отсутствии.
+     *
+     * @param list<Subscription> $subscriptions Подписки для вывода.
+     * @psalm-cli-only
      */
     public static function printSubscriptionList(array $subscriptions): void
     {
@@ -248,6 +236,7 @@ final class Utils
      * Пути-кандидаты для поиска файла в порядке приоритета:
      * корень проекта, в который подключён пакет, и его папка dev/.
      *
+     * @param string $fileName Имя искомого файла.
      * @return list<string>
      */
     public static function projectFileCandidates(string $fileName): array
@@ -263,25 +252,20 @@ final class Utils
     /**
      * Корень проекта, в который подключён пакет.
      *
-     * При установке как зависимость путь пакета оканчивается на известный
-     * суффикс vendor/<vendor>/<package> — отбрасываем его строго на этом уровне.
-     * При запуске из самого пакета (standalone) — корень самого пакета.
+     * При запуске из самого пакета корнем является каталог пакета.
      */
     public static function projectRoot(): string
     {
-        $packageRoot = dirname(__DIR__, 2);
-        $vendorSuffix = '/vendor/max-messenger-bot/max-bot-api-php';
+        $root = InstalledVersions::getRootPackage()['install_path'];
+        $resolvedRoot = realpath($root);
 
-        if (str_ends_with($packageRoot, $vendorSuffix)) {
-            return substr($packageRoot, 0, -strlen($vendorSuffix));
-        }
-
-        return $packageRoot;
+        return $resolvedRoot === false ? $root : $resolvedRoot;
     }
 
     /**
      * Очистка ввода от лишних символов
      *
+     * @param string $prompt Приглашение, выводимое перед чтением строки.
      * @return non-empty-string
      */
     public static function readInput(string $prompt): string
@@ -305,10 +289,11 @@ final class Utils
     /**
      * Запрос токена доступа у пользователя
      *
-     * Сначала пытается получить токен из файла .tokens,
+     * Сначала пытается получить токен из файла .max-tokens,
      * если не удалось - запрашивает вручную с проверкой.
      *
      * @return non-empty-string
+     * @psalm-cli-only
      */
     public static function requestAccessToken(): string
     {
@@ -316,7 +301,7 @@ final class Utils
         echo "ШАГ 1: Токен доступа\n";
         self::printDoubleLine(true);
 
-        // Попытка получить токен из файла .tokens
+        // Попытка получить токен из файла .max-tokens
         $accessToken = self::getAccessTokenFromTokensFile();
 
         if ($accessToken !== null) {
@@ -328,7 +313,6 @@ final class Utils
         }
 
         echo "Введите ваш токен доступа Max Bot\n";
-        echo "Получить токен можно через @MasterBot\n";
 
         $accessToken = self::readInput("\nТокен доступа: ");
 
@@ -347,18 +331,18 @@ final class Utils
     }
 
     /**
-     * Проверка токена доступа через вызов getMyInfo()
+     * Проверка токена доступа через вызов {@see MaxApiClient::getMyInfo()}.
      *
      * @param non-empty-string $accessToken Токен доступа для проверки
      * @return bool true если токен валиден
+     * @psalm-cli-only
      */
     public static function validateAccessToken(string $accessToken): bool
     {
         echo "\n🔄 Проверка токена доступа... ";
 
         try {
-            $client = new MaxApiClient($accessToken);
-            $client->getMyInfo();
+            self::createApiClient($accessToken)->getMyInfo();
             echo "✅ Успешно\n";
 
             return true;
@@ -409,7 +393,7 @@ final class Utils
     }
 
     /**
-     * Подсказка, когда файл .tokens не найден ни в одном из мест
+     * Подсказка, когда файл .max-tokens не найден ни в одном из мест
      *
      * @param list<string> $candidates
      */
@@ -419,7 +403,7 @@ final class Utils
         $projectRoot = self::projectRoot();
 
         echo "\n";
-        echo "ℹ️  Файл .tokens не найден\n";
+        echo "ℹ️  Файл .max-tokens не найден\n";
         echo "   Искал в:\n";
         foreach ($candidates as $candidate) {
             echo sprintf("     • %s\n", $candidate);

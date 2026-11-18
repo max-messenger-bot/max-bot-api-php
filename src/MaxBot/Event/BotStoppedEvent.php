@@ -18,7 +18,7 @@ use MaxMessenger\Bot\Model\Response\User;
 final class BotStoppedEvent extends BaseEvent
 {
     /**
-     * @return int ID диалога, где произошло событие.
+     * @return int Идентификатор диалога, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -34,7 +34,7 @@ final class BotStoppedEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, который остановил бота.
+     * @return int Идентификатор пользователя, который остановил бота.
      */
     public function getUserId(): int
     {
@@ -42,7 +42,7 @@ final class BotStoppedEvent extends BaseEvent
     }
 
     /**
-     * @return string|null Текущий язык пользователя в формате IETF BCP 47.
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47.
      */
     public function getUserLocale(): ?string
     {

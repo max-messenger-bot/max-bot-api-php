@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+/**
+ * Вложение с файлом в сообщении.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ */
 class FileAttachment extends Attachment
 {
     /**
      * @var array{
      *     payload: array,
      *     filename: string,
-     *     size: int
+     *     size: non-negative-int
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
@@ -25,6 +30,9 @@ class FileAttachment extends Attachment
         return $this->data['filename'];
     }
 
+    /**
+     * @return FileAttachmentPayload Данные прикреплённого файла.
+     */
     public function getPayload(): FileAttachmentPayload
     {
         return $this->payload === false
@@ -33,7 +41,7 @@ class FileAttachment extends Attachment
     }
 
     /**
-     * @return int Размер файла в байтах.
+     * @return non-negative-int Размер файла в байтах.
      */
     public function getSize(): int
     {

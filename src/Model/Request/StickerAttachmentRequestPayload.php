@@ -7,14 +7,14 @@ namespace MaxMessenger\Bot\Model\Request;
 use function array_key_exists;
 
 /**
- * Запрос на прикрепление стикера к сообщению.
+ * Данные для прикрепления стикера к сообщению.
  *
- * Должен быть единственным вложением в сообщении.
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody
  */
 final class StickerAttachmentRequestPayload extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{

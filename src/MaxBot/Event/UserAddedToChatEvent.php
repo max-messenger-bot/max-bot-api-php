@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\MaxBot\Event;
 
+use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
 use MaxMessenger\Bot\Model\Response\User;
 use MaxMessenger\Bot\Model\Response\UserAddedToChatUpdate;
 
@@ -11,8 +12,7 @@ use MaxMessenger\Bot\Model\Response\UserAddedToChatUpdate;
  * Событие добавления пользователя в чат или канал.
  *
  * Приходит, когда пользователя добавили или он перешёл по ссылке.
- *
- * На свои действия бот события не получает.
+ * Бот должен быть администратором с правом {@see ChatAdminPermission::ReadAllMessages}.
  *
  * @property-read UserAddedToChatUpdate $update
  */
@@ -22,7 +22,7 @@ final class UserAddedToChatEvent extends BaseEvent
     use SendMessageToUserTrait;
 
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int Идентификатор чата или канала, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -30,8 +30,8 @@ final class UserAddedToChatEvent extends BaseEvent
     }
 
     /**
-     * @return int|null Пользователь, который добавил нового пользователя в чат.
-     *     Может быть `null`, если пользователь присоединился к чату по ссылке.
+     * @return int|null Идентификатор пользователя, который добавил нового пользователя в чат или канал.
+     *     Может быть `null`, если пользователь присоединился по ссылке.
      */
     public function getInviterId(): ?int
     {
@@ -39,7 +39,7 @@ final class UserAddedToChatEvent extends BaseEvent
     }
 
     /**
-     * @return User Пользователь, добавленный в чат.
+     * @return User Пользователь, добавленный в чат или канал.
      */
     public function getUser(): User
     {
@@ -47,7 +47,7 @@ final class UserAddedToChatEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, добавленного в чат.
+     * @return int Идентификатор пользователя, добавленного в чат или канал.
      */
     public function getUserId(): int
     {

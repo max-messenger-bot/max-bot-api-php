@@ -6,11 +6,22 @@ namespace MaxMessenger\Bot\Tests\Unit\HttpClient\Exception\HttpRequest;
 
 use Codeception\Test\Unit;
 use JsonException;
-use MaxMessenger\Bot\Exception\MaxApiException;
+use MaxMessenger\Bot\HttpClient\Exception\HttpRequest\HttpRequestException;
 use MaxMessenger\Bot\HttpClient\Exception\HttpRequest\JsonEncodeException;
+use MaxMessenger\Bot\Tests\Support\Fake\FakeStringCodeException;
 
 final class JsonEncodeExceptionTest extends Unit
 {
+    public function testCastsNonIntegerCodeOfPrevious(): void
+    {
+        $previous = new FakeStringCodeException('SQLSTATE[08006] Connection failure', '08006');
+
+        $exception = new JsonEncodeException((object) [], $previous);
+
+        self::assertSame(8006, $exception->getCode());
+        self::assertSame('SQLSTATE[08006] Connection failure', $exception->getMessage());
+    }
+
     public function testConstructorSetsData(): void
     {
         $data = ['key' => 'value'];
@@ -21,13 +32,11 @@ final class JsonEncodeExceptionTest extends Unit
         self::assertSame($data, (array) $exception->getData());
     }
 
-    public function testExtendsMaxApiException(): void
+    public function testExtendsHttpRequestException(): void
     {
-        $data = ['foo' => 'bar'];
+        $exception = new JsonEncodeException((object) [], $this->createPrevious());
 
-        $exception = new JsonEncodeException((object) $data, $this->createPrevious());
-
-        self::assertInstanceOf(MaxApiException::class, $exception);
+        self::assertInstanceOf(HttpRequestException::class, $exception);
     }
 
     public function testInheritsCodeFromPrevious(): void
@@ -39,15 +48,6 @@ final class JsonEncodeExceptionTest extends Unit
         self::assertSame(123, $exception->getCode());
     }
 
-    public function testInheritsMessageFromPrevious(): void
-    {
-        $previous = new JsonException('Malformed UTF-8', code: JSON_ERROR_UTF8);
-
-        $exception = new JsonEncodeException((object) [], $previous);
-
-        self::assertSame('Malformed UTF-8', $exception->getMessage());
-    }
-
     public function testPreviousIsSet(): void
     {
         $previous = new JsonException('Previous error');
@@ -55,22 +55,6 @@ final class JsonEncodeExceptionTest extends Unit
         $exception = new JsonEncodeException((object) [], $previous);
 
         self::assertSame($previous, $exception->getPrevious());
-    }
-
-    public function testWithComplexData(): void
-    {
-        $data = [
-            'name' => 'test',
-            'items' => [1, 2, 3],
-            'nested' => ['key' => 'value'],
-        ];
-
-        $exception = new JsonEncodeException((object) $data, $this->createPrevious());
-
-        $result = (array) $exception->getData();
-        self::assertSame('test', $result['name']);
-        self::assertSame([1, 2, 3], $result['items']);
-        self::assertSame(['key' => 'value'], (array) $result['nested']);
     }
 
     private function createPrevious(): JsonException

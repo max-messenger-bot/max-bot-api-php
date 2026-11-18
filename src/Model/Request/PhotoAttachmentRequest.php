@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\Model\Enum\AttachmentRequestType;
+use MaxMessenger\Bot\Model\Enum\AttachmentType;
 
 use function array_key_exists;
 
 /**
  * Запрос на прикрепление изображения к сообщению.
+ *
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/media
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
  */
 final class PhotoAttachmentRequest extends AttachmentRequest
 {
@@ -25,13 +29,12 @@ final class PhotoAttachmentRequest extends AttachmentRequest
 
     /**
      * @param PhotoAttachmentRequestPayload|null $payload Запрос на прикрепление изображения.
-     * @api
      */
     public function __construct(?PhotoAttachmentRequestPayload $payload = null)
     {
         $this->required = ['payload'];
 
-        parent::__construct(AttachmentRequestType::Image);
+        parent::__construct(AttachmentType::Image);
 
         if ($payload !== null) {
             $this->setPayload($payload);
@@ -58,7 +61,6 @@ final class PhotoAttachmentRequest extends AttachmentRequest
 
     /**
      * @param PhotoAttachmentRequestPayload|null $payload Запрос на прикрепление изображения.
-     * @api
      */
     public static function new(?PhotoAttachmentRequestPayload $payload = null): self
     {

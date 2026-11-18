@@ -36,6 +36,8 @@ use function trim;
  * - URL адрес Webhook
  * - Типы событий для получения
  * - Кодовое слово (secret)
+ *
+ * @psalm-cli-only
  */
 final class MaxSubscribe
 {
@@ -44,6 +46,13 @@ final class MaxSubscribe
      */
     public static function main(): void
     {
+        Utils::handleHelp(
+            'max-subscribe',
+            "Регистрирует Webhook-подписку. Последовательно запрашивает токен доступа, URL (только https://,\n"
+            . "без порта), типы событий и секрет для заголовка X-Max-Bot-Api-Secret (5–256 символов, A-Za-z0-9_-).\n"
+            . 'После сохранения проверяет, что подписка появилась на сервере.',
+        );
+
         Utils::printHeader('Настройка Webhook подписки Max Bot API');
 
         // Шаг 1: Токен доступа
@@ -67,7 +76,7 @@ final class MaxSubscribe
         echo sprintf("✓ Кодовое слово принято (длина: %d символов)\n", strlen($secret));
 
         // Создание API клиента
-        $client = new MaxApiClient($accessToken);
+        $client = Utils::createApiClient($accessToken);
 
         // Сохранение подписки на сервер
         if (!self::saveSubscription($client, $url, $secret, $updateTypes)) {
@@ -146,11 +155,7 @@ final class MaxSubscribe
         $parsedUrl = parse_url($url);
 
         // URL не должен содержать порт
-        if (isset($parsedUrl['port'])) {
-            return false;
-        }
-
-        return true;
+        return !isset($parsedUrl['port']);
     }
 
     /**
@@ -361,6 +366,7 @@ final class MaxSubscribe
             foreach ($subscriptions as $subscription) {
                 if ($subscription->getUrl() === $url) {
                     $foundSubscription = $subscription;
+
                     break;
                 }
             }
@@ -382,6 +388,7 @@ final class MaxSubscribe
                 $allTypes = array_map(static fn(UpdateType $case): string => $case->value, UpdateType::cases());
                 if ($savedTypeValues === [] || $savedTypeValues === $allTypes) {
                     echo "✅ Подтверждено (все типы)\n";
+
                     return true;
                 }
                 echo "❌ Типы событий не совпадают\n";

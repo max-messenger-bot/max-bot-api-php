@@ -9,7 +9,11 @@ use MaxMessenger\Bot\Model\Enum\ButtonType;
 /**
  * Кнопка сообщения.
  *
- * Кнопка для отправки сообщения.
+ * При нажатии отправляет сообщение в чат от имени пользователя.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 final class MessageButton extends Button
 {

@@ -8,12 +8,14 @@ use MaxMessenger\Bot\Model\Enum\MessageLinkType;
 
 /**
  * Комментарий, на который получен ответ.
+ *
+ * @link https://dev.max.ru/docs-api/objects/CommentMessage/
  */
 class CommentLinkedMessage extends BaseResponseModel
 {
     /**
      * @var array{
-     *     type: string,
+     *     type: non-empty-string,
      *     sender?: array,
      *     chat_id: int,
      *     message: array
@@ -25,7 +27,7 @@ class CommentLinkedMessage extends BaseResponseModel
     private User|false|null $sender = false;
 
     /**
-     * @return int ID канала, в котором оставлен комментарий.
+     * @return int Идентификатор канала, в котором оставлен комментарий.
      */
     public function getChatId(): int
     {
@@ -62,18 +64,24 @@ class CommentLinkedMessage extends BaseResponseModel
     }
 
     /**
-     * @return string Тип связанного сообщения.
+     * @return non-empty-string Тип связанного сообщения. Значения описаны в {@see MessageLinkType}.
      */
     public function getTypeRaw(): string
     {
         return $this->data['type'];
     }
 
+    /**
+     * @return bool Является ли связанный комментарий пересланным.
+     */
     public function isForward(): bool
     {
         return $this->data['type'] === MessageLinkType::Forward->value;
     }
 
+    /**
+     * @return bool Является ли связанный комментарий ответом.
+     */
     public function isReply(): bool
     {
         return $this->data['type'] === MessageLinkType::Reply->value;

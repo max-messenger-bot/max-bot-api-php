@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit;
 
 use Codeception\Test\Unit;
-use MaxMessenger\Bot\Contract\Http\HttpClientInterface;
 use MaxMessenger\Bot\CurlHttpClient\CurlHttpClient;
 use MaxMessenger\Bot\MaxApiConfig;
 use SensitiveParameterValue;
 
+use function defined;
+
 use const CURLOPT_CAINFO;
 use const CURLOPT_CAPATH;
+use const CURLOPT_SSL_OPTIONS;
 use const CURLOPT_SSL_VERIFYHOST;
 use const CURLOPT_SSL_VERIFYPEER;
+use const CURLSSLOPT_NATIVE_CA;
 
 final class MaxApiConfigTest extends Unit
 {
@@ -23,14 +26,6 @@ final class MaxApiConfigTest extends Unit
     private const TEST_CA_CERTIFICATE_PATH = '/etc/ssl/certs/mincifra-root-ca.pem';
     private const TEST_RETRY_ATTEMPTS = [333, 444, 555];
     private const TEST_TIMEOUT = 1234;
-
-    public function testConstructWithAccessToken(): void
-    {
-        $config = new MaxApiConfig(self::TEST_ACCESS_TOKEN);
-
-        $accessToken = $config->getAccessToken();
-        self::assertInstanceOf(SensitiveParameterValue::class, $accessToken);
-    }
 
     public function testConstructWithCustomBaseUrl(): void
     {
@@ -46,45 +41,38 @@ final class MaxApiConfigTest extends Unit
         self::assertSame('https://platform-api2.max.ru', $config->getBaseUrl());
     }
 
-    public function testConstructWithoutAccessToken(): void
+    public function testConstructWithRussianTrustedCaCertificates(): void
+    {
+        $config = new MaxApiConfig(useRussianTrustedCaCertificates: true);
+
+        $path = $config->getCaCertificatePath();
+        self::assertNotNull($path);
+        self::assertStringEndsWith('/resources/certs/russian_trusted_ca_bundle.pem', $path);
+        self::assertFileExists($path);
+    }
+
+    public function testConstructWithoutRussianTrustedCaCertificatesByDefault(): void
     {
         $config = new MaxApiConfig();
 
-        self::assertNull($config->getAccessToken());
+        self::assertNull($config->getCaCertificatePath());
+
+        $httpClient = $config->getHttpClient();
+        self::assertInstanceOf(CurlHttpClient::class, $httpClient);
+        self::assertArrayNotHasKey(CURLOPT_CAINFO, $httpClient->getOptions());
     }
 
-    public function testGetBaseUrl(): void
-    {
-        $config = new MaxApiConfig(self::TEST_ACCESS_TOKEN, baseUrl: self::TEST_BASE_URL);
-
-        self::assertSame(self::TEST_BASE_URL, $config->getBaseUrl());
-    }
-
-    public function testGetCaCertificateDir(): void
+    public function testGetAttachmentRetryAttempts(): void
     {
         $config = new MaxApiConfig();
 
-        $config->caCertificateDir = self::TEST_CA_CERTIFICATE_DIR;
+        self::assertSame($config->getRetryAttempts(), $config->getAttachmentRetryAttempts());
 
-        self::assertSame(self::TEST_CA_CERTIFICATE_DIR, $config->getCaCertificateDir());
-    }
+        $config->attachmentRetryAttempts = self::TEST_RETRY_ATTEMPTS;
+        self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->getAttachmentRetryAttempts());
 
-    public function testGetCaCertificatePath(): void
-    {
-        $config = new MaxApiConfig();
-
-        $config->caCertificatePath = self::TEST_CA_CERTIFICATE_PATH;
-
-        self::assertSame(self::TEST_CA_CERTIFICATE_PATH, $config->getCaCertificatePath());
-    }
-
-    public function testGetConnectTimeout(): void
-    {
-        $config = new MaxApiConfig();
-
-        $config->connectTimeout = self::TEST_TIMEOUT;
-
-        self::assertSame(self::TEST_TIMEOUT, $config->getConnectTimeout());
+        $config->attachmentRetryAttempts = [];
+        self::assertSame([], $config->getAttachmentRetryAttempts());
     }
 
     public function testGetHttpClientAppliesCustomCaCertificate(): void
@@ -122,13 +110,53 @@ final class MaxApiConfigTest extends Unit
         self::assertSame(0, $options[CURLOPT_SSL_VERIFYHOST] ?? null);
     }
 
-    public function testGetHttpClientReturnsDefaultWhenNotSet(): void
+    public function testGetHttpClientForUpdatesReturnsNullWhenNotSet(): void
     {
         $config = new MaxApiConfig();
 
-        $httpClient = $config->getHttpClient();
+        self::assertNull($config->getHttpClientForUpdates());
+    }
 
-        self::assertInstanceOf(HttpClientInterface::class, $httpClient);
+    public function testGetHttpClientForUpdatesReturnsSetClient(): void
+    {
+        $config = new MaxApiConfig();
+        $httpClient = new CurlHttpClient();
+        $config->setHttpClientForUpdates($httpClient);
+
+        self::assertSame($httpClient, $config->getHttpClientForUpdates());
+    }
+
+    public function testGetHttpClientForUploaderReturnsSetClient(): void
+    {
+        $config = new MaxApiConfig();
+        $httpClient = new CurlHttpClient();
+        $config->setHttpClientForUploader($httpClient);
+
+        self::assertSame($httpClient, $config->getHttpClientForUploader());
+    }
+
+    public function testGetHttpClientForUploaderUsesSystemCaCertificatesWhenNotSet(): void
+    {
+        $config = (new MaxApiConfig())
+            ->setTimeout(self::TEST_TIMEOUT)
+            ->setCaCertificateDir(self::TEST_CA_CERTIFICATE_DIR);
+
+        $httpClient = $config->getHttpClientForUploader();
+
+        self::assertInstanceOf(CurlHttpClient::class, $httpClient);
+        self::assertNotSame($config->getHttpClient(), $httpClient);
+        self::assertSame($httpClient, $config->getHttpClientForUploader());
+
+        $options = $httpClient->getOptions();
+        self::assertSame(self::TEST_TIMEOUT, $options[CURLOPT_TIMEOUT_MS] ?? null);
+        self::assertTrue($options[CURLOPT_SSL_VERIFYPEER] ?? null);
+        if (defined('CURLSSLOPT_NATIVE_CA')) {
+            self::assertSame(CURLSSLOPT_NATIVE_CA, $options[CURLOPT_SSL_OPTIONS] ?? null);
+        } else {
+            self::assertArrayNotHasKey(CURLOPT_SSL_OPTIONS, $options);
+        }
+        self::assertArrayNotHasKey(CURLOPT_CAINFO, $options);
+        self::assertArrayNotHasKey(CURLOPT_CAPATH, $options);
     }
 
     public function testGetHttpClientReturnsSetClient(): void
@@ -150,26 +178,21 @@ final class MaxApiConfigTest extends Unit
         $options = $httpClient->getOptions();
         self::assertTrue($options[CURLOPT_SSL_VERIFYPEER] ?? null);
         self::assertSame(2, $options[CURLOPT_SSL_VERIFYHOST] ?? null);
-        self::assertArrayNotHasKey(CURLOPT_CAINFO, $options);
+        self::assertSame($config->getCaCertificatePath(), $options[CURLOPT_CAINFO] ?? null);
         self::assertArrayNotHasKey(CURLOPT_CAPATH, $options);
     }
 
-    public function testGetRetryAttempts(): void
+    public function testGetPostRetryAttempts(): void
     {
         $config = new MaxApiConfig();
 
-        $config->retryAttempts = self::TEST_RETRY_ATTEMPTS;
+        self::assertSame($config->getRetryAttempts(), $config->getPostRetryAttempts());
 
-        self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->getRetryAttempts());
-    }
+        $config->postRetryAttempts = self::TEST_RETRY_ATTEMPTS;
+        self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->getPostRetryAttempts());
 
-    public function testGetTimeout(): void
-    {
-        $config = new MaxApiConfig();
-
-        $config->timeout = self::TEST_TIMEOUT;
-
-        self::assertSame(self::TEST_TIMEOUT, $config->getTimeout());
+        $config->postRetryAttempts = [];
+        self::assertSame([], $config->getPostRetryAttempts());
     }
 
     public function testGetVerifySslCertificate(): void
@@ -181,6 +204,55 @@ final class MaxApiConfigTest extends Unit
         $config->verifySslCertificate = false;
 
         self::assertFalse($config->getVerifySslCertificate());
+    }
+
+    public function testMakeCurlHttpClientAppliesSettings(): void
+    {
+        $config = (new MaxApiConfig())
+            ->setConnectTimeout(2000)
+            ->setTimeout(5000)
+            ->setCaCertificatePath(self::TEST_CA_CERTIFICATE_PATH);
+
+        $options = $config->makeCurlHttpClient()->getOptions();
+
+        self::assertSame(2000, $options[CURLOPT_CONNECTTIMEOUT_MS] ?? null);
+        self::assertSame(5000, $options[CURLOPT_TIMEOUT_MS] ?? null);
+        self::assertSame(self::TEST_CA_CERTIFICATE_PATH, $options[CURLOPT_CAINFO] ?? null);
+        self::assertTrue($options[CURLOPT_SSL_VERIFYPEER] ?? null);
+        if (defined('CURLSSLOPT_NATIVE_CA')) {
+            self::assertSame(CURLSSLOPT_NATIVE_CA, $options[CURLOPT_SSL_OPTIONS] ?? null);
+        } else {
+            self::assertArrayNotHasKey(CURLOPT_SSL_OPTIONS, $options);
+        }
+        self::assertNotNull($options[CURLOPT_USERAGENT] ?? null);
+    }
+
+    public function testMakeCurlHttpClientCreatesNewInstance(): void
+    {
+        $config = new MaxApiConfig();
+
+        self::assertNotSame($config->makeCurlHttpClient(), $config->makeCurlHttpClient());
+        self::assertNotSame($config->getHttpClient(), $config->makeCurlHttpClient());
+    }
+
+    public function testMakeCurlHttpClientUsesSystemCaCertificates(): void
+    {
+        $config = (new MaxApiConfig())
+            ->setConnectTimeout(2000)
+            ->setCaCertificatePath(self::TEST_CA_CERTIFICATE_PATH)
+            ->setCaCertificateDir(self::TEST_CA_CERTIFICATE_DIR);
+
+        $options = $config->makeCurlHttpClient(useSystemCaCertificates: true)->getOptions();
+
+        self::assertSame(2000, $options[CURLOPT_CONNECTTIMEOUT_MS] ?? null);
+        self::assertTrue($options[CURLOPT_SSL_VERIFYPEER] ?? null);
+        if (defined('CURLSSLOPT_NATIVE_CA')) {
+            self::assertSame(CURLSSLOPT_NATIVE_CA, $options[CURLOPT_SSL_OPTIONS] ?? null);
+        } else {
+            self::assertArrayNotHasKey(CURLOPT_SSL_OPTIONS, $options);
+        }
+        self::assertArrayNotHasKey(CURLOPT_CAINFO, $options);
+        self::assertArrayNotHasKey(CURLOPT_CAPATH, $options);
     }
 
     public function testSetAccessToken(): void
@@ -204,6 +276,21 @@ final class MaxApiConfigTest extends Unit
         $config->setAccessToken(null);
 
         self::assertNull($config->getAccessToken());
+    }
+
+    public function testSetAttachmentRetryAttempts(): void
+    {
+        $config = new MaxApiConfig();
+
+        $result = $config->setAttachmentRetryAttempts(self::TEST_RETRY_ATTEMPTS);
+
+        self::assertSame($config, $result);
+        self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->attachmentRetryAttempts);
+        self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->getAttachmentRetryAttempts());
+
+        self::assertSame($config, $config->setAttachmentRetryAttempts(null));
+        self::assertNull($config->attachmentRetryAttempts);
+        self::assertSame($config->getRetryAttempts(), $config->getAttachmentRetryAttempts());
     }
 
     public function testSetBaseUrl(): void
@@ -269,6 +356,21 @@ final class MaxApiConfigTest extends Unit
         $config->setHttpClient(null);
 
         self::assertNull($config->httpClient);
+    }
+
+    public function testSetPostRetryAttempts(): void
+    {
+        $config = new MaxApiConfig();
+
+        $result = $config->setPostRetryAttempts(self::TEST_RETRY_ATTEMPTS);
+
+        self::assertSame($config, $result);
+        self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->postRetryAttempts);
+        self::assertSame(self::TEST_RETRY_ATTEMPTS, $config->getPostRetryAttempts());
+
+        self::assertSame($config, $config->setPostRetryAttempts(null));
+        self::assertNull($config->postRetryAttempts);
+        self::assertSame($config->getRetryAttempts(), $config->getPostRetryAttempts());
     }
 
     public function testSetRetryAttempts(): void

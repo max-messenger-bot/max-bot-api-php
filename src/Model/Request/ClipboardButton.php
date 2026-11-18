@@ -12,6 +12,10 @@ use function array_key_exists;
  * Кнопка буфера обмена.
  *
  * При нажатии на кнопку с типом `clipboard` текст, указанный в свойстве `payload`, копируется в буфер обмена.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 final class ClipboardButton extends Button
 {
@@ -38,6 +42,9 @@ final class ClipboardButton extends Button
         }
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getPayload(): string
     {
         return $this->data['payload'];

@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Закодированная информация загруженного изображения.
+ *
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/media
  */
 class PhotoToken extends BaseResponseModel
 {

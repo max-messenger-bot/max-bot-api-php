@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\Model\Enum\AttachmentRequestType;
+use MaxMessenger\Bot\Model\Enum\AttachmentType;
 
 use function array_key_exists;
 
 /**
- * Запрос на прикрепление предпросмотра контента по внешнему URL.
+ * Запрос на прикрепление предпросмотра контента с помощью внешнего URL.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
  */
 final class ShareAttachmentRequest extends AttachmentRequest
 {
@@ -30,7 +33,7 @@ final class ShareAttachmentRequest extends AttachmentRequest
     {
         $this->required = ['payload'];
 
-        parent::__construct(AttachmentRequestType::Share);
+        parent::__construct(AttachmentType::Share);
 
         if ($payload !== null) {
             $this->setPayload($payload);

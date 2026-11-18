@@ -7,14 +7,18 @@ namespace MaxMessenger\Bot\Model\Enum;
 /**
  * Тип чата.
  *
- * Возможные значения:
  * - `chat` — Групповой чат.
  * - `channel` — Канал.
  * - `dialog` — Диалог.
  *
  * Для комментариев к постам в канале значение определяет, от чьего имени оставлен комментарий:
- * - `channel` — от имени канала.
- * - `chat` — от имени пользователя или бота.
+ * - `channel` — От имени канала.
+ * - `chat` — От имени пользователя или бота.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Chat
+ * @link https://dev.max.ru/docs-api/objects/Message
+ * @link https://dev.max.ru/docs-api/objects/CommentMessage
+ * @link https://dev.max.ru/docs-api/methods/GET/chats/-chatId-/
  */
 enum ChatType: string
 {

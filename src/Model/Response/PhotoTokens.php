@@ -8,6 +8,8 @@ use function is_array;
 
 /**
  * Информация о загруженных изображениях.
+ *
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/media
  */
 class PhotoTokens extends BaseResponseModel
 {
@@ -18,7 +20,9 @@ class PhotoTokens extends BaseResponseModel
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
-    /** @var non-empty-array<string, PhotoToken>|false */
+    /**
+     * @var non-empty-array<string, PhotoToken>|false
+     */
     private array|false $photos = false;
 
     /**
@@ -31,12 +35,14 @@ class PhotoTokens extends BaseResponseModel
             : $this->photos;
     }
 
+    /**
+     * @return bool Содержит ли ответ непустой набор загруженных изображений.
+     */
     public function isValid(): bool
     {
         /** @psalm-suppress RedundantConditionGivenDocblockType */
-        return isset($this->data['photos'])
-            && is_array($this->data['photos'])
-            && $this->data['photos'] !== [];
+        return !empty($this->data['photos'])
+            && is_array($this->data['photos']);
     }
 
     /**

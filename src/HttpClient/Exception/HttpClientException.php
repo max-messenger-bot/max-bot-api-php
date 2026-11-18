@@ -11,15 +11,15 @@ use Throwable;
 /**
  * Базовый класс ошибок HTTP-клиента: ответ от сервера не получен.
  *
- * От него наследуются ошибки транспорта: {@see NetworkException}, а также собственные ошибки клиентов.
+ * От него наследуются ошибки транспорта: {@see TemporaryNetworkException}, а также собственные ошибки клиентов.
  */
-abstract class HttpClientException extends MaxApiException implements TemporaryExceptionInterface
+abstract class HttpClientException extends MaxApiException
 {
     /**
      * @param string $message Описание ошибки.
      * @param int $code Код ошибки транспорта.
      * @param HttpRequestInterface $request Запрос, который не удалось выполнить.
-     * @param Throwable|null $previous Исходная ошибка клиента.
+     * @param Throwable|null $previous Исходная ошибка транспорта.
      */
     public function __construct(
         string $message,

@@ -21,7 +21,7 @@ final class BotStartedEvent extends BaseEvent
     use SendMessageToUserTrait;
 
     /**
-     * @return int ID диалога, где произошло событие.
+     * @return int Идентификатор диалога, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -45,7 +45,7 @@ final class BotStartedEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, который нажал кнопку 'Начать'.
+     * @return int Идентификатор пользователя, который нажал кнопку 'Начать'.
      */
     public function getUserId(): int
     {
@@ -53,7 +53,7 @@ final class BotStartedEvent extends BaseEvent
     }
 
     /**
-     * @return string|null Текущий язык пользователя в формате IETF BCP 47.
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47.
      */
     public function getUserLocale(): ?string
     {

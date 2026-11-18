@@ -7,7 +7,10 @@ namespace MaxMessenger\Bot\Model\Response;
 use DateTimeImmutable;
 
 /**
- * Вы получите это событие, как только пользователь отключит уведомления о новых сообщениях в диалоге, чате или канале.
+ * Событие отключения пользователем уведомлений о новых сообщениях в диалоге.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class DialogMutedUpdate extends Update
 {
@@ -24,7 +27,7 @@ class DialogMutedUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID диалога, чата или канала, где произошло событие.
+     * @return int Идентификатор диалога, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -32,7 +35,7 @@ class DialogMutedUpdate extends Update
     }
 
     /**
-     * @return DateTimeImmutable Время, до наступления которого уведомления в диалоге, чате или канале были отключены.
+     * @return DateTimeImmutable Время, до наступления которого уведомления в диалоге были отключены.
      */
     public function getMutedUntil(): DateTimeImmutable
     {
@@ -40,12 +43,20 @@ class DialogMutedUpdate extends Update
     }
 
     /**
-     * @return non-negative-int Время, до наступления которого уведомления в диалоге, чате или канале
-     *     были отключены (Unix-время в миллисекундах).
+     * @return non-negative-int Время, до наступления которого уведомления в диалоге были отключены
+     *     (Unix-время в миллисекундах).
      */
     public function getMutedUntilRaw(): int
     {
         return $this->data['muted_until'];
+    }
+
+    /**
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['chat_id', 'user', 'muted_until'];
     }
 
     /**

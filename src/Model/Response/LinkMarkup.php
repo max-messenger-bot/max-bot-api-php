@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Представляет ссылку в тексте.
+ * Элемент разметки ссылки в тексте.
  *
- * В тексте комментариев гиперссылки не поддерживаются.
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/text-formatting
  */
 class LinkMarkup extends MarkupElement
 {

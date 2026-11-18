@@ -18,7 +18,7 @@
 ```php
 use MaxMessenger\Bot\MaxBot;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
 // Проверяем запрос и читаем содержимое запроса из глобального контекста
 $body = $bot->readRequestContentFromGlobal();
@@ -50,7 +50,7 @@ use MaxMessenger\Bot\MaxBot;
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
 use MaxMessenger\Bot\Model\Response\MessageCreatedUpdate;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
 // Проверяем запрос и читаем содержимое запроса из глобального контекста
 $body = $bot->readRequestContentFromGlobal();
@@ -58,18 +58,15 @@ $body = $bot->readRequestContentFromGlobal();
 // Декодируем JSON-запрос и получаем из него Update
 $update = MaxBot::makeUpdateFromString($body);
 
-// Проверяем тип события
-if ($update instanceof MessageCreatedUpdate) {
-    // Сообщения может не быть, если событие относится к объекту, который не поддерживается MAX API
+// Проверяем тип события и наличие обязательных полей, включая message
+if ($update instanceof MessageCreatedUpdate && $update->isValid()) {
     $receivedMessage = $update->getMessage();
 
-    if ($receivedMessage !== null) {
-        // Пишем ответ
-        $chatId = $receivedMessage->getRecipient()->getChatId();
-        $mid = $receivedMessage->getBody()->getMid();
-        $message = NewMessageBody::make('Ваше сообщение получено')->setReplyLink($mid);
-        $bot->apiClient->sendMessageToChat($chatId, $message);
-    }
+    // Пишем ответ
+    $chatId = $receivedMessage->getRecipient()->getChatId();
+    $mid = $receivedMessage->getBody()->getMid();
+    $message = NewMessageBody::make('Ваше сообщение получено')->setReplyLink($mid);
+    $bot->apiClient->sendMessageToChat($chatId, $message);
 }
 ```
 
@@ -79,21 +76,26 @@ if ($update instanceof MessageCreatedUpdate) {
 use MaxMessenger\Bot\MaxBot;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
 // Проверяем запрос и читаем содержимое запроса из глобального контекста
 $body = $bot->readRequestContentFromGlobal();
 
-// Декодируем JSON-запрос и получаем из него Event
-$event = $bot->makeEvent(MaxBot::makeUpdateFromString($body));
+// Декодируем JSON-запрос и проверяем обновление до создания события
+$update = MaxBot::makeUpdateFromString($body);
+$event = $bot->getUpdateFilter()?->__invoke($update) !== false
+    ? $bot->makeEvent($update)
+    : null;
 
-// Проверяем тип события и наличие сообщения: событие может прийти без него,
-// если относится к объекту, который не поддерживается MAX API
-if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
+// Проверяем тип события
+if ($event instanceof MessageCreatedEvent) {
     // Пишем ответ
     $event->reply('Ваше сообщение получено', true);
 }
 ```
+
+При ручном создании события фильтр вызывается явно. По умолчанию он проверяет обязательные поля обновления,
+включая `message` у событий сообщений. Подробнее — [фильтрация обновлений](ProcessingUpdates.md#фильтрация-обновлений).
 
 **Та же функциональность с использованием бота:**
 
@@ -101,11 +103,11 @@ if ($event instanceof MessageCreatedEvent && $event->hasMessage()) {
 use MaxMessenger\Bot\MaxBot;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
 // Добавляем обработчик нужного типа события
 $bot->onMessageCreated(function (MessageCreatedEvent $event): void {
-    // Пишем ответ. Если сообщения в событии нет, обработчик прервётся сам
+    // Пишем ответ.
     $event->reply('Ваше сообщение получено', true);
 });
 
@@ -119,7 +121,7 @@ $bot->handleFromGlobal();
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Model\Request\SubscriptionRequestBody;
 
-$apiClient = new MaxApiClient('your-access-token');
+$apiClient = new MaxApiClient('your-access-token', useRussianTrustedCaCertificates: true);
 
 $apiClient->subscribe(SubscriptionRequestBody::make($url, 'your-secret'));
 ```

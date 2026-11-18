@@ -10,6 +10,8 @@ use function array_key_exists;
 
 /**
  * Запрос на редактирование информации о чате.
+ *
+ * @link https://dev.max.ru/docs-api/methods/PATCH/chats/-chatId-/
  */
 final class ChatPatch extends BaseRequestModel
 {
@@ -33,7 +35,7 @@ final class ChatPatch extends BaseRequestModel
      * @param non-empty-string|null $title Название чата (maxLength: 200).
      * @param string|null $description Новое описание чата или канала (maxLength: 16000).
      *     Чтобы удалить описание, передайте пустую строку.
-     * @param non-empty-string|null $pin ID сообщения для закрепления в чате или канале
+     * @param non-empty-string|null $pin Идентификатор сообщения для закрепления в чате или канале
      *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
      *     Чтобы удалить закреплённое сообщение, используйте метод {@see MaxApiClient::unpinMessage()}.
      * @param bool $notify Если `true`, участники получат системное уведомление об изменении.
@@ -117,7 +119,7 @@ final class ChatPatch extends BaseRequestModel
      * @param non-empty-string|null $title Название чата (maxLength: 200).
      * @param string|null $description Новое описание чата или канала (maxLength: 16000).
      *     Чтобы удалить описание, передайте пустую строку.
-     * @param non-empty-string|null $pin ID сообщения для закрепления в чате или канале
+     * @param non-empty-string|null $pin Идентификатор сообщения для закрепления в чате или канале
      *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
      *     Чтобы удалить закреплённое сообщение, используйте метод {@see MaxApiClient::unpinMessage()}.
      * @param bool $notify Если `true`, участники получат системное уведомление об изменении.
@@ -138,7 +140,7 @@ final class ChatPatch extends BaseRequestModel
      * @param non-empty-string|null $title Название чата (maxLength: 200).
      * @param string|null $description Новое описание чата или канала (maxLength: 16000).
      *     Чтобы удалить описание, передайте пустую строку.
-     * @param non-empty-string|null $pin ID сообщения для закрепления в чате или канале
+     * @param non-empty-string|null $pin Идентификатор сообщения для закрепления в чате или канале
      *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
      *     Чтобы удалить закреплённое сообщение, используйте метод {@see MaxApiClient::unpinMessage()}.
      * @param bool $notify Если `true`, участники получат системное уведомление об изменении.
@@ -191,14 +193,14 @@ final class ChatPatch extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $pin ID сообщения для закрепления в чате или канале
+     * @param non-empty-string $pin Идентификатор сообщения для закрепления в чате или канале
      *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
      *     Чтобы удалить закреплённое сообщение, используйте метод {@see MaxApiClient::unpinMessage()}.
      * @return $this
      */
     public function setPin(string $pin): self
     {
-        self::validateString('pin', $pin, minLength: 1, pattern: '/^mid\.[a-zA-Z0-9_\-]+$/');
+        self::validateMid('pin', $pin);
 
         $this->data['pin'] = $pin;
 
@@ -218,6 +220,9 @@ final class ChatPatch extends BaseRequestModel
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function unsetDescription(): self
     {
         unset($this->data['description']);
@@ -225,6 +230,9 @@ final class ChatPatch extends BaseRequestModel
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function unsetIcon(): self
     {
         unset($this->data['icon']);
@@ -232,6 +240,9 @@ final class ChatPatch extends BaseRequestModel
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function unsetPin(): self
     {
         unset($this->data['pin']);
@@ -239,6 +250,9 @@ final class ChatPatch extends BaseRequestModel
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function unsetTitle(): self
     {
         unset($this->data['title']);

@@ -7,6 +7,6 @@ namespace MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http;
 use MaxMessenger\Bot\HttpClient\Exception\TemporaryExceptionInterface;
 
 /**
- * Внутренняя ошибка сервера.
+ * Внутренняя ошибка сервера (HTTP 500).
  */
 final class InternalHttpException extends HttpException implements TemporaryExceptionInterface {}

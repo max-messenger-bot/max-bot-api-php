@@ -13,19 +13,25 @@ final readonly class StringBody implements BodyInterface
 {
     /**
      * @param string $body Содержимое тела запроса.
-     * @param non-empty-string|null $contentType Значение заголовка `Content-Type`.
+     * @param non-empty-string $contentType Значение заголовка `Content-Type`.
      */
     public function __construct(
         private string $body,
-        private ?string $contentType = null,
+        private string $contentType,
     ) {}
 
+    /**
+     * @return string Содержимое тела запроса.
+     */
     public function getBody(): string
     {
         return $this->body;
     }
 
-    public function getContentType(): ?string
+    /**
+     * @return non-empty-string Значение заголовка `Content-Type`.
+     */
+    public function getContentType(): string
     {
         return $this->contentType;
     }

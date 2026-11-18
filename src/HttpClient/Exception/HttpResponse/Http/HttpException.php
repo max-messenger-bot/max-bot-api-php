@@ -25,7 +25,11 @@ abstract class HttpException extends HttpResponseException
         HttpResponseInterface $response,
         public readonly ?Error $error = null,
     ) {
-        parent::__construct($this->error?->getMessage() ?? $response->getBody(), $request, $response);
+        parent::__construct(
+            $this->error?->getMessage() ?? 'HTTP error ' . $response->getHttpCode(),
+            $request,
+            $response,
+        );
     }
 
     /**
@@ -50,6 +54,8 @@ abstract class HttpException extends HttpResponseException
         ?Error $error = null,
     ): never {
         throw match ($response->getHttpCode()) {
+            200 => new OkException($request, $response, $error),
+            201 => new PartialUploadException($request, $response, $error),
             400 => new BadRequestException($request, $response, $error),
             401 => new UnauthorizedException($request, $response, $error),
             403 => new ForbiddenException($request, $response, $error),
@@ -58,6 +64,8 @@ abstract class HttpException extends HttpResponseException
             406 => new NotAcceptableException($request, $response, $error),
             407 => new ProxyAuthenticationRequiredException($request, $response, $error),
             415 => new UnsupportedMediaTypeException($request, $response, $error),
+            416 => new RangeNotSatisfiableException($request, $response, $error),
+            422 => new UnprocessableEntityException($request, $response, $error),
             429 => new TooManyRequestsException($request, $response, $error),
             500 => new InternalHttpException($request, $response, $error),
             501 => new NotImplementedException($request, $response, $error),

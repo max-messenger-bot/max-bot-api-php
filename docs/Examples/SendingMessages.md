@@ -69,7 +69,15 @@ $message = NewMessageBody::new()
 $apiClient->sendMessageToUser($userId, $message);
 ```
 
+Для заголовка в Markdown используйте `# Заголовок`, а в HTML — `<h1>Заголовок</h1>`.
+
+В конце Markdown-цитаты должна быть завершающая пустая строка (`"> Цитата\n\nСледующий текст"`);
+сервер убирает её из `body.text` ответа. В HTML цитату завершает `</blockquote>`, без пустой строки.
+Клиент показывает цитату, хотя в проверенных ответах сервер не вернул `quote` в `body.markup`.
+
 > Для отправки ссылки на пользователя, необходимо указать реальное имя как в профиле, иначе ссылки не будет.
+
+[Документация по форматированию текста](https://dev.max.ru/docs-api/use-cases/sending-messages/text-formatting/)
 
 ## Отправка сообщений используя событие бота
 
@@ -91,8 +99,8 @@ $event->reply('Сообщение получено', true);
 $event->apiClient->sendMessageToChat($event->getChatId(), 'Привет');
 ```
 
-> Если событие относится к объекту, который не поддерживается MAX API, сообщения в нём нет
-> и `getChatId()` прерывает обработку события через `BaseEvent::continue()`.
+> Если событие относится к объекту, который не поддерживается MAX API, сообщения в нём нет.
+> Такие обновления отбрасываются до обработчиков [фильтром обновлений](../ProcessingUpdates.md#фильтрация-обновлений).
 
 ## Реакции на события бота
 
@@ -100,6 +108,7 @@ $event->apiClient->sendMessageToChat($event->getChatId(), 'Привет');
 
 - `$event->sendMessageToChat($message, $disableLinkPreview = false)`
     - **BotAddedToChatEvent**
+    - **BotAdminPermissionsChangedEvent**
     - **BotStartedEvent**
     - **ChatTitleChangedEvent**
     - **DialogClearedEvent**
@@ -123,7 +132,7 @@ $event->apiClient->sendMessageToChat($event->getChatId(), 'Привет');
     - **MessageCallbackEvent**
     - **MessageCreatedEvent**
     - **MessageEditedEvent**
-- `$event->answer($message)`
+- `$event->answer($message, $disableLinkPreview = false)`
     - **MessageCallbackEvent**
 - `$event->deleteMessage();`
     - **MessageCallbackEvent**

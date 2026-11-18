@@ -8,11 +8,13 @@ use function array_key_exists;
 
 /**
  * Запрос на закрепление сообщения в чате или канале.
+ *
+ * @link https://dev.max.ru/docs-api/methods/PUT/chats/-chatId-/pin/
  */
 final class PinMessageBody extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{
@@ -24,7 +26,7 @@ final class PinMessageBody extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $messageId ID сообщения, которое нужно закрепить
+     * @param non-empty-string|null $messageId Идентификатор сообщения, которое нужно закрепить
      *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$'). Соответствует полю `Message.body.mid`.
      * @param bool $notify Если `true`, участники получат уведомление с системным сообщением о закреплении.
      */
@@ -57,8 +59,8 @@ final class PinMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $messageId ID сообщения, которое нужно закрепить (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
-     *     Соответствует полю `Message.body.mid`.
+     * @param non-empty-string $messageId Идентификатор сообщения, которое нужно закрепить
+     *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$'). Соответствует полю `Message.body.mid`.
      * @param bool $notify Если `true`, участники получат уведомление с системным сообщением о закреплении.
      */
     public static function make(string $messageId, bool $notify = true): self
@@ -67,7 +69,7 @@ final class PinMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $messageId ID сообщения, которое нужно закрепить
+     * @param non-empty-string|null $messageId Идентификатор сообщения, которое нужно закрепить
      *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$'). Соответствует полю `Message.body.mid`.
      * @param bool $notify Если `true`, участники получат уведомление с системным сообщением о закреплении.
      */
@@ -77,13 +79,13 @@ final class PinMessageBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $messageId ID сообщения, которое нужно закрепить (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
-     *     Соответствует полю `Message.body.mid`.
+     * @param non-empty-string $messageId Идентификатор сообщения, которое нужно закрепить
+     *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$'). Соответствует полю `Message.body.mid`.
      * @return $this
      */
     public function setMessageId(string $messageId): self
     {
-        self::validateString('messageId', $messageId, minLength: 1, pattern: '/^mid\.[a-zA-Z0-9_\-]+$/');
+        self::validateMid('messageId', $messageId);
 
         $this->data['message_id'] = $messageId;
 

@@ -10,12 +10,13 @@ namespace MaxMessenger\Bot\Contract\Http;
 interface BodyInterface
 {
     /**
-     * @return string Содержимое тела запроса.
+     * @return StreamInterface|string Содержимое тела запроса: строка или поток,
+     *     из которого клиент читает данные порциями.
      */
-    public function getBody(): string;
+    public function getBody(): StreamInterface|string;
 
     /**
-     * @return non-empty-string|null Значение заголовка `Content-Type`. `null`, если заголовок не нужен.
+     * @return non-empty-string Значение заголовка `Content-Type`.
      */
-    public function getContentType(): ?string;
+    public function getContentType(): string;
 }

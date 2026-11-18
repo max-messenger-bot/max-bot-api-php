@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Dev;
 
+use Illuminate\Http\Request as IlluminateRequest;
 use MaxMessenger\Bot\Exception\SimpleQueryError;
-use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Model\Response\Update;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Throwable;
 
 use function ctype_digit;
@@ -15,6 +16,7 @@ use function dirname;
 use function fclose;
 use function fwrite;
 use function is_dir;
+use function is_executable;
 use function is_resource;
 use function json_encode;
 use function ltrim;
@@ -34,13 +36,35 @@ use function substr;
  *
  * Получает события через Long Polling и передаёт их скрипту-обработчику
  * через php-cgi, эмулируя входящий Webhook-запрос.
+ *
+ * @psalm-cli-only
  */
 final class PollingToWebhook
 {
-    private const CONFIG_NAME = '.polling-to-webhook.conf';
+    private const CONFIG_NAME = '.max-polling-to-webhook.conf';
 
+    /**
+     * Получает обновления через Long Polling и передаёт их Webhook-обработчику.
+     */
     public static function main(): void
     {
+        Utils::handleHelp(
+            'polling-to-webhook',
+            "Получает события через Long Polling и передаёт каждое скрипту-обработчику через php-cgi,\n"
+            . "эмулируя входящий Webhook-запрос.\n\n"
+            . 'Конфигурация читается из файла ' . self::CONFIG_NAME . " в корне проекта или в его папке dev/.\n"
+            . "Параметры:\n"
+            . "  MAXBOT_ACCESS_TOKEN  токен доступа (необязателен, иначе запрашивается интерактивно)\n"
+            . "  SCRIPT_FILENAME      полный путь к скрипту-обработчику\n"
+            . "  DOCUMENT_ROOT        корневая папка сайта со скриптом-обработчиком\n"
+            . "  BIN                  путь к php-cgi (необязателен, если он рядом с текущим PHP)\n"
+            . "  MAXBOT_SECRET        значение заголовка X-Max-Bot-Api-Secret\n"
+            . "  REQUEST_URI          адрес запроса (по умолчанию путь скрипта относительно DOCUMENT_ROOT)\n"
+            . "  HTTP_HOST            заголовок Host (по умолчанию localhost)\n"
+            . "  SCHEME               http или https (по умолчанию http)\n"
+            . '  REMOTE_ADDR          IP-адрес отправителя (по умолчанию 127.0.0.1)',
+        );
+
         $candidates = self::configCandidates();
         [$configPath, $config] = Utils::loadConfigFromFiles($candidates);
 
@@ -50,7 +74,7 @@ final class PollingToWebhook
         }
 
         $script = $config['SCRIPT_FILENAME'] ?? null;
-        $bin = $config['BIN'] ?? null;
+        $bin = $config['BIN'] ?? self::findPhpCgi();
         $secret = $config['MAXBOT_SECRET'] ?? null;
         $documentRoot = $config['DOCUMENT_ROOT'] ?? null;
 
@@ -60,7 +84,7 @@ final class PollingToWebhook
         }
 
         if ($bin === null) {
-            fwrite(STDERR, sprintf("❌ Параметр BIN не задан в %s\n", $configPath));
+            fwrite(STDERR, sprintf("❌ php-cgi не найден. Укажите BIN в %s\n", $configPath));
             exit(1);
         }
 
@@ -85,14 +109,9 @@ final class PollingToWebhook
             str_replace('\\', '/', $script),
             rtrim(str_replace('\\', '/', $documentRoot), '/') . '/',
         )) {
-            fwrite(
-                STDERR,
-                sprintf(
-                    "❌ Скрипт-обработчик должен находиться внутри DOCUMENT_ROOT:\n   SCRIPT_FILENAME: %s\n   DOCUMENT_ROOT  : %s\n",
-                    $script,
-                    $documentRoot,
-                ),
-            );
+            $msg = "❌ Скрипт-обработчик должен находиться внутри DOCUMENT_ROOT:\n"
+                . "   SCRIPT_FILENAME: %s\n   DOCUMENT_ROOT  : %s\n";
+            fwrite(STDERR, sprintf($msg, $script, $documentRoot));
             exit(1);
         }
 
@@ -107,7 +126,7 @@ final class PollingToWebhook
         echo "\nНажмите Ctrl+C для остановки\n";
         Utils::printLine(true);
 
-        $client = new MaxApiClient($accessToken);
+        $client = Utils::createApiClient($accessToken);
         $marker = null;
 
         while (true) {
@@ -139,11 +158,12 @@ final class PollingToWebhook
      * Собирает переменные CGI-окружения запроса.
      *
      * Окружение достаточно для фреймворков, создающих объект запроса из глобального контекста
-     * (например `Illuminate\Http\Request::capture()` или
-     * `Symfony\Component\HttpFoundation\Request::createFromGlobals()`).
+     * (например, через {@see IlluminateRequest::capture()} или {@see SymfonyRequest::createFromGlobals()}).
      *
      * @param string $script Полный путь к скрипту-обработчику.
      * @param string $documentRoot Корневая папка сайта, в которой лежит скрипт-обработчик.
+     * @param string $secret Секретный ключ для заголовка `X-Max-Bot-Api-Secret`.
+     * @param int $contentLength Размер тела запроса в байтах.
      * @param array<string, string> $config Конфигурация: `REQUEST_URI`, `HTTP_HOST`, `SCHEME`, `REMOTE_ADDR`.
      * @return array<string, string> Переменные окружения для php-cgi.
      * @internal
@@ -248,6 +268,26 @@ final class PollingToWebhook
         proc_close($process);
     }
 
+    private static function findPhpCgi(): ?string
+    {
+        $extension = DIRECTORY_SEPARATOR === '\\' ? '.exe' : '';
+        $names = [
+            'php-cgi' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . $extension,
+            'php-cgi' . $extension,
+        ];
+
+        foreach ([dirname(PHP_BINARY), PHP_BINDIR] as $directory) {
+            foreach ($names as $name) {
+                $candidate = $directory . DIRECTORY_SEPARATOR . $name;
+                if (is_executable($candidate)) {
+                    return $candidate;
+                }
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Путь скрипта-обработчика относительно корневой папки сайта.
      *
@@ -269,7 +309,7 @@ final class PollingToWebhook
         $example = dirname(__DIR__, 2) . '/dev/' . self::CONFIG_NAME . '.example';
         $projectRoot = Utils::projectRoot();
 
-        fwrite(STDERR, "❌ Конфиг polling-to-webhook не найден.\n\n");
+        fwrite(STDERR, "❌ Конфиг .max-polling-to-webhook.conf не найден.\n\n");
         fwrite(STDERR, "Искал в:\n");
         foreach ($candidates as $candidate) {
             fwrite(STDERR, sprintf("  • %s\n", $candidate));

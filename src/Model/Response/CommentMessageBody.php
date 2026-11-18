@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Информация о комментарии.
+ *
+ * @link https://dev.max.ru/docs-api/objects/CommentMessage/
  */
 class CommentMessageBody extends BaseResponseModel
 {
@@ -35,7 +37,7 @@ class CommentMessageBody extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Уникальный ID комментария.
+     * @return non-empty-string Уникальный идентификатор комментария.
      */
     public function getMid(): string
     {
@@ -43,7 +45,7 @@ class CommentMessageBody extends BaseResponseModel
     }
 
     /**
-     * @return int Порядковый номер расположения комментария в посте.
+     * @return int Порядковый идентификатор сообщения в чате.
      */
     public function getSeq(): int
     {

@@ -2,251 +2,209 @@
 
 ## Введение
 
-**Callback-события** возникают при нажатии пользователями интерактивных кнопок в сообщениях бота. Эти кнопки могут быть
-добавлены к сообщениям с использованием различных типов кнопок (callback, keyboard и др.).
+Callback-события — это события нажатия пользователем callback-кнопки во встроенной клавиатуре сообщения.
+Обработчик получает объект `MessageCallbackEvent`, имя действия и payload.
 
-Для упрощения обработки **Callback-событий** (нажатий кнопок) написаны отдельные вспомогательные
-классы [CallbackHandler](../src/MaxBot/CallbackHandler.php)
-и [CallbackJsonHandler](../src/MaxBot/CallbackJsonHandler.php), а также реализованы методы
-`MaxBot::addCallbackHandler()` и `MaxBot::addCallbackJsonHandler()`.
+Для обработки действий используются классы [CallbackHandler](../src/MaxBot/CallbackHandler.php)
+и [CallbackJsonHandler](../src/MaxBot/CallbackJsonHandler.php), а также методы `MaxBot`:
 
-**Связанная документация:**
+- `onMessageCallback()` — регистрация обработчика события нажатия кнопки;
+- `getCallbackHandler()` — получение основного обработчика действий кнопок с текстовым payload;
+- `getCallbackJsonHandler()` — получение основного обработчика действий кнопок с JSON-payload;
+- `onCallback()` и `onCallbackJson()` — регистрация отдельного действия.
+
+Связанная документация:
 
 - [Примеры обработки нажатий кнопок](Examples/ProcessingCallbacks.md)
 - [Примеры обработки событий бота](Examples/ProcessingEvents.md)
 - [Обработка событий бота](ProcessingEvents.md)
+- [API-клиент](ApiClient.md)
 
-## CallbackHandler
+## Получение обработчиков
 
-Класс `CallbackHandler` предназначен для обработки простых callback-действий с текстовой полезной нагрузкой.
+Метод `getCallbackHandler()` возвращает основной обработчик `CallbackHandler`.
+При первом вызове он создаёт и регистрирует его через `onMessageCallback()`,
+сохраняя экземпляр для последующих вызовов `getCallbackHandler()` и `onCallback()`.
 
-### Получение через MaxBot
+Метод `getCallbackJsonHandler()` возвращает основной обработчик `CallbackJsonHandler`.
+При первом вызове он создаёт и регистрирует его через `onMessageCallback()`,
+сохраняя экземпляр для последующих вызовов `getCallbackJsonHandler()` и `onCallbackJson()`.
 
-Вы можете самостоятельно создать объект класса `CallbackHandler` и зарегистрировать его как получатель событий «новый
-Callback». Но также Вы можете воспользоваться методом `MaxBot::addCallbackHandler()`. Данный метод создаёт новый
-экземпляр класса и регистрирует его обработчиком события `новый Callback`. При повторном вызове будет возвращён новый
-экземпляр.
+Настройки основных обработчиков изменяются через их сеттеры.
 
-```php
-use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
+### CallbackHandler
 
-$bot = new MaxBot('your-access-token', 'your-secret');
-
-// Создание обработчика с разделителем действия и данных
-$callbackHandler = $bot->addCallbackHandler(actionSeparator: ' ', actionMaxLength: 128);
-
-// Регистрация обработчика конкретного действия
-$callbackHandler->onAction('buy', function (MessageCallbackEvent $event): bool {
-    $action = $event->userData['__action'];     // 'buy'
-    $payload = $event->userData['__payload'];   // Данные после разделителя
-
-    // Обработка действия...
-
-    return true; // Отмечаем событие как обработанное
-});
-```
-
-### Методы CallbackHandler
-
-#### onAction
-
-Регистрирует обработчик для конкретного действия.
-
-**Параметры:**
-
-| Параметр   | Тип                                           | Описание             |
-|------------|-----------------------------------------------|----------------------|
-| `$name`    | `non-empty-string`                            | Имя действия.        |
-| `$handler` | `Closure(MessageCallbackEvent): (bool\|void)` | Обработчик действия. |
-
-**Возвращает:** `$this`
-
-#### setActionSeparator
-
-Устанавливает разделитель между действием и полезной нагрузкой.
-
-**Параметры:**
-
-| Параметр           | Тип                      | Описание                       |
-|--------------------|--------------------------|--------------------------------|
-| `$actionSeparator` | `non-empty-string\|null` | Разделитель действия и данных. |
-
-**Возвращает:** `$this`
-
-#### setActionMaxLength
-
-Устанавливает максимальную длину имени действия.
-
-**Параметры:**
-
-| Параметр           | Тип            | Описание                                                          |
-|--------------------|----------------|-------------------------------------------------------------------|
-| `$actionMaxLength` | `positive-int` | Максимальная длина действия в символах UTF-8. По умолчанию: `64`. |
-
-**Возвращает:** `$this`
-
-#### getActionSeparator
-
-Возвращает текущий разделитель действий.
-
-**Возвращает:** `non-empty-string\|null`
-
-#### getActionMaxLength
-
-Возвращает текущую максимальную длину действия.
-
-**Возвращает:** `positive-int`
-
-## CallbackJsonHandler
-
-Класс `CallbackJsonHandler` предназначен для обработки callback-действий с полезной нагрузкой в формате JSON.
-
-### Получение через MaxBot
-
-Вы можете самостоятельно создать объект класса `CallbackJsonHandler` и зарегистрировать его как получатель событий
-«новый Callback». Но также Вы можете воспользоваться методом `MaxBot::addCallbackJsonHandler()`. Данный метод создаёт
-новый экземпляр класса и регистрирует его обработчиком события «новый Callback». При повторном вызове будет возвращён
-новый экземпляр.
+`CallbackHandler` обрабатывает текстовые действия.
+Разделитель имени действия и payload можно настроить через `setActionSeparator()`.
 
 ```php
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
-// Создание обработчика с JSON-payload
-// Ожидается payload вида: {"action": "buy", "productId": 123}
-$callbackHandler = $bot->addCallbackJsonHandler(actionKey: 'action');
-
-$callbackHandler->onAction('buy', function (MessageCallbackEvent $event): bool {
-    $action = $event->userData['__action'];     // 'buy'
-    $payload = $event->userData['__payload'];   // ['action' => 'buy', 'productId' => 123]
-    $productId = $payload['productId'] ?? null;
-
-    // Обработка действия...
-
-    return true; // Отмечаем событие как обработанное
-});
+$callbackHandler = $bot->getCallbackHandler()->setActionSeparator(':');
 ```
 
-### Методы CallbackJsonHandler
-
-#### onAction
-
-Регистрирует обработчик для конкретного действия.
-
-**Параметры:**
-
-| Параметр   | Тип                                           | Описание                                           |
-|------------|-----------------------------------------------|----------------------------------------------------|
-| `$name`    | `non-empty-string`                            | Имя действия (значение ключа `$actionKey` в JSON). |
-| `$handler` | `Closure(MessageCallbackEvent): (bool\|void)` | Обработчик действия.                               |
-
-**Возвращает:** `$this`
-
-#### setActionMaxLength
-
-Устанавливает максимальную длину имени действия.
-
-**Параметры:**
-
-| Параметр           | Тип            | Описание                                                          |
-|--------------------|----------------|-------------------------------------------------------------------|
-| `$actionMaxLength` | `positive-int` | Максимальная длина действия в символах UTF-8. По умолчанию: `64`. |
-
-**Возвращает:** `$this`
-
-#### getActionKey
-
-Возвращает имя ключа, используемого для извлечения действия из JSON.
-
-**Возвращает:** `non-empty-string`
-
-#### getActionMaxLength
-
-Возвращает текущую максимальную длину действия.
-
-**Возвращает:** `positive-int`
-
-## Особенности обработки Callback-событий
-
-### Имя действия и полезная нагрузка
-
-#### CallbackHandler
-
-Класс `CallbackHandler` может работать как с полезной нагрузкой, так и без неё. Для активации возможности работы с
-полезной нагрузкой необходимо установить в свойство `$callbackHandler->actionSeparator` строку-разделитель действия и
-полезной нагрузки.
+Отдельный обработчик создайте и зарегистрируйте через `onMessageCallback()`:
 
 ```php
-$callbackHandler->setActionSeparator(':');
+use MaxMessenger\Bot\MaxBot\CallbackHandler;
 
-// При нажатии кнопки с payload "buy:product_123":
-// - $event->userData['__action'] = 'buy'
-// - $event->userData['__payload'] = 'product_123'
+$callbackHandler = new CallbackHandler(actionSeparator: ':');
+$bot->onMessageCallback($callbackHandler->handle(...));
 ```
 
-Если payload начинаетсяся с `{`, обработчик пропускает событие (предполагается, что это JSON и должен использоваться
-`CallbackJsonHandler`).
+### CallbackJsonHandler
 
-#### CallbackJsonHandler
+`CallbackJsonHandler` обрабатывает JSON-payload. Ключ JSON-поля с именем действия по умолчанию — `action`.
+Для изменения ключа используйте `setActionKey()`.
 
-Класс `CallbackJsonHandler` позволяет работать с `payload` в JSON-формате. Данный класс ожидает в конструкторе имя
-ключа, в котором будет храниться действие.
+```php
+$callbackJsonHandler = $bot->getCallbackJsonHandler()->setActionKey('cmd');
+```
+
+Отдельный обработчик создайте и зарегистрируйте через `onMessageCallback()`:
 
 ```php
 use MaxMessenger\Bot\MaxBot\CallbackJsonHandler;
 
-$callbackHandler = new CallbackJsonHandler(actionKey: 'action');
-
-// При нажатии кнопки с payload '{"action": "start", "data": "value"}':
-// - $event->userData['__action'] = 'start'
-// - $event->userData['__payload'] = ['action' => 'start', 'data' => 'value']
+$callbackJsonHandler = new CallbackJsonHandler(actionKey: 'cmd');
+$bot->onMessageCallback($callbackJsonHandler->handle(...));
 ```
 
-Если payload не является валидным JSON или не содержит указанный ключ, обработчик пропускает событие.
+## Регистрация обработчиков
 
-#### userData
+Методы `MaxBot::onCallback()` и `MaxBot::onCallbackJson()` используют текущий обработчик своего типа
+и возвращают `MaxBot`. Методы `CallbackHandler::onAction()` и `CallbackJsonHandler::onAction()`
+регистрируют действия напрямую и возвращают объект обработчика.
 
-Оба класса записывают в `userData` 2 значения:
+| Метод                             | Параметры                                      | Возвращает |
+|-----------------------------------|------------------------------------------------|------------|
+| `MaxBot::onCallback()`            | `$name: non-empty-string`, `$handler: Closure` | `$this`    |
+| `MaxBot::onCallbackJson()`        | `$name: non-empty-string`, `$handler: Closure` | `$this`    |
+| `CallbackHandler::onAction()`     | `$name: non-empty-string`, `$handler: Closure` | `$this`    |
+| `CallbackJsonHandler::onAction()` | `$name: non-empty-string`, `$handler: Closure` | `$this`    |
 
-| Ключ                            | Тип                   | Описание                                                                            |
-|---------------------------------|-----------------------|-------------------------------------------------------------------------------------|
-| `$event->userData['__action']`  | `string\|null`        | Имя извлечённого действия.                                                          |
-| `$event->userData['__payload']` | `string\|array\|null` | Полезная нагрузка (строка для `CallbackHandler`, массив для `CallbackJsonHandler`). |
+Имя действия `$name` должно совпадать с именем в текстовом payload или значением выбранного JSON-поля.
 
-**Имя действия** по умолчанию ограничено **64** символами в кодировке UTF-8. Действия длиннее этого значения обработаны
-не будут. Однако Вы можете изменить это значение, изменив параметр `$callbackHandler->actionMaxLength`.
+### Текстовые действия
+
+```php
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
+
+$bot->onCallback('buy', static function (MessageCallbackEvent $event, string $action, ?string $payload): void {
+    // Для `buy:product_123`: $action === 'buy', $payload === 'product_123'.
+});
+```
+
+Регистрация напрямую через `CallbackHandler` использует ту же сигнатуру:
+
+```php
+$callbackHandler->onAction('buy', static function (
+    MessageCallbackEvent $event,
+    string $action,
+    ?string $payload,
+): void {
+    // Обработка действия с текстовыми данными.
+});
+```
+
+### JSON-действия
+
+```php
+$bot->onCallbackJson('buy', static function (MessageCallbackEvent $event, string $action, array $payload): void {
+    // Для `{"action":"buy","productId":123}`: $action === 'buy', $payload['productId'] === 123.
+});
+```
+
+Регистрация напрямую через `CallbackJsonHandler` использует ту же сигнатуру:
+
+```php
+$callbackJsonHandler->onAction('buy', static function (
+    MessageCallbackEvent $event,
+    string $action,
+    array $payload,
+): void {
+    // Обработка действия с данными из JSON.
+});
+```
+
+## Аргументы обработчика
+
+Каждый обработчик получает три аргумента в следующем порядке:
+
+| Аргумент   | Тип                                         | Описание                        |
+|------------|---------------------------------------------|---------------------------------|
+| `$event`   | `MessageCallbackEvent`                      | Событие нажатия callback-кнопки |
+| `$action`  | `string`                                    | Имя действия                    |
+| `$payload` | `string\|null` для текста, `array` для JSON | Дополнительные данные действия  |
+
+Для текстовых действий payload содержит текст после разделителя. Если разделителя нет в настройках или
+в данных кнопки, payload равен `null`. Пустая строка после разделителя передаётся как `''`.
+
+Для JSON-действий payload содержит весь декодированный массив, включая поле с именем действия.
+
+### Доступ через `userData`
+
+Для доступа к тем же значениям из других обработчиков события они также записываются в `userData`:
+
+| Ключ                            | Тип                   | Описание         |
+|---------------------------------|-----------------------|------------------|
+| `$event->userData['__action']`  | `string`              | Имя действия     |
+| `$event->userData['__payload']` | `string\|array\|null` | Payload действия |
+
+## Настройка обработчиков
+
+Параметры существующего обработчика изменяются его методами `set*()`. Методы `get*()` возвращают текущие настройки.
+
+### CallbackHandler
+
+| Метод                  | Параметры                                  | Возвращает               |
+|------------------------|--------------------------------------------|--------------------------|
+| `getActionSeparator()` | —                                          | `non-empty-string\|null` |
+| `setActionSeparator()` | `$actionSeparator: non-empty-string\|null` | `$this`                  |
+
+```php
+$callbackHandler->setActionSeparator(':');
+
+// Для кнопки с payload "buy:product_123" обработчик получит:
+// $action === 'buy', $payload === 'product_123'.
+```
+
+### CallbackJsonHandler
+
+| Метод            | Параметры                      | Возвращает         |
+|------------------|--------------------------------|--------------------|
+| `getActionKey()` | —                              | `non-empty-string` |
+| `setActionKey()` | `$actionKey: non-empty-string` | `$this`            |
+
+```php
+$callbackJsonHandler->setActionKey('cmd');
+
+// Для кнопки с payload {"cmd":"buy","productId":123} обработчик получит:
+// $action === 'buy', $payload === ['cmd' => 'buy', 'productId' => 123].
+```
+
+## Особенности обработки
+
+### Порядок обработки
+
+Обработчики callback-события вызываются в порядке регистрации. Внутри `CallbackHandler` или `CallbackJsonHandler`
+вызываются обработчики извлечённого имени действия, также в порядке регистрации.
+
+Текстовый обработчик пропускает payload, начинающийся с `{`.
+JSON-обработчик пропускает payload, который не является JSON-объектом или не содержит непустое строковое имя действия.
+Поэтому оба типа обработчиков можно зарегистрировать для одного бота.
 
 ### Статус события
 
-При обработке событий важно изменить статус **события** на «обработано», если Вы не хотите, чтобы Ваше **событие** было
-обработано другими обработчиками **событий**.
+Обработчик может вернуть `true`, чтобы отметить событие обработанным и остановить дальнейший обход,
+или `false`, чтобы продолжить обработку. При завершении без `return` событие по умолчанию считается обработанным.
+Если обработчик сам изменил статус через методы события, используется установленное им значение.
 
-Больше о статусах **событий** Вы можете прочитать в разделе [Обработка событий](ProcessingEvents.md).
+Подробнее — в [обработке событий бота](ProcessingEvents.md) и [обработке ошибок](HandlingErrorsInEventHandlers.md).
 
-```php
-$callbackHandler->onAction('buy', function (MessageCallbackEvent $event): bool {
-    // Обработка действия...
+### Ограничения
 
-    return true; // Отмечаем событие как обработанное
-});
-```
-
-### Отправка ответа на Callback
-
-После обработки callback-события Вы можете отправить ответ пользователю, используя методы события:
-
-```php
-$callbackHandler->onAction('buy', function (MessageCallbackEvent $event): bool {
-    // Обработка покупки...
-
-    // Отправка ответа с обновлением сообщения
-    $event->answer('✅ Товар добавлен в корзину!');
-
-    return true; // Отмечаем событие как обработанное
-});
-```
-
-Подробнее о методах ответа на Callback и статусах событий читайте в разделе [Обработка событий](ProcessingEvents.md).
+- Разделитель текстового действия по умолчанию не задан.
+- Имя JSON-действия должно быть непустой строкой.

@@ -16,8 +16,9 @@ final class FakePsrNetworkException extends RuntimeException implements NetworkE
     public function __construct(
         string $message,
         private readonly RequestInterface $request,
+        int $code = 0,
     ) {
-        parent::__construct($message);
+        parent::__construct($message, $code);
     }
 
     public function getRequest(): RequestInterface

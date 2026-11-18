@@ -10,8 +10,6 @@ use MaxMessenger\Bot\Model\Enum\MessageLinkType;
 use MaxMessenger\Bot\Model\Response\CommentLinkedMessage;
 use MaxMessenger\Bot\Model\Response\CommentMessage;
 use MaxMessenger\Bot\Model\Response\CommentMessageBody;
-use MaxMessenger\Bot\Model\Response\CommentMessageList;
-use MaxMessenger\Bot\Model\Response\SendCommentResult;
 use MaxMessenger\Bot\Model\Response\UserMentionMarkup;
 
 final class CommentMessageTest extends Unit
@@ -29,7 +27,6 @@ final class CommentMessageTest extends Unit
         self::assertSame('mid.post', $comment->getRecipient()->getPostId());
         self::assertNull($comment->getSender());
         self::assertNull($comment->getLink());
-        self::assertNull($comment->getUrl());
         self::assertNull($comment->getBody()->getMarkup());
     }
 
@@ -58,7 +55,7 @@ final class CommentMessageTest extends Unit
         self::assertSame('mid.parent', $parent->getMid());
     }
 
-    public function testCommentWithMarkupAndUrl(): void
+    public function testCommentWithMarkup(): void
     {
         $comment = CommentMessage::newFromData([
             'recipient' => ['chat_id' => 100, 'chat_type' => 'channel', 'post_id' => 'mid.post'],
@@ -69,10 +66,7 @@ final class CommentMessageTest extends Unit
                 'text' => 'комментарий',
                 'markup' => [['type' => 'user_mention', 'from' => 0, 'length' => 5, 'user_id' => 200]],
             ],
-            'url' => 'https://max.ru/channel/AaBk496dDXA',
         ]);
-
-        self::assertSame('https://max.ru/channel/AaBk496dDXA', $comment->getUrl());
 
         $markup = $comment->getBody()->getMarkup();
         self::assertNotNull($markup);
@@ -95,23 +89,22 @@ final class CommentMessageTest extends Unit
         self::assertTrue($comment->getSender()?->isBot());
     }
 
-    public function testList(): void
+    public function testCommentWithStat(): void
     {
-        $list = CommentMessageList::newFromData(['messages' => [self::commentData(), self::commentData()]]);
+        $comment = CommentMessage::newFromData(self::commentData() + ['stat' => ['views' => 12]]);
+        $stat = $comment->getStat();
 
-        $comments = $list->getMessages();
-        self::assertCount(2, $comments);
-        self::assertSame('mid.comment', $comments[0]->getBody()->getMid());
-        self::assertSame($comments, $list->getMessages());
+        self::assertNotNull($stat);
+        self::assertSame(12, $stat->getViews());
+        self::assertSame($stat, $comment->getStat());
     }
 
-    public function testSendCommentResult(): void
+    public function testCommentWithoutStat(): void
     {
-        $result = SendCommentResult::newFromData(['message' => self::commentData()]);
+        $comment = CommentMessage::newFromData(self::commentData());
 
-        $comment = $result->getMessage();
-        self::assertSame('комментарий', $comment->getText());
-        self::assertSame($comment, $result->getMessage());
+        self::assertNull($comment->getStat());
+        self::assertNull($comment->getStat());
     }
 
     /**

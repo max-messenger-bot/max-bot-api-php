@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Результат запроса на изменение списка участников.
+ *
+ * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members/
  */
 class ModifyMembersResult extends SimpleQueryResult
 {
@@ -36,7 +38,8 @@ class ModifyMembersResult extends SimpleQueryResult
     }
 
     /**
-     * @return list<int>|null ID пользователей, которых не удалось добавить в групповой чат.
+     * @return list<int>|null Идентификаторы пользователей, которых не удалось добавить в групповой чат
+     *     или удалить из него.
      */
     public function getFailedUserIds(): ?array
     {

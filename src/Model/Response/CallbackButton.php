@@ -7,7 +7,10 @@ namespace MaxMessenger\Bot\Model\Response;
 /**
  * Callback-кнопка.
  *
- * После нажатия на такую кнопку клиент отправляет на сервер полезную нагрузку, которая содержит.
+ * После нажатия на такую кнопку клиент отправляет на сервер её полезную нагрузку.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 class CallbackButton extends Button
 {
@@ -20,7 +23,7 @@ class CallbackButton extends Button
     protected readonly array $data;
 
     /**
-     * @return non-empty-string Токен кнопки (maxLength: 1024).
+     * @return non-empty-string Данные кнопки (maxLength: 1024).
      */
     public function getPayload(): string
     {

@@ -76,11 +76,6 @@ final class MessageCallbackEventTest extends Unit
         self::assertSame('ru-RU', $this->createEvent(userLocale: 'ru-RU')->getUserLocale());
     }
 
-    public function testHasMessage(): void
-    {
-        self::assertTrue($this->createEvent()->hasMessage());
-    }
-
     public function testNoUserLocale(): void
     {
         self::assertNull($this->createEvent()->getUserLocale());
@@ -89,7 +84,7 @@ final class MessageCallbackEventTest extends Unit
     private function createEvent(?string $userLocale = null): MessageCallbackEvent
     {
         $message = [
-            'sender' => ['user_id' => 200, 'first_name' => 'Иван', 'is_bot' => false],
+            'sender' => ['user_id' => 300, 'first_name' => 'Бот', 'is_bot' => true],
             'recipient' => ['chat_id' => 100, 'chat_type' => 'dialog', 'user_id' => 200],
             'timestamp' => 1_700_000_000_000,
             'body' => ['mid' => 'mid.1', 'seq' => 1, 'text' => 'Привет'],
@@ -120,7 +115,7 @@ final class MessageCallbackEventTest extends Unit
 
     private function createEventWithHttp(FakeMaxHttpClient $http): MessageCallbackEvent
     {
-        $client = new MaxApiClient(new FakeMaxApiConfig($http));
+        $client = new MaxApiClient(new FakeMaxApiConfig(), httpClient: $http);
         $data = [
             'update_type' => 'message_callback',
             'timestamp' => 1_700_000_000_000,

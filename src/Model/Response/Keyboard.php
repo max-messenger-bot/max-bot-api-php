@@ -6,6 +6,9 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Клавиатура — это двумерный массив кнопок.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 class Keyboard extends BaseResponseModel
 {

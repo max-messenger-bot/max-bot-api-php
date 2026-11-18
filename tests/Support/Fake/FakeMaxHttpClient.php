@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Tests\Support\Fake;
 
+use Closure;
 use LogicException;
 use MaxMessenger\Bot\Contract\Http\HttpClientInterface;
 use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
+use Throwable;
 
 use function array_key_last;
+use function array_shift;
 
 /**
  * Фейковый HTTP-клиент для герметичных тестов: запоминает выполненные запросы
@@ -20,6 +23,15 @@ final class FakeMaxHttpClient implements MaxHttpClientInterface
      * @var list<array{method: string, path: string, body: object|null, query: array<string|int>|null}>
      */
     public array $calls = [];
+    public ?Closure $exceptionLogger = null;
+    /**
+     * @var list<Throwable> Исключения вместо ответа: по одному на очередной запрос.
+     */
+    public array $exceptions = [];
+    /**
+     * @var int|null Таймаут последнего вызова {@see getUpdates()} в миллисекундах.
+     */
+    public ?int $updatesTimeout = null;
 
     /**
      * @param array<string, mixed> $response
@@ -52,12 +64,16 @@ final class FakeMaxHttpClient implements MaxHttpClientInterface
     {
         $this->calls[] = ['method' => 'delete', 'path' => $path, 'body' => null, 'query' => $query];
 
+        $this->throwIfQueued();
+
         return $this->response;
     }
 
-    public function get(string $path, ?array $query = null, ?int $timeout = null): array
+    public function get(string $path, ?array $query = null): array
     {
         $this->calls[] = ['method' => 'get', 'path' => $path, 'body' => null, 'query' => $query];
+
+        $this->throwIfQueued();
 
         return $this->response;
     }
@@ -67,12 +83,34 @@ final class FakeMaxHttpClient implements MaxHttpClientInterface
         throw new LogicException('Not used in tests.');
     }
 
+    public function getHttpClientForUpdates(): HttpClientInterface
+    {
+        throw new LogicException('Not used in tests.');
+    }
+
+    public function getHttpClientForUploader(): HttpClientInterface
+    {
+        throw new LogicException('Not used in tests.');
+    }
+
+    public function getUpdates(string $path, ?array $query = null, ?int $timeout = null): array
+    {
+        $this->calls[] = ['method' => 'getUpdates', 'path' => $path, 'body' => null, 'query' => $query];
+        $this->updatesTimeout = $timeout;
+
+        $this->throwIfQueued();
+
+        return $this->response;
+    }
+
     /**
      * @return array{method: string, path: string, body: object|null, query: array<string|int>|null}|null
      */
     public function lastCall(): ?array
     {
-        return $this->calls[array_key_last($this->calls)] ?? null;
+        $key = array_key_last($this->calls);
+
+        return $key === null ? null : $this->calls[$key];
     }
 
     /**
@@ -93,12 +131,16 @@ final class FakeMaxHttpClient implements MaxHttpClientInterface
     {
         $this->calls[] = ['method' => 'patch', 'path' => $path, 'body' => $body, 'query' => $query];
 
+        $this->throwIfQueued();
+
         return $this->response;
     }
 
     public function post(string $path, ?object $body, ?array $query = null): array
     {
         $this->calls[] = ['method' => 'post', 'path' => $path, 'body' => $body, 'query' => $query];
+
+        $this->throwIfQueued();
 
         return $this->response;
     }
@@ -107,11 +149,34 @@ final class FakeMaxHttpClient implements MaxHttpClientInterface
     {
         $this->calls[] = ['method' => 'put', 'path' => $path, 'body' => $body, 'query' => $query];
 
+        $this->throwIfQueued();
+
         return $this->response;
     }
 
-    public function withVersion(?string $version): static
+    public function setExceptionLogger(?Closure $exceptionLogger): static
+    {
+        $this->exceptionLogger = $exceptionLogger;
+
+        return $this;
+    }
+
+    public function setVersion(?string $version): static
     {
         return $this;
+    }
+
+    /**
+     * Выбрасывает очередное заданное исключение, если оно есть.
+     *
+     * @throws Throwable Исключение из начала очереди {@see $exceptions}.
+     */
+    private function throwIfQueued(): void
+    {
+        $exception = array_shift($this->exceptions);
+
+        if ($exception !== null) {
+            throw $exception;
+        }
     }
 }

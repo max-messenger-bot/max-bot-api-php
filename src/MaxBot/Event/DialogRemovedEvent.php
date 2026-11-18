@@ -17,7 +17,7 @@ use MaxMessenger\Bot\Model\Response\User;
 final class DialogRemovedEvent extends BaseEvent
 {
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int Идентификатор диалога, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -25,7 +25,7 @@ final class DialogRemovedEvent extends BaseEvent
     }
 
     /**
-     * @return User Пользователь, который удалил чат.
+     * @return User Пользователь, который удалил диалог.
      */
     public function getUser(): User
     {
@@ -33,7 +33,7 @@ final class DialogRemovedEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, который удалил чат.
+     * @return int Идентификатор пользователя, который удалил диалог.
      */
     public function getUserId(): int
     {
@@ -41,7 +41,7 @@ final class DialogRemovedEvent extends BaseEvent
     }
 
     /**
-     * @return string|null Текущий язык пользователя в формате IETF BCP 47.
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47.
      */
     public function getUserLocale(): ?string
     {

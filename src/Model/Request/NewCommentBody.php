@@ -23,8 +23,8 @@ use function is_string;
  */
 final class NewCommentBody extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{
@@ -117,12 +117,12 @@ final class NewCommentBody extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $text Текст комментария (maxLength: 4000).
+     * @param non-empty-string $text Текст комментария (maxLength: 4000).
      * @param NewMessageLink|null $link Ссылка на комментарий.
      * @param TextFormat|null $format Если установлен, текст комментария будет форматирован данным способом.
      */
     public static function make(
-        ?string $text = null,
+        string $text,
         ?NewMessageLink $link = null,
         ?TextFormat $format = null,
     ): self {
@@ -165,9 +165,8 @@ final class NewCommentBody extends BaseRequestModel
     }
 
     /**
-     * Устанавливает ссылку на комментарий, на который отправляется ответ.
-     *
-     * @param non-empty-string|CommentMessage|CommentMessageBody $mid Уникальный ID комментария или объект комментария.
+     * @param non-empty-string|CommentMessage|CommentMessageBody $mid Уникальный идентификатор комментария или объект
+     *     комментария, на который отправляется ответ.
      * @return $this
      */
     public function setReplyLink(string|CommentMessage|CommentMessageBody $mid): self
@@ -192,6 +191,9 @@ final class NewCommentBody extends BaseRequestModel
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function unsetFormat(): self
     {
         unset($this->data['format']);
@@ -199,6 +201,9 @@ final class NewCommentBody extends BaseRequestModel
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function unsetLink(): self
     {
         unset($this->data['link']);

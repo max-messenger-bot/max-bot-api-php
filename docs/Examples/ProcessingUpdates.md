@@ -20,7 +20,7 @@
 
 $marker = null;
 while (true) {
-    $marker = $apiClient->handleFromServer(marker: $marker);
+    $marker = $bot->handleFromServer(marker: $marker);
     echo sprintf('%s: Marker: %s' . PHP_EOL, date('Y-m-d H:i:s'), $marker ?? '[null]');
     usleep(100000);
 }
@@ -32,5 +32,5 @@ while (true) {
 // Создание бота
 // Добавление обработчиков
 
-$apiClient->handleFromGlobal();
+$bot->handleFromGlobal();
 ```

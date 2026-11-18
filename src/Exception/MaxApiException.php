@@ -7,8 +7,8 @@ namespace MaxMessenger\Bot\Exception;
 use RuntimeException;
 
 /**
- * Runtime exception.
+ * Исключение времени выполнения.
  *
- * Base class for runtime exceptions in the API Max client.
+ * Базовый класс исключений времени выполнения клиента API МАКС.
  */
 class MaxApiException extends RuntimeException {}

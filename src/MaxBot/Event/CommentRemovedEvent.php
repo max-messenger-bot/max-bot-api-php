@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\MaxBot\Event;
 
+use MaxMessenger\Bot\Exception\MaxBot\Event\PostIdMissingException;
 use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\NotFoundException;
 use MaxMessenger\Bot\MaxApiClient;
+use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
 use MaxMessenger\Bot\Model\Request\NewCommentBody;
 use MaxMessenger\Bot\Model\Response\CommentRemovedUpdate;
 use MaxMessenger\Bot\Model\Response\SendCommentResult;
@@ -13,7 +15,7 @@ use MaxMessenger\Bot\Model\Response\SendCommentResult;
 /**
  * Событие удаления комментария к посту в канале.
  *
- * На свои действия бот события не получает.
+ * Бот получает событие, только если он администратор канала с правом {@see ChatAdminPermission::ReadAllMessages}.
  *
  * @property-read CommentRemovedUpdate $update
  */
@@ -22,7 +24,7 @@ final class CommentRemovedEvent extends BaseEvent
     use SendMessageToUserTrait;
 
     /**
-     * @return int ID чата, где комментарий был удалён.
+     * @return int Идентификатор чата, где комментарий был удалён.
      */
     public function getChatId(): int
     {
@@ -30,7 +32,7 @@ final class CommentRemovedEvent extends BaseEvent
     }
 
     /**
-     * @return non-empty-string ID удалённого комментария.
+     * @return non-empty-string Идентификатор удалённого комментария.
      */
     public function getMessageId(): string
     {
@@ -38,20 +40,23 @@ final class CommentRemovedEvent extends BaseEvent
     }
 
     /**
-     * @return non-empty-string Идентификатор поста в канале.
+     * @return non-empty-string|null Идентификатор поста в канале, если он передан.
      */
-    public function getPostId(): string
+    public function getPostId(): ?string
     {
         return $this->update->getPostId();
     }
 
+    /**
+     * @return null У события нет пользователя.
+     */
     public function getUser(): null
     {
         return null;
     }
 
     /**
-     * @return int ID пользователя, удалившего комментарий.
+     * @return int Идентификатор пользователя, удалившего комментарий.
      */
     public function getUserId(): int
     {
@@ -62,16 +67,18 @@ final class CommentRemovedEvent extends BaseEvent
      * Ответить комментарием к тому же посту.
      *
      * Для отправки комментария в настройках канала должны быть включены комментарии, а бот должен
-     * быть администратором этого канала с правами `read_all_messages` и `write`.
-     *
-     * - Вы можете получить ошибку {@see NotFoundException}, если пост на момент ответа будет удалён.
+     * быть администратором этого канала с правом {@see ChatAdminPermission::Write}.
      *
      * @param NewCommentBody|non-empty-string $comment Тело нового комментария.
      * @return SendCommentResult Информация о созданном комментарии.
+     * @throws NotFoundException Если пост удалён к моменту ответа.
+     * @throws PostIdMissingException Если в обновлении нет идентификатора поста.
      * @see MaxApiClient::sendComment()
      */
     public function reply(NewCommentBody|string $comment): SendCommentResult
     {
-        return $this->apiClient->sendComment($this->getPostId(), $comment);
+        $postId = $this->getPostId() ?? throw new PostIdMissingException();
+
+        return $this->apiClient->sendComment($postId, $comment);
     }
 }

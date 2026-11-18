@@ -6,17 +6,28 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Простой ответ на запрос.
+ *
+ * @link https://dev.max.ru/docs-api/
  */
 class SimpleQueryResult extends BaseResponseModel
 {
     /**
      * @var array{
      *     success: bool,
+     *     code?: string,
      *     message?: string
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
+
+    /**
+     * @return string|null Код ошибки API или `null`, если сервер его не передал.
+     */
+    public function getCode(): ?string
+    {
+        return $this->data['code'] ?? null;
+    }
 
     /**
      * @return string|null Сообщение об ошибке.

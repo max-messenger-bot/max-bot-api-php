@@ -5,22 +5,19 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Contract\Http;
 
 use MaxMessenger\Bot\Contract\MaxHttpClientInterface;
+use MaxMessenger\Bot\PsrHttpClient\PsrHttpClient;
 
 /**
  * HTTP-запрос.
  *
  * Готовое описание запроса, которое {@see MaxHttpClientInterface} передаёт клиенту.
- * Логики не содержит: адрес, заголовки и тело формирует вызывающая сторона.
+ * Ограничения времени транспорт применяет, если умеет; {@see PsrHttpClient} их игнорирует.
  */
 interface HttpRequestInterface
 {
     /**
-     * Тело запроса.
-     *
-     * Клиент передаёт тело серверу, если оно задано. Для запросов без тела возвращает `null`:
-     * клиент сам решает, нужно ли отправлять пустое тело, исходя из метода запроса.
-     *
      * @return BodyInterface|null Тело запроса или `null`, если тела нет.
+     *     Для запросов без тела клиент сам решает, нужно ли отправлять пустое тело, исходя из метода запроса.
      */
     public function getBody(): ?BodyInterface;
 
@@ -30,7 +27,19 @@ interface HttpRequestInterface
     public function getHeaders(): array;
 
     /**
-     * @return non-empty-string Метод запроса, например `GET` или `POST`.
+     * @return positive-int|null Наименьшая допустимая скорость передачи в байтах в секунду. Задаётся вместе
+     *     с {@see getLowSpeedTime()}: если хотя бы одно из двух значений `null`, скорость не проверяется.
+     */
+    public function getLowSpeedLimit(): ?int;
+
+    /**
+     * @return positive-int|null Сколько секунд скорость может держаться ниже предела,
+     *     прежде чем передача будет прервана.
+     */
+    public function getLowSpeedTime(): ?int;
+
+    /**
+     * @return non-empty-string Метод запроса в верхнем регистре, например `GET` или `POST`.
      */
     public function getMethod(): string;
 

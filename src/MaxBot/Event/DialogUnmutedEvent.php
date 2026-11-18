@@ -8,7 +8,7 @@ use MaxMessenger\Bot\Model\Response\DialogUnmutedUpdate;
 use MaxMessenger\Bot\Model\Response\User;
 
 /**
- * Событие включения уведомлений в диалоге, чате или канале.
+ * Событие включения уведомлений в диалоге.
  *
  * @property-read DialogUnmutedUpdate $update
  */
@@ -18,7 +18,7 @@ final class DialogUnmutedEvent extends BaseEvent
     use SendMessageToUserTrait;
 
     /**
-     * @return int ID диалога, чата или канала, где произошло событие.
+     * @return int Идентификатор диалога, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -34,7 +34,7 @@ final class DialogUnmutedEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, который включил уведомления.
+     * @return int Идентификатор пользователя, который включил уведомления.
      */
     public function getUserId(): int
     {
@@ -42,7 +42,7 @@ final class DialogUnmutedEvent extends BaseEvent
     }
 
     /**
-     * @return string|null Текущий язык пользователя в формате IETF BCP 47.
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47.
      */
     public function getUserLocale(): ?string
     {

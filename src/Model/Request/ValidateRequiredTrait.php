@@ -7,6 +7,9 @@ namespace MaxMessenger\Bot\Model\Request;
 use MaxMessenger\Bot\Exception\Validation\RequiredFieldException;
 use MaxMessenger\Bot\Exception\Validation\RequiredOneFieldException;
 
+/**
+ * Проверки наличия обязательных полей модели запроса.
+ */
 trait ValidateRequiredTrait
 {
     /**
@@ -18,6 +21,9 @@ trait ValidateRequiredTrait
      */
     protected array $requiredOnce = [];
 
+    /**
+     * Проверяет обязательные поля и группы полей, из которых нужно заполнить хотя бы одно.
+     */
     public function validateRequired(): void
     {
         foreach ($this->required as $field) {

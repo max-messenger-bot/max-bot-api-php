@@ -7,7 +7,7 @@ namespace MaxMessenger\Bot\Model\Response;
 use MaxMessenger\Bot\MaxApiClient;
 
 /**
- * Объект включает общую информацию о боте, URL аватара и описание.
+ * Информация о боте, включая URL аватара и описание.
  *
  * Дополнительно содержит список команд, поддерживаемых ботом.
  * Возвращается только при вызове метода {@see MaxApiClient::getMyInfo()}
@@ -18,18 +18,18 @@ class BotInfo extends UserWithPhoto
 {
     /**
      * @var array{
-     *     commands?: list<array>
+     *     commands?: non-empty-list<array>
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
     /**
-     * @var list<BotCommand>|false|null
+     * @var non-empty-list<BotCommand>|false|null
      */
     private array|false|null $commands = false;
 
     /**
-     * @return list<BotCommand>|null Команды, поддерживаемые ботом (maxItems: 32).
+     * @return non-empty-list<BotCommand>|null Команды, поддерживаемые ботом (maxItems: 32).
      */
     public function getCommands(): ?array
     {

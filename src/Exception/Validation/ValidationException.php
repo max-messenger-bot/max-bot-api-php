@@ -7,8 +7,8 @@ namespace MaxMessenger\Bot\Exception\Validation;
 use MaxMessenger\Bot\Exception\MaxApiException;
 
 /**
- * Validation exception.
+ * Ошибка проверки данных.
  *
- * Base class for validation exceptions in the Max Bot API client.
+ * Базовый класс исключений проверки данных в клиенте API МАКС.
  */
 abstract class ValidationException extends MaxApiException {}

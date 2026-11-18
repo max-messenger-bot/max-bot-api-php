@@ -18,22 +18,24 @@ use MaxMessenger\Bot\Model\Response\SendMessageResult;
  */
 trait SendMessageToUserTrait
 {
+    /**
+     * @return int Идентификатор пользователя события.
+     * @throws UserMissingException Если у события нет пользователя.
+     * @throws SenderUnknownException Если отправитель сообщения или комментария скрыт.
+     */
     abstract public function requireUserId(): int;
 
     /**
      * Отправить сообщение лично в диалоге с пользователем.
      *
-     * - Если у события нет пользователя, {@see requireUserId()} выбросит ошибку: {@see UserMissingException}
-     *   или, в событиях сообщений и комментариев, {@see SenderUnknownException}.
-     * - Чтобы бот мог отправить сообщение пользователю, пользователь должен запустить бота.
-     *   Иначе запрос завершится ошибкой.
-     * - Можно отправлять не более двух сообщений в секунду в один диалог. При превышении этого лимита
-     *   сообщения следует ставить в очередь или делать задержку перед отправкой.
+     * Чтобы бот мог отправить сообщение пользователю, пользователь должен запустить бота.
      *
      * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
      *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
+     * @throws UserMissingException Если у события нет пользователя.
+     * @throws SenderUnknownException Если в событии сообщения или комментария отправитель скрыт.
      * @see MaxApiClient::sendMessageToUser()
      */
     public function sendMessageToUser(

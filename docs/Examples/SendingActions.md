@@ -33,7 +33,7 @@
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Model\Enum\SenderAction;
 
-$client = new MaxApiClient('your-access-token');
+$client = new MaxApiClient('your-access-token', useRussianTrustedCaCertificates: true);
 
 // Отправляем действие "печатает" в чат
 $client->sendAction($chatId, SenderAction::TypingOn);
@@ -55,16 +55,16 @@ $client->sendAction($chatId, $action);
 
 ### Показ действия перед отправкой сообщения
 
-Показываем пользователю, что бот正在准备 ответ:
+Показываем пользователю, что бот готовит ответ:
 
 ```php
 use MaxMessenger\Bot\MaxBot;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 use MaxMessenger\Bot\Model\Enum\SenderAction;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $chatId = $event->getChatId();
     $text = $event->getMessage()->getBody()->getText();
     
@@ -72,12 +72,10 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
     $event->apiClient->sendAction($chatId, SenderAction::TypingOn);
     
     // Имитация задержки обработки
-    sleep(1);
+    sleep(3);
     
     // Отправляем ответ
     $event->reply('Вы написали: ' . $text);
-
-    return true; // Отмечаем событие как обработанное
 });
 ```
 
@@ -88,13 +86,13 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 ```php
 use MaxMessenger\Bot\Model\Enum\SenderAction;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $chatId = $event->getChatId();
     $apiClient = $event->apiClient;
     
     // Сначала показываем, что печатаем
     $apiClient->sendAction($chatId, SenderAction::TypingOn);
-    sleep(1);
+    sleep(3);
     
     // Потом показываем, что отправляем фото
     $apiClient->sendAction($chatId, SenderAction::SendingPhoto);
@@ -102,8 +100,6 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
     
     // Отправляем сообщение с фото
     // ...
-
-    return true; // Отмечаем событие как обработанное
 });
 ```
 
@@ -114,15 +110,13 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 ```php
 use MaxMessenger\Bot\Model\Enum\SenderAction;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $chatId = $event->getChatId();
     
     // Отмечаем сообщения как прочитанные
     $event->apiClient->sendAction($chatId, SenderAction::MarkSeen);
     
     // Обрабатываем сообщение...
-
-    return true; // Отмечаем событие как обработанное
 });
 ```
 
@@ -134,7 +128,7 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 use MaxMessenger\Bot\Model\Enum\SenderAction;
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $chatId = $event->getChatId();
     $apiClient = $event->apiClient;
     
@@ -143,16 +137,12 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
     
     // Загрузка и отправка файла...
     // $apiClient->sendMessage(...);
-
-    return true; // Отмечаем событие как обработанное
 });
 ```
 
 ## Полный пример бота с действиями
 
 ```php
-<?php
-
 require_once __DIR__ . '/vendor/autoload.php';
 
 use MaxMessenger\Bot\MaxBot;
@@ -161,10 +151,10 @@ use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 use MaxMessenger\Bot\Model\Enum\SenderAction;
 use Throwable;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
 // Обработка сообщений с индикатором действий
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $chatId = $event->getChatId();
     $apiClient = $event->apiClient;
     $text = $event->getMessage()->getBody()->getText();
@@ -180,8 +170,6 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
     
     // Отправляем ответ
     $event->reply('Получил ваше сообщение: ' . $text);
-
-    return true; // Отмечаем событие как обработанное
 });
 
 // Обработка ошибок
@@ -245,5 +233,5 @@ $apiClient->sendAction($chatId, SenderAction::SendingVideo);
 Для канала сервер принимает запрос и отвечает успехом, но участникам действие не показывается.
 
 В обработчиках событий удобнее вызывать `$event->sendActionToChat()` — он сам подставляет чат события.
-Этот метод есть у событий, после которых бот может написать в тот же чат или диалог
-(трейд `SendMessageToChatTrait`). Подробнее — в разделе [Обработка событий бота](../ProcessingEvents.md).
+Этот метод есть у событий, после которых бот может написать в тот же чат или диалог (трейд `SendMessageToChatTrait`).
+Подробнее — в разделе [Обработка событий бота](../ProcessingEvents.md).

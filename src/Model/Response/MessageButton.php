@@ -7,6 +7,9 @@ namespace MaxMessenger\Bot\Model\Response;
 /**
  * Кнопка сообщения.
  *
- * Кнопка для отправки сообщения.
+ * При нажатии отправляет сообщение в чат от имени пользователя.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 class MessageButton extends Button {}

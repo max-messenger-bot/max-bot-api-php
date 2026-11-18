@@ -7,12 +7,15 @@ namespace MaxMessenger\Bot\Model\Request;
 use function array_key_exists;
 
 /**
- * Полезная нагрузка запроса ShareAttachmentRequest.
+ * Полезная нагрузка запроса {@see ShareAttachmentRequest}.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
  */
 final class ShareAttachmentPayload extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{

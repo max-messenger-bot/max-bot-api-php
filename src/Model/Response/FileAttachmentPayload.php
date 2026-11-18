@@ -4,15 +4,29 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+/**
+ * Данные прикреплённого к сообщению файла.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ */
 class FileAttachmentPayload extends AttachmentPayload
 {
     /**
      * @var array{
+     *     fileId: int,
      *     token: non-empty-string
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
+
+    /**
+     * @return int Идентификатор прикреплённого файла.
+     */
+    public function getFileId(): int
+    {
+        return $this->data['fileId'];
+    }
 
     /**
      * @return non-empty-string Используйте `token`, если вы пытаетесь повторно использовать одно и то же вложение

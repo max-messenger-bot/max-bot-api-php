@@ -7,6 +7,11 @@ namespace MaxMessenger\Bot\Model\Response;
 use function is_int;
 use function is_string;
 
+/**
+ * Сведения о загруженном файле.
+ *
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/media
+ */
 class UploadedFile extends BaseResponseModel
 {
     /**
@@ -18,19 +23,25 @@ class UploadedFile extends BaseResponseModel
      */
     protected readonly array $data;
 
+    /**
+     * @return int Идентификатор загруженного файла.
+     */
     public function getFileId(): int
     {
         return $this->data['fileId'];
     }
 
     /**
-     * @return non-empty-string
+     * @return non-empty-string Токен загруженного файла.
      */
     public function getToken(): string
     {
         return $this->data['token'];
     }
 
+    /**
+     * @return bool Содержит ли ответ идентификатор файла и токен ожидаемых типов.
+     */
     public function isValid(): bool
     {
         /** @psalm-suppress RedundantConditionGivenDocblockType */

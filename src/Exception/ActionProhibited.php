@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Exception;
 
 /**
- * Action prohibited.
+ * Действие запрещено.
  *
- * Exception thrown when an action is prohibited.
+ * Возникает при попытке выполнить запрещённое действие.
  */
 final class ActionProhibited extends MaxApiLogicException
 {

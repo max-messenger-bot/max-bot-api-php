@@ -13,12 +13,22 @@ use MaxMessenger\Bot\Model\Response\MessageBody;
 use function array_key_exists;
 
 /**
- * Ссылка на сообщение.
+ * Ссылка на сообщение в чате, пост в канале или комментарий к посту.
+ *
+ * Пересылка комментариев не поддерживается.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/objects/NewCommentBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
+ * @link https://dev.max.ru/docs-api/methods/PUT/messages/
+ * @link https://dev.max.ru/docs-api/methods/POST/answers/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/-messageId-/comments/
+ * @link https://dev.max.ru/docs-api/methods/PUT/messages/-messageId-/comments/
  */
 final class NewMessageLink extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{
@@ -30,8 +40,9 @@ final class NewMessageLink extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $mid ID исходного сообщения (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
-     * @param MessageLinkType $type Тип ссылки сообщения.
+     * @param non-empty-string|null $mid Идентификатор исходного сообщения, поста или комментария
+     *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
+     * @param MessageLinkType $type Тип ссылки на сообщение, пост или комментарий.
      */
     public function __construct(?string $mid = null, MessageLinkType $type = MessageLinkType::Reply)
     {
@@ -62,8 +73,9 @@ final class NewMessageLink extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $mid ID исходного сообщения (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
-     * @param MessageLinkType $type Тип ссылки сообщения.
+     * @param non-empty-string $mid Идентификатор исходного сообщения, поста или комментария
+     *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
+     * @param MessageLinkType $type Тип ссылки на сообщение, пост или комментарий.
      */
     public static function make(string $mid, MessageLinkType $type): self
     {
@@ -71,14 +83,20 @@ final class NewMessageLink extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $mid ID исходного сообщения (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
-     * @param MessageLinkType $type Тип ссылки сообщения.
+     * @param non-empty-string|null $mid Идентификатор исходного сообщения, поста или комментария
+     *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
+     * @param MessageLinkType $type Тип ссылки на сообщение, пост или комментарий.
      */
     public static function new(?string $mid = null, MessageLinkType $type = MessageLinkType::Reply): self
     {
         return new self($mid, $type);
     }
 
+    /**
+     * @param Message|MessageBody|CommentMessage|CommentMessageBody $message Исходное сообщение, пост или комментарий,
+     *     из которого берётся идентификатор.
+     * @param MessageLinkType $type Тип связи: ответ или пересылка.
+     */
     public static function newFromMessage(
         Message|MessageBody|CommentMessage|CommentMessageBody $message,
         MessageLinkType $type = MessageLinkType::Reply,
@@ -91,12 +109,13 @@ final class NewMessageLink extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $mid ID исходного сообщения (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
+     * @param non-empty-string $mid Идентификатор исходного сообщения, поста или комментария
+     *     (pattern: '^mid\.[a-zA-Z0-9_\-]+$').
      * @return $this
      */
     public function setMid(string $mid): self
     {
-        self::validateString('mid', $mid, minLength: 1, pattern: '/^mid\.[a-zA-Z0-9_\-]+$/');
+        self::validateMid('mid', $mid);
 
         $this->data['mid'] = $mid;
 
@@ -104,7 +123,7 @@ final class NewMessageLink extends BaseRequestModel
     }
 
     /**
-     * @param MessageLinkType $type Тип ссылки сообщения.
+     * @param MessageLinkType $type Тип ссылки на сообщение, пост или комментарий.
      * @return $this
      */
     public function setType(MessageLinkType $type): self

@@ -7,8 +7,20 @@ namespace MaxMessenger\Bot\Model\Enum;
 /**
  * Тип элемента разметки.
  *
- * Может быть \*\*жирный\*\*, \*курсив\*, ~~зачёркнутый~~, ++подчёркнутый++, \`моноширинный\`, ^^выделенный^^,
- * цитата, заголовок, ссылка или упоминание пользователя.
+ * - `emphasized` — Курсив.
+ * - `heading` — Заголовок.
+ * - `highlighted` — Выделенный текст.
+ * - `link` — Гиперссылка.
+ * - `monospaced` — Моноширинный текст или блок кода.
+ * - `quote` — Цитата.
+ * - `strikethrough` — Зачёркнутый текст.
+ * - `strong` — Жирный текст.
+ * - `underline` — Подчёркнутый текст.
+ * - `user_mention` — Упоминание пользователя по публичному имени или идентификатору.
+ *
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/text-formatting
+ * @link https://dev.max.ru/docs-api/objects/Message
+ * @link https://dev.max.ru/docs-api/objects/CommentMessage
  */
 enum MarkupElementType: string
 {

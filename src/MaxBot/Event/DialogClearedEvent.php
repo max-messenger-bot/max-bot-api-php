@@ -18,7 +18,7 @@ final class DialogClearedEvent extends BaseEvent
     use SendMessageToUserTrait;
 
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int Идентификатор диалога, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -34,7 +34,7 @@ final class DialogClearedEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, который очистил историю диалога.
+     * @return int Идентификатор пользователя, который очистил историю диалога.
      */
     public function getUserId(): int
     {
@@ -42,7 +42,7 @@ final class DialogClearedEvent extends BaseEvent
     }
 
     /**
-     * @return string|null Текущий язык пользователя в формате IETF BCP 47.
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47.
      */
     public function getUserLocale(): ?string
     {

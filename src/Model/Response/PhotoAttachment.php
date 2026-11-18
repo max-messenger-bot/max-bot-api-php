@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Вложение изображения.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
  */
 class PhotoAttachment extends Attachment
 {
@@ -18,6 +20,9 @@ class PhotoAttachment extends Attachment
     protected readonly array $data;
     private PhotoAttachmentPayload|false $payload = false;
 
+    /**
+     * @return PhotoAttachmentPayload Данные прикреплённого изображения.
+     */
     public function getPayload(): PhotoAttachmentPayload
     {
         return $this->payload === false

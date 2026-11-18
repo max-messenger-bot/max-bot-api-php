@@ -6,15 +6,20 @@ namespace MaxMessenger\Bot\Model\Response;
 
 use function is_string;
 
+/**
+ * Вложение с видео в сообщении.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ */
 class VideoAttachment extends Attachment
 {
     /**
      * @var array{
      *     payload: array,
-     *     thumbnail?: array|string,
-     *     width?: int,
-     *     height?: int,
-     *     duration?: int
+     *     thumbnail?: array|non-empty-string,
+     *     width?: non-negative-int,
+     *     height?: non-negative-int,
+     *     duration?: non-negative-int
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
@@ -23,7 +28,7 @@ class VideoAttachment extends Attachment
     private VideoThumbnail|false|null $thumbnail = false;
 
     /**
-     * @return int|null Длина видео в секундах.
+     * @return non-negative-int|null Длина видео в секундах.
      */
     public function getDuration(): ?int
     {
@@ -31,13 +36,16 @@ class VideoAttachment extends Attachment
     }
 
     /**
-     * @return int|null Высота видео.
+     * @return non-negative-int|null Высота видео.
      */
     public function getHeight(): ?int
     {
         return $this->data['height'] ?? null;
     }
 
+    /**
+     * @return MediaAttachmentPayload Данные прикреплённого видео.
+     */
     public function getPayload(): MediaAttachmentPayload
     {
         return $this->payload === false
@@ -62,7 +70,7 @@ class VideoAttachment extends Attachment
     }
 
     /**
-     * @return int|null Ширина видео.
+     * @return non-negative-int|null Ширина видео.
      */
     public function getWidth(): ?int
     {

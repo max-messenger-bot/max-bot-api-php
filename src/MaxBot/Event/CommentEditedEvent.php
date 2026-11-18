@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\MaxBot\Event;
 
+use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
 use MaxMessenger\Bot\Model\Response\CommentEditedUpdate;
 use MaxMessenger\Bot\Model\Response\CommentMessage;
 
 /**
  * Событие редактирования комментария к посту в канале.
  *
- * На свои действия бот события не получает.
+ * Бот получает событие, только если он администратор канала с правом {@see ChatAdminPermission::ReadAllMessages}.
  *
  * @property-read CommentEditedUpdate $update
  */

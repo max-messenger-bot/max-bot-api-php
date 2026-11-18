@@ -10,13 +10,16 @@ use MaxMessenger\Bot\Model\Enum\ChatType;
  * Получатель сообщения.
  *
  * Может быть пользователем, чатом или каналом.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ * @link https://dev.max.ru/docs-api/objects/CommentMessage/
  */
 class Recipient extends BaseResponseModel
 {
     /**
      * @var array{
      *     chat_id: int,
-     *     chat_type: string,
+     *     chat_type: non-empty-string,
      *     user_id?: int,
      *     post_id?: non-empty-string
      * }
@@ -25,7 +28,7 @@ class Recipient extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return int ID чата или канала.
+     * @return int Идентификатор чата или канала.
      */
     public function getChatId(): int
     {
@@ -42,7 +45,7 @@ class Recipient extends BaseResponseModel
     }
 
     /**
-     * @return string Тип чата. Для комментариев определяет, от чьего имени оставлен комментарий.
+     * @return non-empty-string Тип чата. Значения описаны в {@see ChatType}.
      */
     public function getChatTypeRaw(): string
     {
@@ -59,7 +62,7 @@ class Recipient extends BaseResponseModel
     }
 
     /**
-     * @return int|null ID получателя сообщения в диалоге (пользователя или бота).
+     * @return int|null Идентификатор получателя сообщения в диалоге (пользователя или бота).
      *     Если сообщение отправлено в групповой чат или канал, возвращается `null`.
      */
     public function getUserId(): ?int

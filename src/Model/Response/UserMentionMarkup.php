@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Представляет упоминание пользователя в тексте.
+ * Элемент разметки упоминания пользователя в тексте.
  *
- * Упоминание может быть как по имени пользователя, так и по ID, если у пользователя нет имени.
+ * Упоминание может быть как по имени пользователя, так и по идентификатору, если у пользователя нет имени.
  *
- * В тексте комментариев упоминание пользователей не поддерживается.
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/text-formatting
  */
 class UserMentionMarkup extends MarkupElement
 {
@@ -23,7 +24,7 @@ class UserMentionMarkup extends MarkupElement
     protected readonly array $data;
 
     /**
-     * @return int|null ID упомянутого пользователя без `@username`.
+     * @return int|null Идентификатор упомянутого пользователя без `@username`.
      */
     public function getUserId(): ?int
     {

@@ -12,22 +12,23 @@ use MaxMessenger\Bot\Model\Enum\MarkupElementType;
  * Может быть \*\*жирный\*\*, \*курсив\*, ~~зачёркнутый~~, ++подчёркнутый++, \`моноширинный\`, ^^выделенный^^,
  * цитата, заголовок, ссылка или упоминание пользователя.
  *
- * В тексте комментариев не поддерживаются гиперссылки и упоминание пользователей.
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/text-formatting
  */
 class MarkupElement extends BaseResponseModel
 {
     /**
      * @var array{
      *     type: non-empty-string,
-     *     from: int,
-     *     length: int
+     *     from: non-negative-int,
+     *     length: non-negative-int
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
 
     /**
-     * @return int Индекс начала элемента разметки в тексте. Нумерация с нуля.
+     * @return non-negative-int Индекс начала элемента разметки в тексте. Нумерация с нуля.
      */
     public function getFrom(): int
     {
@@ -35,7 +36,7 @@ class MarkupElement extends BaseResponseModel
     }
 
     /**
-     * @return int Длина элемента разметки в символах.
+     * @return non-negative-int Длина элемента разметки в символах.
      */
     public function getLength(): int
     {
@@ -51,7 +52,7 @@ class MarkupElement extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Тип элемента разметки.
+     * @return non-empty-string Тип элемента разметки. Значения описаны в {@see MarkupElementType}.
      */
     public function getTypeRaw(): string
     {
@@ -59,7 +60,9 @@ class MarkupElement extends BaseResponseModel
     }
 
     /**
-     * Creates an object using a map.
+     * Создаёт элемент разметки нужного типа по данным ответа API.
+     *
+     * @param array $data Данные элемента разметки из ответа API.
      */
     public static function newFromData(array $data): static
     {

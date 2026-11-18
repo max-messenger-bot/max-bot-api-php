@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Exception\Validation;
 
 /**
- * Keyboard validation exception.
+ * Ошибка проверки клавиатуры.
  *
- * Exception thrown when keyboard configuration violates validation rules.
+ * Возникает, если конфигурация клавиатуры нарушает правила проверки.
  */
 final class KeyboardException extends ValidationException {}

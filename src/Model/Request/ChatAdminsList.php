@@ -9,6 +9,8 @@ use function array_values;
 
 /**
  * Список администраторов чата.
+ *
+ * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members/admins/
  */
 final class ChatAdminsList extends BaseRequestModel
 {
@@ -36,7 +38,9 @@ final class ChatAdminsList extends BaseRequestModel
     }
 
     /**
-     * @param ChatAdmin $admin
+     * Добавляет администратора в список назначаемых администраторов.
+     *
+     * @param ChatAdmin $admin Пользователь или бот с назначаемыми правами.
      * @return $this
      */
     public function addAdmin(ChatAdmin $admin): self

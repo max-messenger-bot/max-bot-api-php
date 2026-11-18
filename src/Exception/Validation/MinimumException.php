@@ -7,12 +7,17 @@ namespace MaxMessenger\Bot\Exception\Validation;
 use function sprintf;
 
 /**
- * Argument is below minimum value.
+ * Аргумент меньше минимального значения.
  *
- * Exception thrown when a numeric argument is less than the minimum allowed value.
+ * Возникает, если числовой аргумент меньше допустимого минимума.
  */
 final class MinimumException extends ValidationException
 {
+    /**
+     * @param string $argumentName Имя числового аргумента.
+     * @param int $value Фактическое значение аргумента.
+     * @param int $minimum Минимально допустимое значение.
+     */
     public function __construct(string $argumentName, int $value, int $minimum)
     {
         $part1 = sprintf('a number greater than or equal to %d', $minimum);

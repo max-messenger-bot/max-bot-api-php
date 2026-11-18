@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\MaxBot\Event;
 
+use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
 use MaxMessenger\Bot\Model\Response\User;
 use MaxMessenger\Bot\Model\Response\UserRemovedFromChatUpdate;
 
@@ -11,8 +12,7 @@ use MaxMessenger\Bot\Model\Response\UserRemovedFromChatUpdate;
  * Событие удаления пользователя из чата или канала.
  *
  * Приходит, когда пользователя удалили или он покинул чат или канал.
- *
- * На свои действия бот события не получает.
+ * Бот должен быть администратором с правом {@see ChatAdminPermission::ReadAllMessages}.
  *
  * @property-read UserRemovedFromChatUpdate $update
  */
@@ -22,8 +22,8 @@ final class UserRemovedFromChatEvent extends BaseEvent
     use SendMessageToUserTrait;
 
     /**
-     * @return int|null Администратор, который удалил пользователя из чата.
-     *     Может быть `null`, если пользователь покинул чат сам.
+     * @return int|null Идентификатор администратора, который удалил пользователя из чата или канала.
+     *     Может быть `null`, если пользователь покинул чат или канал сам.
      */
     public function getAdminId(): ?int
     {
@@ -31,7 +31,7 @@ final class UserRemovedFromChatEvent extends BaseEvent
     }
 
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int Идентификатор чата или канала, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -39,7 +39,7 @@ final class UserRemovedFromChatEvent extends BaseEvent
     }
 
     /**
-     * @return User Пользователь, удалённый из чата.
+     * @return User Пользователь, удалённый из чата или канала.
      */
     public function getUser(): User
     {
@@ -47,7 +47,7 @@ final class UserRemovedFromChatEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, удалённого из чата.
+     * @return int Идентификатор пользователя, удалённого из чата или канала.
      */
     public function getUserId(): int
     {

@@ -10,7 +10,9 @@ use MaxMessenger\Bot\MaxApiClient;
  * Массив сообщений.
  *
  * Маркер следующей страницы API не возвращает: для перебора сдвигайте границы промежутка времени
- * `from` и `to` в {@see MaxApiClient::getMessages()}.
+ * `before` и `after` в {@see MaxApiClient::getMessages()}.
+ *
+ * @link https://dev.max.ru/docs-api/methods/GET/messages/
  */
 class MessageList extends BaseResponseModel
 {

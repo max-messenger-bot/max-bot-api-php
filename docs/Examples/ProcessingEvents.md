@@ -22,16 +22,14 @@
 use MaxMessenger\Bot\MaxBot;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $message = $event->getMessage();
     $text = $message->getText();
     
     // Отвечаем на сообщение
     $event->reply('Вы написали: ' . $text);
-
-    return true; // Отмечаем событие как обработанное
 });
 ```
 
@@ -42,7 +40,7 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 ```php
 use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
 
-$bot->onBotStarted(function (BotStartedEvent $event): bool {
+$bot->onBotStarted(function (BotStartedEvent $event): void {
     $user = $event->getUser();
     $payload = $event->getPayload(); // Данные из дип-линка
     
@@ -53,8 +51,6 @@ $bot->onBotStarted(function (BotStartedEvent $event): bool {
     }
     
     $event->sendMessageToUser($welcomeText);
-
-    return true; // Отмечаем событие как обработанное
 });
 ```
 
@@ -68,32 +64,26 @@ use MaxMessenger\Bot\MaxBot\Event\MessageEditedEvent;
 use MaxMessenger\Bot\MaxBot\Event\MessageRemovedEvent;
 
 // Новое сообщение
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $text = $event->getMessage()->getText();
     
     // Логируем сообщение
-    error_log("Новое сообщение: " . $text);
-
-    return true;
+    error_log('Новое сообщение: ' . $text);
 });
 
 // Редактирование сообщения
-$bot->onMessageEdited(function (MessageEditedEvent $event): bool {
+$bot->onMessageEdited(function (MessageEditedEvent $event): void {
     $text = $event->getMessage()->getText();
     
-    error_log("Сообщение отредактировано: " . $text);
-
-    return true;
+    error_log('Сообщение отредактировано: ' . $text);
 });
 
 // Удаление сообщения
-$bot->onMessageRemoved(function (MessageRemovedEvent $event): bool {
+$bot->onMessageRemoved(function (MessageRemovedEvent $event): void {
     $messageId = $event->getMessageId();
     $userId = $event->getUserId();
     
     error_log("Сообщение $messageId удалено пользователем $userId");
-
-    return true;
 });
 ```
 
@@ -104,22 +94,18 @@ use MaxMessenger\Bot\MaxBot\Event\CommentCreatedEvent;
 use MaxMessenger\Bot\MaxBot\Event\CommentRemovedEvent;
 
 // Новый комментарий к посту
-$bot->onCommentCreated(function (CommentCreatedEvent $event): bool {
+$bot->onCommentCreated(function (CommentCreatedEvent $event): void {
     $comment = $event->getComment();
 
     // Отвечаем комментарием с цитированием исходного
     $event->reply('Спасибо за комментарий!', asReply: true);
 
     error_log("Комментарий к посту {$event->getPostId()}: " . $comment->getText());
-
-    return true;
 });
 
 // Удаление комментария
-$bot->onCommentRemoved(function (CommentRemovedEvent $event): bool {
+$bot->onCommentRemoved(function (CommentRemovedEvent $event): void {
     error_log("Комментарий {$event->getMessageId()} удалён пользователем {$event->getUserId()}");
-
-    return true;
 });
 ```
 
@@ -134,26 +120,22 @@ use MaxMessenger\Bot\MaxBot\Event\DialogClearedEvent;
 use MaxMessenger\Bot\MaxBot\Event\UserAddedToChatEvent;
 
 // Изменение заголовка чата
-$bot->onChatTitleChanged(function (ChatTitleChangedEvent $event): bool {
+$bot->onChatTitleChanged(function (ChatTitleChangedEvent $event): void {
     $title = $event->getTitle();
     $user = $event->getUser();
     
     error_log("Пользователь {$user->getFirstName()} изменил название чата на '$title'");
-
-    return true;
 });
 
 // Очистка диалога
-$bot->onDialogCleared(function (DialogClearedEvent $event): bool {
+$bot->onDialogCleared(function (DialogClearedEvent $event): void {
     $user = $event->getUser();
     
     error_log("Пользователь {$user->getFirstName()} очистил историю диалога");
-
-    return true;
 });
 
 // Добавление пользователя в чат
-$bot->onUserAddedToChat(function (UserAddedToChatEvent $event): bool {
+$bot->onUserAddedToChat(function (UserAddedToChatEvent $event): void {
     $user = $event->getUser();
     $inviterId = $event->getInviterId();
     
@@ -162,8 +144,6 @@ $bot->onUserAddedToChat(function (UserAddedToChatEvent $event): bool {
     } else {
         error_log("Пользователь {$user->getFirstName()} присоединился к чату по ссылке");
     }
-
-    return true;
 });
 ```
 
@@ -179,7 +159,7 @@ $bot->onPrepare(function (BaseEvent $event): void {
     $event->userData['receivedAt'] = time();
     $event->userData['startTime'] = microtime(true);
     
-    error_log("Получено событие: " . get_class($event));
+    error_log('Получено событие: ' . get_class($event));
 });
 ```
 
@@ -190,10 +170,8 @@ use MaxMessenger\Bot\Model\Enum\UpdateType;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 
 // Обработка всех сообщений о создании диалогов
-$bot->on(UpdateType::BotStarted, function (BaseEvent $event): bool {
+$bot->on(UpdateType::BotStarted, function (BaseEvent $event): void {
     // Обработка события запуска бота
-
-    return true;
 });
 ```
 
@@ -203,10 +181,8 @@ $bot->on(UpdateType::BotStarted, function (BaseEvent $event): bool {
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 
 // Ловим все события, которые не были обработаны другими обработчиками
-$bot->onFallback(function (BaseEvent $event): bool {
-    error_log("Необработанное событие: " . $event::class);
-
-    return true; // Отмечаем как обработанное, чтобы не было ошибок
+$bot->onFallback(function (BaseEvent $event): void {
+    error_log('Необработанное событие: ' . $event::class);
 });
 ```
 
@@ -237,10 +213,8 @@ $bot->onFinal(function (BaseEvent $event): void {
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     // Обрабатываем сообщение
-    
-    return true; // Событие обработано, другие обработчики не вызываются
 });
 ```
 
@@ -266,7 +240,7 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $text = $event->getMessage()->getText();
     
     if (str_contains($text, '/stop')) {
@@ -278,8 +252,6 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
         // Прерываем обработку, событие считается необработанным
         $event->continue();
     }
-
-    return true;
 });
 ```
 
@@ -297,15 +269,13 @@ $bot->onPrepare(function (BaseEvent $event): void {
 });
 
 // Основной обработчик использует сохранённые данные
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $receivedAt = $event->userData['receivedAt'] ?? null;
     $delay = time() - $receivedAt;
     
     if ($delay > 60) {
         error_log("Сообщение получено $delay секунд назад");
     }
-
-    return true;
 });
 ```
 
@@ -334,7 +304,7 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event) use (&$messageCount
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $text = $event->getMessage()->getText();
     
     // Простой ответ
@@ -342,8 +312,6 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
     
     // Ответ с цитированием
     $event->reply('Ответ на ваше сообщение', asReply: true);
-
-    return true;
 });
 ```
 
@@ -352,13 +320,11 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $adminChatId = 12345;
     
     // Пересылаем сообщение в админ-чат
     $event->forwardToChat($adminChatId);
-
-    return true;
 });
 ```
 
@@ -367,15 +333,14 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $text = $event->getMessage()->getText();
 
-    // Если сообщение содержит важный контент, пересылаем его автору в диалог
-    if (str_contains($text, '!важно')) {
-        $event->forwardToUser($event->getUserId());
+    // Пост от имени канала может не иметь отправителя
+    $userId = $event->getUserId();
+    if ($userId !== null && str_contains($text, '!важно')) {
+        $event->forwardToUser($userId);
     }
-
-    return true;
 });
 ```
 
@@ -384,7 +349,7 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $text = $event->getMessage()->getText();
 
     // Отвечаем пользователю лично в диалоге
@@ -392,8 +357,6 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 
     // Можно также переслать оригинальное сообщение
     $event->replyToUser('Дублирую ваше сообщение:', forwardOrigMessage: true);
-
-    return true;
 });
 ```
 
@@ -402,7 +365,7 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $text = $event->getMessage()->getText();
 
     // Разная логика для разных типов чатов
@@ -416,8 +379,6 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
         // Обработка сообщений из канала
         error_log('Новое сообщение в канале: ' . $text);
     }
-
-    return true;
 });
 ```
 
@@ -426,13 +387,11 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 ```php
 use MaxMessenger\Bot\MaxBot\Event\UserAddedToChatEvent;
 
-$bot->onUserAddedToChat(function (UserAddedToChatEvent $event): bool {
+$bot->onUserAddedToChat(function (UserAddedToChatEvent $event): void {
     $user = $event->getUser();
     
     // Отправляем приветственное сообщение пользователю в диалог
     $event->sendMessageToUser('Добро пожаловать в чат, ' . $user->getFirstName() . '!');
-
-    return true;
 });
 ```
 
@@ -441,13 +400,11 @@ $bot->onUserAddedToChat(function (UserAddedToChatEvent $event): bool {
 ```php
 use MaxMessenger\Bot\MaxBot\Event\ChatTitleChangedEvent;
 
-$bot->onChatTitleChanged(function (ChatTitleChangedEvent $event): bool {
+$bot->onChatTitleChanged(function (ChatTitleChangedEvent $event): void {
     $title = $event->getTitle();
 
     // Отправляем сообщение в чат, где произошло событие
     $event->sendMessageToChat('Заголовок чата изменён на: ' . $title);
-
-    return true;
 });
 ```
 
@@ -456,15 +413,13 @@ $bot->onChatTitleChanged(function (ChatTitleChangedEvent $event): bool {
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $text = $event->getMessage()->getText();
     
     // Удаляем сообщения с определённым содержимым
     if (str_contains($text, 'спам')) {
         $event->deleteMessage();
     }
-
-    return true;
 });
 ```
 
@@ -472,33 +427,28 @@ $bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
 
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
-use MaxMessenger\Bot\Model\Response\ContactAttachment;
 
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
-    if ($event->isSelfContact()) {
-        // Пользователь поделился своим реальным номером
-        /** @var ContactAttachment $contact */
-        $contact = $event->getMessage()->getBody()->getAttachments()[0];
-        $phones = $contact->getPayload()->getPhones();
-        if (count($phones) === 1) {
-            // Обрабатываем номер телефона
-            $phone = reset($phones);
-        } else {
-            // Номеров нет, либо их несколько = ошибка в логике?
-        }
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
+    $contact = $event->getContactAttachment();
 
-        return true;
+    if ($contact === null || !$event->isSelfContact()) {
+        $event->continue();
     }
 
-    return false;
+    // Пользователь поделился своим реальным номером
+    $phones = $contact->getPayload()->getPhones();
+    if ($phones !== null && count($phones) === 1) {
+        // Обрабатываем номер телефона
+        $phone = reset($phones);
+    } else {
+        // Номеров нет, либо их несколько = ошибка в логике?
+    }
 });
 ```
 
 ## Полный пример бота
 
 ```php
-<?php
-
 require_once __DIR__ . '/vendor/autoload.php';
 
 use MaxMessenger\Bot\MaxBot;
@@ -507,7 +457,7 @@ use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 use Throwable;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
 // Предварительная обработка — логирование
 $bot->onPrepare(function (BaseEvent $event): void {
@@ -516,25 +466,21 @@ $bot->onPrepare(function (BaseEvent $event): void {
 });
 
 // Обработка кнопки start
-$bot->onBotStarted(function (BotStartedEvent $event): bool {
+$bot->onBotStarted(function (BotStartedEvent $event): void {
     $user = $event->getUser();
     
     $message = "Привет, {$user->getFirstName()}!\n\n"
              . "Я тестовый бот. Отправьте мне сообщение.";
     
     $event->sendMessageToUser($message);
-
-    return true;
 });
 
 // Обработка сообщений
-$bot->onMessageCreated(function (MessageCreatedEvent $event): bool {
+$bot->onMessageCreated(function (MessageCreatedEvent $event): void {
     $text = $event->getMessage()->getText();
     
     // Эхо-бот: повторяем сообщение
     $event->reply('Вы: ' . $text);
-
-    return true;
 });
 
 // Обработка исключений

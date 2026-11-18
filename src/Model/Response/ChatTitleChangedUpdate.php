@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Вы получите это событие, как только будет изменено название чата.
+ * Событие изменения названия чата.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class ChatTitleChangedUpdate extends Update
 {
@@ -21,11 +24,19 @@ class ChatTitleChangedUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int Идентификатор чата, где произошло событие.
      */
     public function getChatId(): int
     {
         return $this->data['chat_id'];
+    }
+
+    /**
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['chat_id', 'user', 'title'];
     }
 
     /**

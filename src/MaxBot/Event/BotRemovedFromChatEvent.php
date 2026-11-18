@@ -17,7 +17,7 @@ final class BotRemovedFromChatEvent extends BaseEvent
     use SendMessageToUserTrait;
 
     /**
-     * @return int ID чата, откуда был удалён бот.
+     * @return int Идентификатор чата или канала, откуда был удалён бот.
      */
     public function getChatId(): int
     {
@@ -25,7 +25,7 @@ final class BotRemovedFromChatEvent extends BaseEvent
     }
 
     /**
-     * @return User Пользователь, удаливший бота из чата.
+     * @return User Пользователь, удаливший бота из чата или канала.
      */
     public function getUser(): User
     {
@@ -33,7 +33,7 @@ final class BotRemovedFromChatEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, удалившего бота из чата.
+     * @return int Идентификатор пользователя, удалившего бота из чата или канала.
      */
     public function getUserId(): int
     {

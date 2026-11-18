@@ -12,11 +12,13 @@ use function array_values;
 
 /**
  * Администратор чата с правами доступа.
+ *
+ * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members/admins/
  */
 final class ChatAdmin extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{
@@ -29,15 +31,11 @@ final class ChatAdmin extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param int|null $userId Идентификатор пользователя-участника группового чата или канала,
+     * @param int|null $userId Идентификатор пользователя или бота, участвующего в групповом чате или канале,
      *     который назначается администратором.
      * @param ChatAdminPermission[]|null $permissions Перечень прав доступа пользователя или бота, который
-     *     назначается администратором группового чата или канала. Если право назначается действующему
-     *     администратору, то его текущие права будут обновлены в соответствии с переданным списком.
-     * @param non-empty-string|null $alias Описание роли, которое будет отображаться на клиентском устройстве
-     *     в настройках чата или канала рядом с именем пользователя. Если пользователь администратор или владелец
-     *     и ему не установлено это название, то поле не передаётся, клиентское устройство на своей стороне
-     *     подменит значение на соответствующее: "владелец" или "админ".
+     *     назначается администратором группового чата или канала.
+     * @param non-empty-string|null $alias Псевдоним администратора в чате (maxLength: 16).
      */
     public function __construct(?int $userId = null, ?array $permissions = null, ?string $alias = null)
     {
@@ -54,6 +52,9 @@ final class ChatAdmin extends BaseRequestModel
         }
     }
 
+    /**
+     * @return non-empty-string|null
+     */
     public function getAlias(): ?string
     {
         return $this->data['alias'] ?? null;
@@ -88,15 +89,11 @@ final class ChatAdmin extends BaseRequestModel
     }
 
     /**
-     * @param int $userId Идентификатор пользователя-участника группового чата или канала,
+     * @param int $userId Идентификатор пользователя или бота, участвующего в групповом чате или канале,
      *     который назначается администратором.
      * @param ChatAdminPermission[] $permissions Перечень прав доступа пользователя или бота, который
-     *     назначается администратором группового чата или канала. Если право назначается действующему
-     *     администратору, то его текущие права будут обновлены в соответствии с переданным списком.
-     * @param non-empty-string|null $alias Описание роли, которое будет отображаться на клиентском устройстве
-     *     в настройках чата или канала рядом с именем пользователя. Если пользователь администратор или владелец
-     *     и ему не установлено это название, то поле не передаётся, клиентское устройство на своей стороне
-     *     подменит значение на соответствующее: "владелец" или "админ".
+     *     назначается администратором группового чата или канала.
+     * @param non-empty-string|null $alias Псевдоним администратора в чате (maxLength: 16).
      */
     public static function make(int $userId, array $permissions, ?string $alias = null): self
     {
@@ -104,15 +101,11 @@ final class ChatAdmin extends BaseRequestModel
     }
 
     /**
-     * @param int|null $userId Идентификатор пользователя-участника группового чата или канала,
+     * @param int|null $userId Идентификатор пользователя или бота, участвующего в групповом чате или канале,
      *     который назначается администратором.
      * @param ChatAdminPermission[]|null $permissions Перечень прав доступа пользователя или бота, который
-     *     назначается администратором группового чата или канала. Если право назначается действующему
-     *     администратору, то его текущие права будут обновлены в соответствии с переданным списком.
-     * @param non-empty-string|null $alias Описание роли, которое будет отображаться на клиентском устройстве
-     *     в настройках чата или канала рядом с именем пользователя. Если пользователь администратор или владелец
-     *     и ему не установлено это название, то поле не передаётся, клиентское устройство на своей стороне
-     *     подменит значение на соответствующее: "владелец" или "админ".
+     *     назначается администратором группового чата или канала.
+     * @param non-empty-string|null $alias Псевдоним администратора в чате (maxLength: 16).
      */
     public static function new(?int $userId = null, ?array $permissions = null, ?string $alias = null): self
     {
@@ -120,15 +113,12 @@ final class ChatAdmin extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $alias Описание роли, которое будет отображаться на клиентском устройстве
-     *     в настройках чата или канала рядом с именем пользователя. Если пользователь администратор или владелец
-     *     и ему не установлено это название, то поле не передаётся, клиентское устройство на своей стороне
-     *     подменит значение на соответствующее: "владелец" или "админ".
+     * @param non-empty-string $alias Псевдоним администратора в чате (maxLength: 16).
      * @return $this
      */
     public function setAlias(string $alias): self
     {
-        self::validateString('alias', $alias, minLength: 1);
+        self::validateString('alias', $alias, minLength: 1, maxLength: 16);
 
         $this->data['alias'] = $alias;
 
@@ -137,19 +127,18 @@ final class ChatAdmin extends BaseRequestModel
 
     /**
      * @param ChatAdminPermission[] $permissions Перечень прав доступа пользователя или бота, который
-     *     назначается администратором группового чата или канала. Если право назначается действующему
-     *     администратору, то его текущие права будут обновлены в соответствии с переданным списком.
+     *     назначается администратором группового чата или канала.
      * @return $this
      */
     public function setPermissions(array $permissions): self
     {
-        $this->data['permissions'] = array_values(array_unique($permissions));
+        $this->data['permissions'] = array_values(array_unique($permissions, SORT_REGULAR));
 
         return $this;
     }
 
     /**
-     * @param int $userId Идентификатор пользователя-участника группового чата или канала,
+     * @param int $userId Идентификатор пользователя или бота, участвующего в групповом чате или канале,
      *     который назначается администратором.
      * @return $this
      */

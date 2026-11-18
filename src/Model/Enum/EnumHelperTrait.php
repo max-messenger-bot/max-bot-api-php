@@ -14,8 +14,10 @@ use BackedEnum;
 trait EnumHelperTrait
 {
     /**
-     * @param array<string|int> $values
-     * @return list<static>
+     * Преобразует известные значения в элементы перечисления, пропуская неизвестные.
+     *
+     * @param array<string|int> $values Значения элементов перечисления.
+     * @return list<static> Найденные элементы в порядке исходного списка.
      */
     public static function tryFromList(array $values): array
     {
@@ -31,8 +33,10 @@ trait EnumHelperTrait
     }
 
     /**
-     * @param array<string|int>|null $values
-     * @return list<static>|null
+     * Преобразует список значений, если он передан.
+     *
+     * @param array<string|int>|null $values Значения элементов перечисления или `null`.
+     * @return list<static>|null Найденные элементы или `null`, если список не передан.
      */
     public static function tryFromNullableList(?array $values): ?array
     {

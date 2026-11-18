@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+/**
+ * Вложение с предпросмотром ссылки и медиа.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ */
 class ShareAttachment extends Attachment
 {
     /**
@@ -27,13 +32,16 @@ class ShareAttachment extends Attachment
     }
 
     /**
-     * @return non-empty-string|null Изображение предпросмотра ссылки.
+     * @return non-empty-string|null URL изображения предпросмотра ссылки.
      */
     public function getImageUrl(): ?string
     {
         return $this->data['image_url'] ?? null;
     }
 
+    /**
+     * @return ShareAttachmentPayload Данные предпросмотра медиавложения.
+     */
     public function getPayload(): ShareAttachmentPayload
     {
         return $this->payload === false

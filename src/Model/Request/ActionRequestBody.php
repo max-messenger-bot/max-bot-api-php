@@ -10,6 +10,8 @@ use function array_key_exists;
 
 /**
  * Запрос на отправку действия бота в чат.
+ *
+ * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/actions/
  */
 final class ActionRequestBody extends BaseRequestModel
 {

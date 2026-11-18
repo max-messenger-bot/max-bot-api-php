@@ -40,6 +40,20 @@ final class LinkedMessageTest extends Unit
         self::assertNull($link->getSender());
     }
 
+    public function testInvalidSenderIdReturnsNull(): void
+    {
+        foreach ([0, '0', 'abc', ''] as $rawId) {
+            $link = LinkedMessage::newFromData([
+                'type' => 'reply',
+                'sender' => $rawId,
+                'chat_id' => 100,
+                'message' => ['mid' => 'mid.parent', 'seq' => 1, 'text' => 'родительское'],
+            ]);
+
+            self::assertNull($link->getSender());
+        }
+    }
+
     public function testMessage(): void
     {
         $body = LinkedMessage::newFromData([
@@ -66,6 +80,26 @@ final class LinkedMessageTest extends Unit
         self::assertTrue($link->isReply());
         self::assertFalse($link->isForward());
         self::assertSame(100, $link->getChatId());
+    }
+
+    public function testSenderIdCreatesHiddenUser(): void
+    {
+        foreach ([[200, 200], ['200', 200], [-200, -200], ['-200', -200]] as [$rawId, $expectedId]) {
+            $link = LinkedMessage::newFromData([
+                'type' => 'reply',
+                'sender' => $rawId,
+                'chat_id' => 100,
+                'message' => ['mid' => 'mid.parent', 'seq' => 1, 'text' => 'родительское'],
+            ]);
+
+            $sender = $link->getSender();
+            self::assertNotNull($sender);
+            self::assertSame($expectedId, $sender->getUserId());
+            self::assertSame('**HIDDEN**', $sender->getFirstName());
+            self::assertFalse($sender->isBot());
+            self::assertSame($sender, $link->getSender());
+            self::assertSame($rawId, $link->getRawData()['sender']);
+        }
     }
 
     public function testUnknownType(): void

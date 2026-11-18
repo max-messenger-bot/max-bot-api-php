@@ -36,8 +36,7 @@
     },
     "require": {
         "php": "^8.2",
-        "ext-mbstring": "*",
-        "mj4444/simple-http-client": "^0.2"
+        "ext-mbstring": "*"
     },
     "require-dev": {
         "codeception/codeception": "^5.3",
@@ -47,7 +46,9 @@
         "psr/http-client": "^1.0",
         "psr/http-factory": "^1.1",
         "psr/http-message": "^2.0",
-        "vimeo/psalm": "^6.16"
+        "sebastian/diff": "^6.0",
+        "symfony/console": "^7.4",
+        "vimeo/psalm": "^7.10"
     },
     "suggest": {
         "ext-curl": "To send API requests with the bundled CurlHttpClient; not needed with a PSR-18 client",
@@ -62,9 +63,7 @@
         "test": "codecept run"
     },
     "bin": [
-        "bin/max-chats",
         "bin/max-debug",
-        "bin/max-delete-chats",
         "bin/max-subscribe",
         "bin/max-subscribes",
         "bin/max-unsubscribe",

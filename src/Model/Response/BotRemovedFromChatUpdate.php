@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Вы получите это событие, как только бот будет удалён из чата.
+ * Событие удаления бота из чата или канала.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class BotRemovedFromChatUpdate extends Update
 {
@@ -21,7 +24,7 @@ class BotRemovedFromChatUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID чата, откуда был удалён бот.
+     * @return int Идентификатор чата или канала, откуда был удалён бот.
      */
     public function getChatId(): int
     {
@@ -29,7 +32,15 @@ class BotRemovedFromChatUpdate extends Update
     }
 
     /**
-     * @return User Пользователь, удаливший бота из чата.
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['chat_id', 'user', 'is_channel'];
+    }
+
+    /**
+     * @return User Пользователь, удаливший бота из чата или канала.
      */
     public function getUser(): User
     {

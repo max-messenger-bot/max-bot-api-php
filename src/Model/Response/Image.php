@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Общий класс, описывающий объект изображения.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Chat/
  */
 class Image extends BaseResponseModel
 {

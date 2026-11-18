@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
+
 /**
- * Вы получите это событие, как только пользователь будет добавлен в чат, где бот является администратором.
+ * Событие добавления пользователя в чат или канал, где бот является администратором с правом
+ * {@see ChatAdminPermission::ReadAllMessages}.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class UserAddedToChatUpdate extends Update
 {
@@ -22,7 +28,7 @@ class UserAddedToChatUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int Идентификатор чата или канала, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -30,8 +36,8 @@ class UserAddedToChatUpdate extends Update
     }
 
     /**
-     * @return int|null Пользователь, который добавил нового пользователя в чат.
-     *     Может быть `null`, если пользователь присоединился к чату по ссылке.
+     * @return int|null Идентификатор пользователя, который добавил нового пользователя в чат или канал.
+     *     Может быть `null`, если пользователь присоединился по ссылке.
      */
     public function getInviterId(): ?int
     {
@@ -39,7 +45,15 @@ class UserAddedToChatUpdate extends Update
     }
 
     /**
-     * @return User Пользователь, добавленный в чат.
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['chat_id', 'user', 'is_channel'];
+    }
+
+    /**
+     * @return User Пользователь, добавленный в чат или канал.
      */
     public function getUser(): User
     {

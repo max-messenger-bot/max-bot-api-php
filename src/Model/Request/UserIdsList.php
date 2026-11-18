@@ -4,35 +4,34 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\Exception\Validation\MaxItemsException;
-
 use function array_key_exists;
 use function array_map;
 use function array_unique;
 use function array_values;
-use function count;
 use function in_array;
 
 /**
- * Список ID пользователей для добавления в групповой чат.
+ * Список идентификаторов пользователей для добавления в групповой чат.
  *
  * Не более 100 элементов.
+ *
+ * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members/
  */
 final class UserIdsList extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{
-     *     user_ids: list<int>
+     *     user_ids: non-empty-list<int>
      * }
      * @psalm-suppress NonInvariantDocblockPropertyType, InvalidPropertyAssignmentValue
      */
     protected array $data = [];
 
     /**
-     * @param non-empty-array<int>|null $userIds Массив ID пользователей, которых вы хотите добавить
+     * @param non-empty-array<int>|null $userIds Массив идентификаторов пользователей, которых вы хотите добавить
      *     в групповой чат (maxItems: 100).
      */
     public function __construct(?array $userIds = null)
@@ -45,6 +44,8 @@ final class UserIdsList extends BaseRequestModel
     }
 
     /**
+     * Добавляет идентификатор пользователя в список, если его там ещё нет.
+     *
      * @param int $userId Идентификатор пользователя.
      * @return $this
      */
@@ -57,18 +58,18 @@ final class UserIdsList extends BaseRequestModel
         }
 
         if (!in_array($userId, $this->data['user_ids'], true)) {
-            if (count($this->data['user_ids']) >= 100) {
-                throw new MaxItemsException('user_ids', 101, 100);
-            }
+            $userIds = [...$this->data['user_ids'], $userId];
 
-            $this->data['user_ids'][] = $userId;
+            self::validateArray('userId', $userIds, maxItems: 100);
+
+            $this->data['user_ids'] = $userIds;
         }
 
         return $this;
     }
 
     /**
-     * @return list<int>
+     * @return non-empty-list<int>
      */
     public function getUserIds(): array
     {
@@ -81,7 +82,7 @@ final class UserIdsList extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-array<int> $userIds Массив ID пользователей, которых вы хотите добавить
+     * @param non-empty-array<int> $userIds Массив идентификаторов пользователей, которых вы хотите добавить
      *     в групповой чат (maxItems: 100).
      */
     public static function make(array $userIds): self
@@ -90,7 +91,7 @@ final class UserIdsList extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-array<int>|null $userIds Массив ID пользователей, которых вы хотите добавить
+     * @param non-empty-array<int>|null $userIds Массив идентификаторов пользователей, которых вы хотите добавить
      *     в групповой чат (maxItems: 100).
      */
     public static function new(?array $userIds = null): self
@@ -99,28 +100,18 @@ final class UserIdsList extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-array<int> $userIds Массив ID пользователей, которых вы хотите добавить
+     * @param non-empty-array<int> $userIds Массив идентификаторов пользователей, которых вы хотите добавить
      *     в групповой чат (maxItems: 100).
      * @return $this
      */
     public function setUserIds(array $userIds): self
     {
-        $this->data['user_ids'] = static::prepareUserIds($userIds);
-
-        return $this;
-    }
-
-    /**
-     * @param non-empty-array<int> $userIds Массив ID пользователей, которых вы хотите добавить
-     *     в групповой чат (maxItems: 100).
-     * @return non-empty-list<int>
-     */
-    protected static function prepareUserIds(array $userIds): array
-    {
         $userIds = array_values(array_unique(array_map('\intval', $userIds)));
 
-        self::validateArray('user_ids', $userIds, minItems: 1, maxItems: 100);
+        self::validateArray('userIds', $userIds, minItems: 1, maxItems: 100);
 
-        return $userIds;
+        $this->data['user_ids'] = $userIds;
+
+        return $this;
     }
 }

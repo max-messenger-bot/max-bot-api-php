@@ -12,19 +12,48 @@ use MaxMessenger\Bot\Exception\Validation\MaxLengthException;
 use MaxMessenger\Bot\Exception\Validation\MinimumException;
 use MaxMessenger\Bot\Exception\Validation\MinItemsException;
 use MaxMessenger\Bot\Exception\Validation\MinLengthException;
-use MaxMessenger\Bot\Exception\Validation\MustBeLessException;
 
 use function count;
 use function mb_strlen;
 use function preg_match;
 
+/**
+ * Проверяет аргументы методов моделей запросов и клиента API.
+ */
 trait ValidateTrait
 {
     /**
-     * @var bool If validation is not working correctly, you can disable it by setting the value to `true`.
+     * @var bool `true` Отключает проверки аргументов методов. Свойство объявлено в трейте, поэтому значение
+     *     задаётся отдельно для каждого класса, использующего трейт (и наследуется его потомками).
+     *     Проверки обязательных полей при сериализации не отключаются.
      */
     public static bool $disableValidation = false;
 
+    /**
+     * Проверяет версию API.
+     *
+     * @param string $argumentName Имя проверяемого аргумента.
+     * @param string|null $value Проверяемая версия API.
+     */
+    protected static function validateApiVersion(string $argumentName, ?string $value): void
+    {
+        if (static::$disableValidation) {
+            return;
+        }
+
+        if (!preg_match('/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/', $value ?? '')) {
+            throw new MatchException($argumentName);
+        }
+    }
+
+    /**
+     * Проверяет количество элементов массива, если значение передано.
+     *
+     * @param string $argumentName Имя проверяемого аргумента.
+     * @param array|null $value Значение аргумента или `null`.
+     * @param int|null $minItems Минимальное количество элементов.
+     * @param int|null $maxItems Максимальное количество элементов.
+     */
     protected static function validateArray(
         string $argumentName,
         ?array $value,
@@ -49,7 +78,12 @@ trait ValidateTrait
     }
 
     /**
-     * @param array[]|null $value
+     * Проверяет количество элементов во вложенных массивах.
+     *
+     * @param string $argumentName Имя проверяемого аргумента.
+     * @param array[]|null $value Двумерный массив или `null`.
+     * @param int|null $minItems Минимальное количество элементов в каждом вложенном массиве.
+     * @param int|null $maxItems Максимальное количество элементов в каждом вложенном массиве.
      */
     protected static function validateArray2D(
         string $argumentName,
@@ -69,6 +103,31 @@ trait ValidateTrait
         }
     }
 
+    /**
+     * Проверяет идентификатор нажатия callback-кнопки.
+     *
+     * @param string $argumentName Имя проверяемого аргумента.
+     * @param string|null $value Проверяемый идентификатор.
+     */
+    protected static function validateCallbackId(string $argumentName, ?string $value): void
+    {
+        if (static::$disableValidation) {
+            return;
+        }
+
+        if (!preg_match('/^\s*\S[\s\S]*$/', $value ?? '')) {
+            throw new MatchException($argumentName);
+        }
+    }
+
+    /**
+     * Проверяет целое число на попадание в допустимые границы.
+     *
+     * @param string $argumentName Имя проверяемого аргумента.
+     * @param int|null $value Значение аргумента или `null`.
+     * @param int|null $minimum Минимальное допустимое значение.
+     * @param int|null $maximum Максимальное допустимое значение.
+     */
     protected static function validateInt(
         string $argumentName,
         ?int $value,
@@ -88,17 +147,28 @@ trait ValidateTrait
         }
     }
 
-    protected static function validateMustBeLess(
-        string $argument1Name,
-        string $argument2Name,
-        bool $conditionIsMet,
-    ): void {
-        if (!static::$disableValidation && !$conditionIsMet) {
-            throw new MustBeLessException($argument1Name, $argument2Name);
+    /**
+     * Проверяет идентификатор сообщения, поста или комментария.
+     *
+     * @param string $argumentName Имя проверяемого аргумента.
+     * @param string|null $value Проверяемый идентификатор (`mid`).
+     */
+    protected static function validateMid(string $argumentName, ?string $value): void
+    {
+        if (static::$disableValidation) {
+            return;
+        }
+
+        if (!preg_match('/^mid\.[a-zA-Z0-9_-]+$/', $value ?? '')) {
+            throw new MatchException($argumentName);
         }
     }
 
     /**
+     * Проверяет, что значение обязательного аргумента передано.
+     *
+     * @param string $argumentName Имя проверяемого аргумента.
+     * @param mixed $value Значение аргумента.
      * @psalm-assert !null $value
      */
     protected static function validateNotNull(string $argumentName, mixed $value): void
@@ -109,7 +179,13 @@ trait ValidateTrait
     }
 
     /**
-     * @param non-empty-string|null $pattern
+     * Проверяет длину строки и соответствие шаблону.
+     *
+     * @param string $argumentName Имя проверяемого аргумента.
+     * @param string|null $value Значение аргумента или `null`.
+     * @param int|null $minLength Минимальная длина строки.
+     * @param int|null $maxLength Максимальная длина строки.
+     * @param non-empty-string|null $pattern Регулярное выражение для проверки строки.
      */
     protected static function validateString(
         string $argumentName,
@@ -135,6 +211,34 @@ trait ValidateTrait
         }
 
         if ($pattern !== null && !preg_match($pattern, $value)) {
+            throw new MatchException($argumentName);
+        }
+    }
+
+    /**
+     * Проверяет адрес подписки Webhook.
+     *
+     * @param string $argumentName Имя проверяемого аргумента.
+     * @param string|null $value Проверяемый адрес подписки.
+     */
+    protected static function validateSubscriptionUrl(string $argumentName, ?string $value): void
+    {
+        self::validateString($argumentName, $value, minLength: 12);
+    }
+
+    /**
+     * Проверяет токен видеовложения.
+     *
+     * @param string $argumentName Имя проверяемого аргумента.
+     * @param string|null $value Проверяемый токен.
+     */
+    protected static function validateVideoToken(string $argumentName, ?string $value): void
+    {
+        if (static::$disableValidation) {
+            return;
+        }
+
+        if (!preg_match('/^vid\.[\x21-\x7E]+$/', $value ?? '')) {
             throw new MatchException($argumentName);
         }
     }

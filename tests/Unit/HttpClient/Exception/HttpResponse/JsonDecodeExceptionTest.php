@@ -68,6 +68,6 @@ final class JsonDecodeExceptionTest extends Unit
 
     private function createResponse(int $httpCode): HttpResponse
     {
-        return new HttpResponse($httpCode, 'https://example.test/messages', 'application/json', 'not json');
+        return new HttpResponse($httpCode, 'application/json', 'not json');
     }
 }

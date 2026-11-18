@@ -23,6 +23,8 @@ use function sprintf;
  *
  * Если есть подписки - выводит сообщение о невозможности Long Polling
  * Если подписок нет - запускает бесконечный цикл получения событий
+ *
+ * @psalm-cli-only
  */
 final class MaxDebug
 {
@@ -31,6 +33,12 @@ final class MaxDebug
      */
     public static function main(): void
     {
+        Utils::handleHelp(
+            'max-debug',
+            "Выводит в реальном времени события, поступающие боту через Long Polling.\n"
+            . 'Если у бота есть Webhook-подписки, Long Polling не работает: утилита сообщит об этом.',
+        );
+
         Utils::printHeader('Отладка Max Bot API (Long Polling)');
 
         // Шаг 1: Токен доступа
@@ -38,7 +46,7 @@ final class MaxDebug
         echo "✓ Токен доступа принят\n";
 
         // Создание API клиента
-        $client = new MaxApiClient($accessToken);
+        $client = Utils::createApiClient($accessToken);
 
         // Проверка подписок и запуск Long Polling
         self::checkAndRunLongPolling($client);

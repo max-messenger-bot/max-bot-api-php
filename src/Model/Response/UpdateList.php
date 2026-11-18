@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Список событий в чатах и каналах, в которые добавлен бот.
+ * Список событий в диалогах с ботом, а также в групповых чатах и каналах, в которые он добавлен.
  *
- * Обратите внимание, чтобы получать события из групповых чатов и каналов,
- * бот должен быть администратором
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class UpdateList extends BaseResponseModel
 {

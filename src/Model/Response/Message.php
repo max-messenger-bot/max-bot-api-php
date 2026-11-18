@@ -78,7 +78,8 @@ class Message extends BaseResponseModel
     }
 
     /**
-     * @return MessageStat|null Статистика просмотров постов и репостов — возвращается только для каналов.
+     * @return MessageStat|null Статистика просмотров постов и репостов.
+     *     Возвращается только для каналов при вызове метода получения сообщений.
      */
     public function getStat(): ?MessageStat
     {
@@ -112,8 +113,8 @@ class Message extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null Публичная ссылка на пост в канале.
-     *     Отсутствует для диалогов и групповых чатов.
+     * @return non-empty-string|null Публичная ссылка на сообщение или пост в канале.
+     *     Может отсутствовать для диалогов и непубличных чатов или каналов.
      */
     public function getUrl(): ?string
     {

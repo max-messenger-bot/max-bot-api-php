@@ -11,10 +11,9 @@ final class HttpResponseTest extends Unit
 {
     public function testDefaults(): void
     {
-        $response = new HttpResponse(200, 'https://example.test/messages');
+        $response = new HttpResponse(200);
 
         self::assertSame(200, $response->getHttpCode());
-        self::assertSame('https://example.test/messages', $response->getUrl());
         self::assertNull($response->getContentType());
         self::assertSame('', $response->getBody());
         self::assertSame([], $response->getHeaders());
@@ -36,10 +35,9 @@ final class HttpResponseTest extends Unit
     public function testGetters(): void
     {
         $headers = ['content-type' => ['application/json']];
-        $response = new HttpResponse(404, 'https://example.test/chats', 'application/json', '{"code":"x"}', $headers);
+        $response = new HttpResponse(404, 'application/json', '{"code":"x"}', $headers);
 
         self::assertSame(404, $response->getHttpCode());
-        self::assertSame('https://example.test/chats', $response->getUrl());
         self::assertSame('application/json', $response->getContentType());
         self::assertSame('{"code":"x"}', $response->getBody());
         self::assertSame($headers, $response->getHeaders());
@@ -50,6 +48,6 @@ final class HttpResponseTest extends Unit
      */
     private function createResponse(array $headers): HttpResponse
     {
-        return new HttpResponse(200, 'https://example.test/messages', 'application/json', '{}', $headers);
+        return new HttpResponse(200, 'application/json', '{}', $headers);
     }
 }

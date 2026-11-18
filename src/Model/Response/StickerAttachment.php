@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+/**
+ * Вложение со стикером в сообщении.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ */
 class StickerAttachment extends Attachment
 {
     /**
      * @var array{
      *     payload: array,
-     *     width: int,
-     *     height: int
+     *     width: non-negative-int,
+     *     height: non-negative-int
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
@@ -18,13 +23,16 @@ class StickerAttachment extends Attachment
     private StickerAttachmentPayload|false $payload = false;
 
     /**
-     * @return int Высота стикера.
+     * @return non-negative-int Высота стикера.
      */
     public function getHeight(): int
     {
         return $this->data['height'];
     }
 
+    /**
+     * @return StickerAttachmentPayload Данные прикреплённого стикера.
+     */
     public function getPayload(): StickerAttachmentPayload
     {
         return $this->payload === false
@@ -33,7 +41,7 @@ class StickerAttachment extends Attachment
     }
 
     /**
-     * @return int Ширина стикера.
+     * @return non-negative-int Ширина стикера.
      */
     public function getWidth(): int
     {

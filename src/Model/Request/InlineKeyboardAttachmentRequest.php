@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\Model\Enum\AttachmentRequestType;
+use MaxMessenger\Bot\Model\Enum\AttachmentType;
 
 use function array_key_exists;
 use function is_array;
 
 /**
  * Запрос на прикрепление клавиатуры к сообщению.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 final class InlineKeyboardAttachmentRequest extends AttachmentRequest
 {
@@ -32,7 +36,7 @@ final class InlineKeyboardAttachmentRequest extends AttachmentRequest
     {
         $this->required = ['payload'];
 
-        parent::__construct(AttachmentRequestType::InlineKeyboard);
+        parent::__construct(AttachmentType::InlineKeyboard);
 
         if (is_array($payloadOrButtons)) {
             $this->setPayload(new InlineKeyboardAttachmentRequestPayload($payloadOrButtons));
@@ -62,7 +66,7 @@ final class InlineKeyboardAttachmentRequest extends AttachmentRequest
 
     /**
      * @param InlineKeyboardAttachmentRequestPayload|non-empty-array<non-empty-array<Button>>|null $payloadOrButtons
-     *     Payload с данными клавиатуры или двумерный массив кнопок
+     *     Payload с данными клавиатуры или двумерный массив кнопок.
      */
     public static function new(InlineKeyboardAttachmentRequestPayload|array|null $payloadOrButtons = null): self
     {

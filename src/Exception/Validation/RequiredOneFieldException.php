@@ -8,14 +8,14 @@ use function implode;
 use function sprintf;
 
 /**
- * At least one field must be non-null.
+ * Хотя бы одно поле должно отличаться от `null`.
  *
- * Exception thrown when at least one field from a list must be provided.
+ * Возникает, если все перечисленные поля равны `null`.
  */
 final class RequiredOneFieldException extends ValidationException
 {
     /**
-     * @param string[] $fieldNames
+     * @param string[] $fieldNames Имена полей, среди которых хотя бы одно должно иметь значение.
      */
     public function __construct(array $fieldNames)
     {

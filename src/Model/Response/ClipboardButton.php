@@ -8,6 +8,9 @@ namespace MaxMessenger\Bot\Model\Response;
  * Кнопка буфера обмена.
  *
  * После нажатия на кнопку указанный текст копируется в буфер обмена.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 class ClipboardButton extends Button
 {

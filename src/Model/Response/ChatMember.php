@@ -8,8 +8,10 @@ use DateTimeImmutable;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
 
+use function in_array;
+
 /**
- * Объект включает общую информацию о пользователе или боте, URL аватара и описание (при наличии).
+ * Информация о пользователе или боте, включая URL аватара и описание (при наличии).
  *
  * Дополнительно содержит данные для пользователей-участников чата или канала.
  * Возвращается только при вызове некоторых методов группы `/chats`, например {@see MaxApiClient::getMembers()}
@@ -32,10 +34,7 @@ class ChatMember extends UserWithPhoto
     protected readonly array $data;
 
     /**
-     * @return string|null Описание роли, которое будет отображаться на клиентском устройстве в настройках
-     *     чата или канала рядом с именем пользователя. Если пользователь администратор или владелец и ему
-     *     не установлено это название, то поле не передаётся, клиентское устройство на своей стороне подменит
-     *     значение на соответствующее: "владелец" или "админ".
+     * @return string|null Псевдоним участника в чате (maxLength: 16). Может быть только у администратора.
      */
     public function getAlias(): ?string
     {
@@ -59,8 +58,8 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return DateTimeImmutable Время последней активности пользователя в чате.
-     *     Может быть устаревшим для суперчатов (равно времени вступления).
+     * @return DateTimeImmutable Время последней активности пользователя в чате или канале.
+     *     Может быть устаревшим для суперчатов и каналов (равно времени вступления).
      */
     public function getLastAccessTime(): DateTimeImmutable
     {
@@ -68,8 +67,8 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return non-negative-int Время последней активности пользователя в чате.
-     *     Может быть устаревшим для суперчатов (равно времени вступления).
+     * @return non-negative-int Время последней активности пользователя в чате или канале (Unix-время в миллисекундах).
+     *     Может быть устаревшим для суперчатов и каналов (равно времени вступления).
      */
     public function getLastAccessTimeRaw(): int
     {
@@ -86,12 +85,23 @@ class ChatMember extends UserWithPhoto
     }
 
     /**
-     * @return list<string>|null Перечень прав доступа пользователя или бота, если тот является
+     * @return list<non-empty-string>|null Перечень прав доступа пользователя или бота, если тот является
      *     администратором группового чата или канала. Для обычных участников чата или канала поле не возвращается.
+     *     Значения описаны в {@see ChatAdminPermission}.
      */
     public function getPermissionsRaw(): ?array
     {
         return $this->data['permissions'] ?? null;
+    }
+
+    /**
+     * Проверяет наличие права администратора у участника.
+     *
+     * @param ChatAdminPermission $permission Проверяемое право.
+     */
+    public function hasPermission(ChatAdminPermission $permission): bool
+    {
+        return in_array($permission->value, $this->data['permissions'] ?? [], true);
     }
 
     /**

@@ -5,19 +5,46 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit\MaxBot\Event;
 
 use Codeception\Test\Unit;
-use MaxMessenger\Bot\Exception\MaxBot\Event\EventException;
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
+use MaxMessenger\Bot\Model\Response\ContactAttachment;
 use MaxMessenger\Bot\Model\Response\Message;
 use MaxMessenger\Bot\Model\Response\Update;
 use MaxMessenger\Bot\Model\Response\User;
+
+use function hash_hmac;
 
 final class MessageCreatedEventTest extends Unit
 {
     public function testGetChatId(): void
     {
         self::assertSame(100, $this->createEvent()->getChatId());
+    }
+
+    public function testGetContactAttachment(): void
+    {
+        $event = $this->createEvent(attachments: [$this->createContactAttachment()]);
+        $contact = $event->getContactAttachment();
+
+        self::assertInstanceOf(ContactAttachment::class, $contact);
+        self::assertSame($contact, $event->getContactAttachment());
+        self::assertTrue($event->isContact());
+        self::assertTrue($event->isSelfContact());
+    }
+
+    public function testGetContactAttachmentWithKeyboard(): void
+    {
+        $event = $this->createEvent(attachments: [
+            ['type' => 'inline_keyboard', 'payload' => ['buttons' => [[
+                ['type' => 'callback', 'text' => 'Кнопка', 'payload' => 'test'],
+            ]]]],
+            $this->createContactAttachment(),
+        ]);
+
+        self::assertInstanceOf(ContactAttachment::class, $event->getContactAttachment());
+        self::assertTrue($event->isContact());
+        self::assertTrue($event->isSelfContact());
     }
 
     public function testGetMessage(): void
@@ -63,6 +90,14 @@ final class MessageCreatedEventTest extends Unit
         self::assertFalse($event->isDialog());
     }
 
+    public function testIsContactWithoutContact(): void
+    {
+        $event = $this->createEvent();
+
+        self::assertNull($event->getContactAttachment());
+        self::assertFalse($event->isContact());
+    }
+
     public function testIsDialog(): void
     {
         $event = $this->createEvent();
@@ -71,37 +106,17 @@ final class MessageCreatedEventTest extends Unit
         self::assertFalse($event->isChannel());
     }
 
+    public function testIsSelfContactFalseWithInvalidHash(): void
+    {
+        $event = $this->createEvent(attachments: [$this->createContactAttachment(validHash: false)]);
+
+        self::assertTrue($event->isContact());
+        self::assertFalse($event->isSelfContact());
+    }
+
     public function testIsSelfContactFalseWithoutContact(): void
     {
         self::assertFalse($this->createEvent()->isSelfContact());
-    }
-
-    public function testNoMessage(): void
-    {
-        $event = $this->createEvent(withMessage: false);
-
-        self::assertFalse($event->hasMessage());
-
-        $this->expectException(EventException::class);
-
-        $event->getMessage();
-    }
-
-    public function testNoMessageInterruptsHandler(): void
-    {
-        $event = $this->createEvent(withMessage: false);
-        $called = false;
-
-        $handled = $event->handle(function (MessageCreatedEvent $event) use (&$called): bool {
-            $called = true;
-            $event->getChatId();
-
-            return true;
-        });
-
-        self::assertTrue($called);
-        self::assertFalse($handled);
-        self::assertFalse($event->isHandled);
     }
 
     public function testNoUserLocale(): void
@@ -109,10 +124,24 @@ final class MessageCreatedEventTest extends Unit
         self::assertNull($this->createEvent(userLocale: null)->getUserLocale());
     }
 
+    private function createContactAttachment(bool $validHash = true): array
+    {
+        $vcf = "BEGIN:VCARD\nTEL:79990000000\nEND:VCARD\n";
+
+        return [
+            'type' => 'contact',
+            'payload' => [
+                'vcf_info' => $vcf,
+                'hash' => $validHash ? hash_hmac('sha256', $vcf, 'test-token') : 'invalid',
+            ],
+        ];
+    }
+
     private function createEvent(
         string $chatType = 'dialog',
         ?string $userLocale = 'ru-RU',
         bool $withMessage = true,
+        ?array $attachments = null,
     ): MessageCreatedEvent {
         $message = [
             'sender' => ['user_id' => 200, 'first_name' => 'Иван', 'is_bot' => false],
@@ -120,6 +149,9 @@ final class MessageCreatedEventTest extends Unit
             'timestamp' => 1_700_000_000_000,
             'body' => ['mid' => 'mid.1', 'seq' => 1, 'text' => 'Привет'],
         ];
+        if ($attachments !== null) {
+            $message['body']['attachments'] = $attachments;
+        }
 
         $data = [
             'update_type' => 'message_created',

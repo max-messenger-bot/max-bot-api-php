@@ -6,10 +6,17 @@ namespace MaxMessenger\Bot\Model\Request;
 
 use function array_key_exists;
 
+/**
+ * Контактные данные для вложения в отправляемое сообщение.
+ *
+ * Необходимо указать хотя бы одно из полей: `contact_id` или `vcf_info`.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody
+ */
 final class ContactAttachmentRequestPayload extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{
@@ -21,7 +28,7 @@ final class ContactAttachmentRequestPayload extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param int|null $contactId ID контакта, если он зарегистрирован в MAX.
+     * @param int|null $contactId Идентификатор пользователя, если он зарегистрирован в МАКС.
      * @param non-empty-string|null $vcfInfo Полная информация о контакте в формате VCF (minLength: 20).
      */
     public function __construct(
@@ -62,7 +69,7 @@ final class ContactAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param int|null $contactId ID контакта, если он зарегистрирован в MAX.
+     * @param int|null $contactId Идентификатор пользователя, если он зарегистрирован в МАКС.
      * @param non-empty-string|null $vcfInfo Полная информация о контакте в формате VCF (minLength: 20).
      */
     public static function make(
@@ -73,7 +80,7 @@ final class ContactAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param int|null $contactId ID контакта, если он зарегистрирован в MAX.
+     * @param int|null $contactId Идентификатор пользователя, если он зарегистрирован в МАКС.
      * @param non-empty-string|null $vcfInfo Полная информация о контакте в формате VCF (minLength: 20).
      */
     public static function new(
@@ -84,7 +91,7 @@ final class ContactAttachmentRequestPayload extends BaseRequestModel
     }
 
     /**
-     * @param int $contactId ID контакта, если он зарегистрирован в MAX.
+     * @param int $contactId Идентификатор пользователя, если он зарегистрирован в МАКС.
      * @return $this
      */
     public function setContactId(int $contactId): self

@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\CurlHttpClient;
 
+use Closure;
 use CurlHandle;
 use LogicException;
 use MaxMessenger\Bot\Contract\Http\HttpClientInterface;
 use MaxMessenger\Bot\Contract\Http\HttpRequestInterface;
 use MaxMessenger\Bot\Contract\Http\HttpResponseInterface;
+use MaxMessenger\Bot\Contract\Http\StreamInterface;
 use MaxMessenger\Bot\CurlHttpClient\Exception\CurlException;
-use MaxMessenger\Bot\HttpClient\Exception\NetworkException;
+use MaxMessenger\Bot\HttpClient\Exception\TemporaryNetworkException;
+use MaxMessenger\Bot\HttpClient\Exception\TimeoutException;
 use MaxMessenger\Bot\HttpClient\HttpResponse;
+use MaxMessenger\Bot\HttpClient\TransportErrorType;
 
 use function array_replace;
 use function count;
@@ -22,33 +26,40 @@ use function curl_getinfo;
 use function curl_init;
 use function curl_reset;
 use function curl_setopt_array;
+use function defined;
 use function explode;
 use function in_array;
 use function is_string;
+use function str_starts_with;
 use function strlen;
 use function trim;
 
 /**
  * HTTP-клиент на основе curl.
  *
- * Выполняет запросы {@see HttpRequestInterface} и возвращает {@see HttpResponse}. Настройки curl задаются
- * методами `set*`, произвольные параметры — методом {@see setOption()}.
+ * Выполняет запросы {@see HttpRequestInterface} и возвращает {@see HttpResponse}.
+ * Настройки curl задаются методами `set*`, произвольные параметры — методом {@see setOption()}.
  */
 final class CurlHttpClient implements HttpClientInterface
 {
     /**
-     * Переиспользовать соединение между запросами.
-     *
-     * Экономит установку соединения и TLS-рукопожатие при частых запросах, например при опросе событий.
+     * @var int Максимальный размер потокового тела в байтах, передаваемого строкой через `CURLOPT_POSTFIELDS`.
+     */
+    public int $postDataStringThreshold = 256 * 1024;
+    /**
+     * @var bool Сохранять дескриптор curl между запросами, чтобы curl мог повторно использовать соединение.
      */
     public bool $usePersistentCurlHandle = true;
     private ?CurlHandle $curlHandle = null;
 
     /**
      * @param array<int, mixed> $options Параметры curl.
+     * @param (Closure(CurlException): ?TransportErrorType)|null $errorClassifier Определитель ошибок curl.
+     *     `null` в результате вызывает встроенное правило; {@see TransportErrorType::Permanent} отключает повтор.
      */
     public function __construct(
         private array $options = [],
+        private ?Closure $errorClassifier = null,
     ) {}
 
     /**
@@ -59,6 +70,12 @@ final class CurlHttpClient implements HttpClientInterface
         return $this->options;
     }
 
+    /**
+     * Выполняет запрос к API через curl.
+     *
+     * @param HttpRequestInterface $request Запрос к API.
+     * @return HttpResponseInterface Ответ сервера.
+     */
     public function request(HttpRequestInterface $request): HttpResponseInterface
     {
         $method = $request->getMethod();
@@ -69,15 +86,26 @@ final class CurlHttpClient implements HttpClientInterface
             CURLOPT_URL => $request->getUrl(),
             CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_NOBODY => $method === 'HEAD',
         ]);
 
-        if ($body !== null) {
-            $contentType = $body->getContentType();
-            if ($contentType !== null) {
-                $headers['Content-Type'] = $contentType;
-            }
+        $stream = null;
 
-            $options[CURLOPT_POSTFIELDS] = $body->getBody();
+        if ($body !== null) {
+            $headers['Content-Type'] = $body->getContentType();
+
+            $content = $body->getBody();
+            if ($content instanceof StreamInterface) {
+                $content->seek(0);
+
+                if ($content->getSize() <= $this->postDataStringThreshold) {
+                    $options[CURLOPT_POSTFIELDS] = $content->getContents();
+                } else {
+                    $stream = $content;
+                }
+            } else {
+                $options[CURLOPT_POSTFIELDS] = $content;
+            }
         } elseif (in_array($method, ['POST', 'PUT', 'PATCH'], true)) {
             $options[CURLOPT_POSTFIELDS] = '';
         }
@@ -87,12 +115,31 @@ final class CurlHttpClient implements HttpClientInterface
             $curlHeaders[] = $name . ': ' . $value;
         }
 
+        if ($stream !== null) {
+            $options[CURLOPT_UPLOAD] = true;
+            $options[CURLOPT_INFILESIZE] = $stream->getSize();
+            $options[CURLOPT_READFUNCTION] = static fn(CurlHandle $curlHandle, mixed $fileHandle, int $length): string
+                => $length > 0 ? $stream->read($length) : '';
+
+            // Заголовок без значения убирает `Expect: 100-continue`, который curl добавляет
+            // к большому телу: иначе перед отправкой данных он ждёт ответа сервера.
+            $curlHeaders[] = 'Expect:';
+        }
+
         $options[CURLOPT_HTTPHEADER] = $curlHeaders;
 
         $timeout = $request->getTimeout();
         if ($timeout !== null) {
             unset($options[CURLOPT_TIMEOUT]);
             $options[CURLOPT_TIMEOUT_MS] = $timeout;
+        }
+
+        $lowSpeedLimit = $request->getLowSpeedLimit();
+        $lowSpeedTime = $request->getLowSpeedTime();
+
+        if ($lowSpeedLimit !== null && $lowSpeedTime !== null) {
+            $options[CURLOPT_LOW_SPEED_LIMIT] = $lowSpeedLimit;
+            $options[CURLOPT_LOW_SPEED_TIME] = $lowSpeedTime;
         }
 
         return $this->execute($options, $request);
@@ -111,9 +158,8 @@ final class CurlHttpClient implements HttpClientInterface
     }
 
     /**
-     * Путь к папке с сертификатами удостоверяющих центров (`CURLOPT_CAPATH`).
-     *
-     * @param non-empty-string|null $caCertificateDir Путь к папке или `null`, чтобы использовать системные сертификаты.
+     * @param non-empty-string|null $caCertificateDir Путь к папке с сертификатами удостоверяющих центров
+     *     (`CURLOPT_CAPATH`) или `null`, чтобы использовать системные сертификаты.
      * @return $this
      */
     public function setCaCertificateDir(?string $caCertificateDir): static
@@ -122,10 +168,8 @@ final class CurlHttpClient implements HttpClientInterface
     }
 
     /**
-     * Путь к файлу с сертификатами удостоверяющих центров (`CURLOPT_CAINFO`).
-     *
-     * @param non-empty-string|null $caCertificatePath Путь к файлу или `null`, чтобы использовать
-     *     системные сертификаты.
+     * @param non-empty-string|null $caCertificatePath Путь к файлу с сертификатами удостоверяющих центров
+     *     (`CURLOPT_CAINFO`) или `null`, чтобы использовать системные сертификаты.
      * @return $this
      */
     public function setCaCertificatePath(?string $caCertificatePath): static
@@ -140,6 +184,18 @@ final class CurlHttpClient implements HttpClientInterface
     public function setConnectTimeout(?int $connectTimeout): static
     {
         return $this->setOption(CURLOPT_CONNECTTIMEOUT_MS, $connectTimeout);
+    }
+
+    /**
+     * @param (Closure(CurlException): ?TransportErrorType)|null $errorClassifier Определитель ошибок curl.
+     *     `null` удаляет callback; `null` в результате вызывает встроенное правило.
+     * @return $this
+     */
+    public function setErrorClassifier(?Closure $errorClassifier): static
+    {
+        $this->errorClassifier = $errorClassifier;
+
+        return $this;
     }
 
     /**
@@ -194,6 +250,26 @@ final class CurlHttpClient implements HttpClientInterface
     }
 
     /**
+     * Настраивает использование системного хранилища сертификатов, если это поддерживается libcurl.
+     *
+     * @param bool $useNativeCaCertificates Включить или отключить `CURLSSLOPT_NATIVE_CA`.
+     * @return $this
+     */
+    public function setUseNativeCaCertificates(bool $useNativeCaCertificates): static
+    {
+        if (!defined('CURLSSLOPT_NATIVE_CA')) {
+            return $this;
+        }
+
+        $sslOptions = (int) ($this->options[CURLOPT_SSL_OPTIONS] ?? 0);
+        $sslOptions = $useNativeCaCertificates
+            ? $sslOptions | CURLSSLOPT_NATIVE_CA
+            : $sslOptions & ~CURLSSLOPT_NATIVE_CA;
+
+        return $this->setOption(CURLOPT_SSL_OPTIONS, $sslOptions !== 0 ? $sslOptions : null);
+    }
+
+    /**
      * @param non-empty-string|null $userAgent Значение заголовка `User-Agent`.
      * @return $this
      */
@@ -203,15 +279,34 @@ final class CurlHttpClient implements HttpClientInterface
     }
 
     /**
-     * Проверять ли TLS-сертификат сервера.
-     *
-     * @param bool $verifySslCertificate `false` отключает проверку сертификата.
+     * @param bool $verifySslCertificate Нужно ли проверять TLS-сертификат сервера. `false` отключает проверку.
      * @return $this
      */
     public function setVerifySslCertificate(bool $verifySslCertificate): static
     {
-        return $this->setOption(CURLOPT_SSL_VERIFYPEER, $verifySslCertificate)
+        return $this
+            ->setOption(CURLOPT_SSL_VERIFYPEER, $verifySslCertificate)
             ->setOption(CURLOPT_SSL_VERIFYHOST, $verifySslCertificate ? 2 : 0);
+    }
+
+    private static function classifyError(CurlException $exception): ?TransportErrorType
+    {
+        $code = $exception->getCode();
+
+        if ($code === CURLE_OPERATION_TIMEOUTED) {
+            return TransportErrorType::Timeout;
+        }
+
+        return in_array($code, [
+            CURLE_COULDNT_RESOLVE_PROXY,
+            CURLE_COULDNT_RESOLVE_HOST,
+            CURLE_COULDNT_CONNECT,
+            CURLE_PARTIAL_FILE,
+            CURLE_SSL_CONNECT_ERROR,
+            CURLE_GOT_NOTHING,
+            CURLE_SEND_ERROR,
+            CURLE_RECV_ERROR,
+        ], true) ? TransportErrorType::TemporaryNetwork : null;
     }
 
     /**
@@ -220,22 +315,30 @@ final class CurlHttpClient implements HttpClientInterface
      * @param array<int, mixed> $options Параметры curl.
      * @param HttpRequestInterface $request Запрос.
      * @return HttpResponseInterface Ответ сервера.
-     * @throws NetworkException Если ответ не получен из-за ошибки сети.
-     * @throws CurlException При прочих ошибках curl.
+     * @throws TimeoutException Если истекло время ожидания.
+     * @throws TemporaryNetworkException Если соединение или передача временно не удались.
+     * @throws CurlException При остальных ошибках curl.
      */
     private function execute(array $options, HttpRequestInterface $request): HttpResponseInterface
     {
         /** @var array<string, list<string>> $responseHeaders */
         $responseHeaders = [];
-        $options[CURLOPT_HEADERFUNCTION]
-            = static function (CurlHandle $curlHandle, string $header) use (&$responseHeaders): int {
-                $parts = explode(':', $header, 2);
-                if (count($parts) === 2) {
-                    $responseHeaders[trim($parts[0])][] = trim($parts[1]);
-                }
+
+        $headerFunction = static function (CurlHandle $curlHandle, string $header) use (&$responseHeaders): int {
+            if (str_starts_with($header, 'HTTP/')) {
+                $responseHeaders = [];
 
                 return strlen($header);
-            };
+            }
+
+            $parts = explode(':', $header, 2);
+            if (count($parts) === 2) {
+                $responseHeaders[trim($parts[0])][] = trim($parts[1]);
+            }
+
+            return strlen($header);
+        };
+        $options[CURLOPT_HEADERFUNCTION] = $headerFunction;
 
         $curlHandle = $this->getCurlHandle();
 
@@ -244,12 +347,14 @@ final class CurlHttpClient implements HttpClientInterface
         $response = curl_exec($curlHandle);
 
         if (!is_string($response)) {
-            $curlErrno = curl_errno($curlHandle);
-            $message = curl_error($curlHandle);
+            $previous = new CurlException(curl_error($curlHandle), curl_errno($curlHandle), $request);
+            $type = $this->errorClassifier?->__invoke($previous) ?? self::classifyError($previous);
 
-            throw self::isNetworkError($curlErrno)
-                ? new NetworkException($message, $curlErrno, $request)
-                : new CurlException($message, $curlErrno, $request);
+            throw match ($type) {
+                TransportErrorType::Timeout => new TimeoutException($previous, $request),
+                TransportErrorType::TemporaryNetwork => new TemporaryNetworkException($previous, $request),
+                default => $previous,
+            };
         }
 
         /** @var string|false|null $contentType */
@@ -257,7 +362,6 @@ final class CurlHttpClient implements HttpClientInterface
 
         return new HttpResponse(
             (int) curl_getinfo($curlHandle, CURLINFO_HTTP_CODE),
-            $request->getUrl(),
             is_string($contentType) ? $contentType : null,
             $response,
             $responseHeaders,
@@ -277,39 +381,5 @@ final class CurlHttpClient implements HttpClientInterface
         }
 
         return curl_init() ?: throw new LogicException('Failed to initialize curl.');
-    }
-
-    /**
-     * Проверяет, что код ошибки curl относится к ошибкам сети.
-     *
-     * @param int $curlErrno Код ошибки curl.
-     * @return bool `true`, если ответ не получен из-за ошибки сети.
-     */
-    private static function isNetworkError(int $curlErrno): bool
-    {
-        return in_array($curlErrno, [
-            NetworkException::UNSUPPORTED_PROTOCOL,
-            NetworkException::FAILED_INIT,
-            NetworkException::URL_MALFORMAT,
-            NetworkException::COULDNT_RESOLVE_HOST,
-            NetworkException::COULDNT_CONNECT,
-            NetworkException::WRITE_ERROR,
-            NetworkException::READ_ERROR,
-            NetworkException::OUT_OF_MEMORY,
-            NetworkException::OPERATION_TIMEOUTED,
-            NetworkException::HTTP_RANGE_ERROR,
-            NetworkException::SSL_CONNECT_ERROR,
-            NetworkException::ABORTED_BY_CALLBACK,
-            NetworkException::HTTP_PORT_FAILED,
-            NetworkException::TOO_MANY_REDIRECTS,
-            NetworkException::GOT_NOTHING,
-            NetworkException::SEND_ERROR,
-            NetworkException::RECV_ERROR,
-            NetworkException::SSL_CERTPROBLEM,
-            NetworkException::SSL_CIPHER,
-            NetworkException::SSL_PEER_CERTIFICATE,
-            NetworkException::BAD_CONTENT_ENCODING,
-            NetworkException::FILESIZE_EXCEEDED,
-        ], true);
     }
 }

@@ -10,32 +10,27 @@ use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 use function is_array;
 use function is_string;
 use function json_decode;
-use function mb_strlen;
 use function str_starts_with;
 
 /**
  * Вспомогательный класс для обработки нажатий Callback-кнопок с JSON-payload.
- *
- * Максимальная длина действия по умолчанию соответствует 64 символам в кодировке UTF-8.
  */
 final class CallbackJsonHandler
 {
     /**
-     * @var positive-int
-     */
-    public int $actionMaxLength = 64;
-
-    /**
-     * @param non-empty-string $actionKey
-     * @param array<non-empty-string, list<Closure(MessageCallbackEvent): (bool|void)>> $actionHandlers
+     * Создаёт обработчик нажатий Callback-кнопок с JSON-payload.
+     *
+     * @param non-empty-string $actionKey Ключ JSON-поля с именем действия.
+     * @param array<non-empty-string, list<Closure(MessageCallbackEvent, string, array): (bool|void)>>
+     *     $actionHandlers Обработчики отдельных действий.
      */
     public function __construct(
-        public readonly string $actionKey,
+        public string $actionKey = 'action',
         private array $actionHandlers = [],
     ) {}
 
     /**
-     * @return non-empty-string
+     * @return non-empty-string Ключ JSON-поля с именем действия.
      */
     public function getActionKey(): string
     {
@@ -43,27 +38,28 @@ final class CallbackJsonHandler
     }
 
     /**
-     * @return positive-int
+     * Обрабатывает нажатие Callback-кнопки с JSON-payload.
+     *
+     * @param MessageCallbackEvent $event Событие нажатия Callback-кнопки.
+     * @return bool `true`, если обработчик обработал действие.
      */
-    public function getActionMaxLength(): int
-    {
-        return $this->actionMaxLength;
-    }
-
     public function handle(MessageCallbackEvent $event): bool
     {
         $payload = $event->getCallback()->getPayload();
 
-        /** @psalm-suppress MixedAssignment */
-        $payload = str_starts_with($payload, '{')
-            ? json_decode($payload, true)
-            : null;
-        /** @psalm-suppress RiskyTruthyFalsyComparison */
-        if (!is_array($payload) || empty($action = $payload[$this->actionKey] ?? null)) {
+        if ($this->actionHandlers === [] || !str_starts_with($payload, '{')) {
             return false;
         }
 
-        if (!is_string($action) || mb_strlen($action, 'UTF-8') > $this->actionMaxLength) {
+        /** @psalm-suppress MixedAssignment */
+        $payload = json_decode($payload, true);
+        if (!is_array($payload)) {
+            return false;
+        }
+
+        /** @psalm-suppress MixedAssignment */
+        $action = $payload[$this->actionKey] ?? null;
+        if (!is_string($action) || $action === '') {
             return false;
         }
 
@@ -71,7 +67,7 @@ final class CallbackJsonHandler
         $event->userData['__payload'] = $payload;
 
         foreach ($this->actionHandlers[$action] ?? [] as $handler) {
-            if ($event->handle($handler)) {
+            if ($event->handle(static fn(MessageCallbackEvent $event): ?bool => $handler($event, $action, $payload))) {
                 return true;
             }
         }
@@ -80,8 +76,11 @@ final class CallbackJsonHandler
     }
 
     /**
-     * @param non-empty-string $name
-     * @param Closure(MessageCallbackEvent $event): (bool|void) $handler
+     * Регистрирует обработчик действия с указанным именем.
+     *
+     * @param non-empty-string $name Имя действия.
+     * @param Closure(MessageCallbackEvent $event, string $action, array $payload): (bool|void) $handler
+     *     Обработчик действия с его именем и всем декодированным JSON-payload, включая поле действия.
      * @return $this
      */
     public function onAction(string $name, Closure $handler): static
@@ -92,12 +91,12 @@ final class CallbackJsonHandler
     }
 
     /**
-     * @param positive-int $actionMaxLength
+     * @param non-empty-string $actionKey Ключ JSON-поля с именем действия.
      * @return $this
      */
-    public function setActionMaxLength(int $actionMaxLength): self
+    public function setActionKey(string $actionKey): self
     {
-        $this->actionMaxLength = $actionMaxLength;
+        $this->actionKey = $actionKey;
 
         return $this;
     }

@@ -8,6 +8,8 @@ use MaxMessenger\Bot\Model\Enum\AttachmentType;
 
 /**
  * Общий класс, представляющий вложение сообщения.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
  */
 class Attachment extends BaseResponseModel
 {
@@ -28,7 +30,7 @@ class Attachment extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Тип вложения.
+     * @return non-empty-string Тип вложения. Значения описаны в {@see AttachmentType}.
      */
     public function getTypeRaw(): string
     {
@@ -36,7 +38,9 @@ class Attachment extends BaseResponseModel
     }
 
     /**
-     * Creates an object using a map.
+     * Создаёт вложение нужного типа по данным ответа API.
+     *
+     * @param array $data Данные вложения из ответа API.
      */
     public static function newFromData(array $data): static
     {

@@ -16,12 +16,4 @@ final class StringBodyTest extends Unit
         self::assertSame('{"text":"привет"}', $body->getBody());
         self::assertSame('application/json; charset=utf-8', $body->getContentType());
     }
-
-    public function testWithoutContentType(): void
-    {
-        $body = new StringBody('plain text');
-
-        self::assertSame('plain text', $body->getBody());
-        self::assertNull($body->getContentType());
-    }
 }

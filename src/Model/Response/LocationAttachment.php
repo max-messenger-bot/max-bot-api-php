@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+/**
+ * Вложение с географическими координатами в сообщении.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ */
 class LocationAttachment extends Attachment
 {
     /**

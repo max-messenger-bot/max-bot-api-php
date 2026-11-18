@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\Model\Enum\AttachmentRequestType;
+use MaxMessenger\Bot\Model\Enum\AttachmentType;
 
 use function array_key_exists;
 
 /**
  * Запрос на прикрепление видео к сообщению.
  *
- * Вместе с видео можно прикрепить изображения ({@see PhotoAttachmentRequest}) и одно вложение
- * с кнопками ({@see InlineKeyboardAttachmentRequest}). Общее количество вложений не должно превышать 12.
- * Подробнее — {@link https://dev.max.ru/docs-api#Примеры%20с%20видео,%20изображением,%20файлом в примерах}.
+ * Общее количество вложений не должно превышать 12.
+ *
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/media
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
  */
 final class VideoAttachmentRequest extends AttachmentRequest
 {
@@ -34,7 +36,7 @@ final class VideoAttachmentRequest extends AttachmentRequest
     {
         $this->required = ['payload'];
 
-        parent::__construct(AttachmentRequestType::Video);
+        parent::__construct(AttachmentType::Video);
 
         if ($payload !== null) {
             $this->setPayload($payload);
@@ -53,7 +55,6 @@ final class VideoAttachmentRequest extends AttachmentRequest
 
     /**
      * @param UploadedInfo $payload Информация о загруженном видео.
-     * @api
      */
     public static function make(UploadedInfo $payload): self
     {
@@ -62,7 +63,6 @@ final class VideoAttachmentRequest extends AttachmentRequest
 
     /**
      * @param UploadedInfo|null $payload Информация о загруженном видео.
-     * @api
      */
     public static function new(?UploadedInfo $payload = null): self
     {

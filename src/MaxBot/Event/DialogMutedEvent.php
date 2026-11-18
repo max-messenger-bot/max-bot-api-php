@@ -9,7 +9,7 @@ use MaxMessenger\Bot\Model\Response\DialogMutedUpdate;
 use MaxMessenger\Bot\Model\Response\User;
 
 /**
- * Событие отключения уведомлений в диалоге, чате или канале.
+ * Событие отключения уведомлений в диалоге.
  *
  * @property-read DialogMutedUpdate $update
  */
@@ -19,7 +19,7 @@ final class DialogMutedEvent extends BaseEvent
     use SendMessageToUserTrait;
 
     /**
-     * @return int ID диалога, чата или канала, где произошло событие.
+     * @return int Идентификатор диалога, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -27,7 +27,7 @@ final class DialogMutedEvent extends BaseEvent
     }
 
     /**
-     * @return DateTimeImmutable Время, до наступления которого уведомления в диалоге, чате или канале были отключены.
+     * @return DateTimeImmutable Время, до наступления которого уведомления в диалоге были отключены.
      */
     public function getMutedUntil(): DateTimeImmutable
     {
@@ -35,8 +35,8 @@ final class DialogMutedEvent extends BaseEvent
     }
 
     /**
-     * @return non-negative-int Время, до наступления которого уведомления в диалоге, чате или канале
-     *     были отключены (Unix-время в миллисекундах).
+     * @return non-negative-int Время, до наступления которого уведомления в диалоге были отключены
+     *     (Unix-время в миллисекундах).
      */
     public function getMutedUntilRaw(): int
     {
@@ -52,7 +52,7 @@ final class DialogMutedEvent extends BaseEvent
     }
 
     /**
-     * @return int ID пользователя, который отключил уведомления.
+     * @return int Идентификатор пользователя, который отключил уведомления.
      */
     public function getUserId(): int
     {
@@ -60,7 +60,7 @@ final class DialogMutedEvent extends BaseEvent
     }
 
     /**
-     * @return string|null Текущий язык пользователя в формате IETF BCP 47.
+     * @return non-empty-string|null Текущий язык пользователя в формате IETF BCP 47.
      */
     public function getUserLocale(): ?string
     {

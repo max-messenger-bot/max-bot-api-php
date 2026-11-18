@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
+
 /**
- * Вы получите это событие, как только пользователь будет удалён из чата, где бот является администратором.
+ * Событие удаления пользователя из чата или канала, где бот является администратором с правом
+ * {@see ChatAdminPermission::ReadAllMessages}.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class UserRemovedFromChatUpdate extends Update
 {
@@ -22,8 +28,8 @@ class UserRemovedFromChatUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int|null Администратор, который удалил пользователя из чата.
-     *     Может быть `null`, если пользователь покинул чат сам.
+     * @return int|null Идентификатор администратора, который удалил пользователя из чата или канала.
+     *     Может быть `null`, если пользователь покинул чат или канал сам.
      */
     public function getAdminId(): ?int
     {
@@ -31,7 +37,7 @@ class UserRemovedFromChatUpdate extends Update
     }
 
     /**
-     * @return int ID чата, где произошло событие.
+     * @return int Идентификатор чата или канала, где произошло событие.
      */
     public function getChatId(): int
     {
@@ -39,7 +45,15 @@ class UserRemovedFromChatUpdate extends Update
     }
 
     /**
-     * @return User Пользователь, удалённый из чата.
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['chat_id', 'user', 'is_channel'];
+    }
+
+    /**
+     * @return User Пользователь, удалённый из чата или канала.
      */
     public function getUser(): User
     {

@@ -7,12 +7,17 @@ namespace MaxMessenger\Bot\Exception\Validation;
 use function sprintf;
 
 /**
- * Argument exceeds maximum value.
+ * Аргумент превышает максимальное значение.
  *
- * Exception thrown when a numeric argument exceeds the maximum allowed value.
+ * Возникает, если числовой аргумент превышает допустимый максимум.
  */
 final class MaximumException extends ValidationException
 {
+    /**
+     * @param string $argumentName Имя числового аргумента.
+     * @param int $value Фактическое значение аргумента.
+     * @param int $maximum Максимально допустимое значение.
+     */
     public function __construct(string $argumentName, int $value, int $maximum)
     {
         $part1 = sprintf('a number less than or equal to %d', $maximum);

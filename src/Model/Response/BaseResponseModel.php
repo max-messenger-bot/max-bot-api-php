@@ -13,6 +13,9 @@ use Traversable;
 use function intdiv;
 use function sprintf;
 
+/**
+ * Базовая модель ответа API с доступом к исходным данным.
+ */
 abstract class BaseResponseModel implements ModelInterface
 {
     final private function __construct(
@@ -20,7 +23,7 @@ abstract class BaseResponseModel implements ModelInterface
     ) {}
 
     /**
-     * Returns an iterator of the model's raw data.
+     * @return Traversable<array-key, mixed> Итератор по исходным данным ответа.
      */
     public function getIterator(): Traversable
     {
@@ -28,7 +31,7 @@ abstract class BaseResponseModel implements ModelInterface
     }
 
     /**
-     * Get raw model data.
+     * @return array Исходные данные ответа.
      */
     final public function getRawData(): array
     {
@@ -36,18 +39,31 @@ abstract class BaseResponseModel implements ModelInterface
     }
 
     /**
-     * Returns data that should be serialized into JSON format.
+     * Возвращает данные модели для сериализации в JSON.
+     *
+     * @return array Исходные данные ответа.
      */
     final public function jsonSerialize(): array
     {
         return $this->getRawData();
     }
 
+    /**
+     * Создаёт модель из данных ответа API.
+     *
+     * @param array $data Данные ответа API.
+     */
     public static function newFromData(array $data): static
     {
         return new static($data);
     }
 
+    /**
+     * Создаёт модель, если данные ответа переданы.
+     *
+     * @param array|null $data Данные ответа API или `null`.
+     * @return static|null Созданная модель или `null`.
+     */
     public static function newFromNullableData(?array $data): ?static
     {
         return $data !== null
@@ -56,8 +72,10 @@ abstract class BaseResponseModel implements ModelInterface
     }
 
     /**
+     * Создаёт двумерный список моделей из данных ответа.
+     *
      * @template T of array[][]
-     * @param T $data
+     * @param T $data Двумерный список данных моделей.
      * @return (
      *     T is non-empty-array<array<array>>
      *     ? (
@@ -79,8 +97,10 @@ abstract class BaseResponseModel implements ModelInterface
     }
 
     /**
+     * Создаёт список моделей из данных ответа.
+     *
      * @template T of array[]
-     * @param T $data
+     * @param T $data Список данных моделей.
      * @return (T is non-empty-array<array> ? non-empty-list<static> : list<static>)
      */
     public static function newListFromData(array $data): array
@@ -94,8 +114,11 @@ abstract class BaseResponseModel implements ModelInterface
     }
 
     /**
-     * @param array[]|null $data
-     * @return list<static>|null
+     * Создаёт список моделей, если данные ответа переданы.
+     *
+     * @template T of array[]|null
+     * @param T $data Список данных моделей или `null`.
+     * @return (T is null ? null : (T is non-empty-array<array> ? non-empty-list<static> : list<static>))
      */
     public static function newListFromNullableData(?array $data): ?array
     {
@@ -105,7 +128,10 @@ abstract class BaseResponseModel implements ModelInterface
     }
 
     /**
-     * Check if a property exists in raw data.
+     * Проверяет наличие поля в исходных данных ответа.
+     *
+     * @param mixed $offset Имя или индекс поля.
+     * @return bool Есть ли поле в исходных данных.
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -114,7 +140,10 @@ abstract class BaseResponseModel implements ModelInterface
     }
 
     /**
-     * Get a property from raw data.
+     * Возвращает поле из исходных данных ответа.
+     *
+     * @param mixed $offset Имя или индекс поля.
+     * @return mixed Значение поля или `null`, если его нет.
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -123,8 +152,10 @@ abstract class BaseResponseModel implements ModelInterface
     }
 
     /**
-     * Set a property in raw data (prohibited).
+     * Отклоняет попытку изменить исходные данные ответа.
      *
+     * @param mixed $offset Имя или индекс поля.
+     * @param mixed $value Новое значение поля.
      * @internal
      */
     public function offsetSet(mixed $offset, mixed $value): void
@@ -133,8 +164,9 @@ abstract class BaseResponseModel implements ModelInterface
     }
 
     /**
-     * Remove property from raw data (prohibited).
+     * Отклоняет попытку удалить поле из исходных данных ответа.
      *
+     * @param mixed $offset Имя или индекс поля.
      * @internal
      */
     final public function offsetUnset(mixed $offset): void

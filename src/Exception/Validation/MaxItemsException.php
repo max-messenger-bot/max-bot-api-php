@@ -7,12 +7,17 @@ namespace MaxMessenger\Bot\Exception\Validation;
 use function sprintf;
 
 /**
- * Array exceeds maximum item count.
+ * В массиве слишком много элементов.
  *
- * Exception thrown when an array argument contains more items than allowed.
+ * Возникает, если аргумент-массив содержит больше элементов, чем допустимо.
  */
 final class MaxItemsException extends ValidationException
 {
+    /**
+     * @param string $argumentName Имя аргумента-массива.
+     * @param int $countItems Фактическое число элементов.
+     * @param int $maxItems Максимально допустимое число элементов.
+     */
     public function __construct(string $argumentName, int $countItems, int $maxItems)
     {
         $part1 = sprintf('an array of up to %s items', $maxItems);

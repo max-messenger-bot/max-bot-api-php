@@ -7,12 +7,14 @@ namespace MaxMessenger\Bot\Model\Request;
 use function array_key_exists;
 
 /**
- * Команда бота
+ * Команда бота.
+ *
+ * @link https://dev.max.ru/docs-api/methods/PATCH/me/commands/
  */
 final class BotCommand extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{

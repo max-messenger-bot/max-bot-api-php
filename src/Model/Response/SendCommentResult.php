@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Информация о созданном комментарии.
+ *
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/-messageId-/comments/
  */
 class SendCommentResult extends BaseResponseModel
 {

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
+/**
+ * Вложение с контактом в сообщении.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message/
+ */
 class ContactAttachment extends Attachment
 {
     /**
@@ -16,7 +21,7 @@ class ContactAttachment extends Attachment
     private ContactAttachmentPayload|false $payload = false;
 
     /**
-     * @return ContactAttachmentPayload Результат загрузки данных контакта в сообщение.
+     * @return ContactAttachmentPayload Данные прикреплённого контакта.
      */
     public function getPayload(): ContactAttachmentPayload
     {

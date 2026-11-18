@@ -8,8 +8,6 @@ use Closure;
 use MaxMessenger\Bot\MaxBot\Event\MessageCreatedEvent;
 
 use function explode;
-use function mb_strlen;
-use function mb_substr;
 use function str_starts_with;
 use function substr;
 
@@ -25,52 +23,66 @@ use function substr;
  *
  * По умолчанию команды с дополнительными данными не поддерживаются, но вы можете активировать эту возможность,
  * присвоив свойству `$commandHandler->commandSeparator` разделитель команд и данных.
- *
- * Максимальная длина команды по умолчанию соответствует 64 символам в кодировке UTF-8 (как в схеме API Max).
  */
 final class CommandHandler
 {
     /**
-     * @param array<non-empty-string, list<Closure(MessageCreatedEvent): (bool|void)>> $commandHandlers
-     * @param list<Closure(MessageCreatedEvent): (bool|void)> $commandsHandlers
-     * @param non-empty-string|null $commandSeparator
-     * @param positive-int $commandMaxLength
+     * Создаёт обработчик команд с заданными обработчиками и настройками разбора.
+     *
+     * @param non-empty-string|null $commandSeparator Разделитель имени команды и дополнительного текста.
+     * @param bool $allowChannels Разрешить обработку команд из каналов.
+     * @param array<non-empty-string, list<Closure(MessageCreatedEvent, string, ?string): (bool|void)>> $commandHandlers
+     *     Обработчики отдельных команд.
+     * @param list<Closure(MessageCreatedEvent, string, ?string): (bool|void)> $commandsHandlers Обработчики команд,
+     *     не обработанных ранее.
      */
     public function __construct(
+        public ?string $commandSeparator = null,
+        public bool $allowChannels = false,
         private array $commandHandlers = [],
         private array $commandsHandlers = [],
-        public ?string $commandSeparator = null,
-        public int $commandMaxLength = 64,
     ) {}
 
     /**
-     * @return positive-int
+     * @return bool Разрешена ли обработка команд из каналов.
      */
-    public function getCommandMaxLength(): int
+    public function getAllowChannels(): bool
     {
-        return $this->commandMaxLength;
+        return $this->allowChannels;
     }
 
     /**
-     * @return non-empty-string|null
+     * @return non-empty-string|null Разделитель имени команды и дополнительного текста или `null`, если он не задан.
      */
     public function getCommandSeparator(): ?string
     {
         return $this->commandSeparator;
     }
 
+    /**
+     * Обрабатывает команду из сообщения.
+     *
+     * @param MessageCreatedEvent $event Событие создания сообщения.
+     * @return bool `true`, если один из обработчиков обработал команду.
+     */
     public function handle(MessageCreatedEvent $event): bool
     {
-        $text = $this->getTextFromDialogEvent($event);
-
-        /** @psalm-suppress RiskyTruthyFalsyComparison */
-        if (!$text || !str_starts_with($text, '/')) {
+        if (!$this->allowChannels && $event->isChannel()) {
             return false;
         }
-        /** @psalm-var non-falsy-string $text Psalm bug */
+
+        $text = $event->getMessage()->getBody()->getText();
+
+        if (
+            ($this->commandHandlers === [] && $this->commandsHandlers === [])
+            || !$text
+            || !str_starts_with($text, '/')
+        ) {
+            return false;
+        }
 
         if ($this->commandSeparator === null) {
-            $command = mb_substr($text, 1, $this->commandMaxLength + 1, 'UTF-8');
+            $command = substr($text, 1);
             $payload = null;
         } else {
             $payloadParts = explode($this->commandSeparator, substr($text, 1), 2);
@@ -78,21 +90,17 @@ final class CommandHandler
             $payload = $payloadParts[1] ?? null;
         }
 
-        if (mb_strlen($command, 'UTF-8') > $this->commandMaxLength) {
-            return false;
-        }
-
         $event->userData['__command'] = $command;
         $event->userData['__payload'] = $payload;
 
         foreach ($this->commandHandlers[$command] ?? [] as $handler) {
-            if ($event->handle($handler)) {
+            if ($event->handle(static fn(MessageCreatedEvent $event): ?bool => $handler($event, $command, $payload))) {
                 return true;
             }
         }
 
         foreach ($this->commandsHandlers as $handler) {
-            if ($event->handle($handler)) {
+            if ($event->handle(static fn(MessageCreatedEvent $event): ?bool => $handler($event, $command, $payload))) {
                 return true;
             }
         }
@@ -101,8 +109,11 @@ final class CommandHandler
     }
 
     /**
-     * @param non-empty-string $name
-     * @param Closure(MessageCreatedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик команды с указанным именем.
+     *
+     * @param non-empty-string $name Имя команды без символа `/`.
+     * @param Closure(MessageCreatedEvent $event, string $command, ?string $payload): (bool|void) $handler
+     *     Обработчик команды с её именем и текстом после разделителя; без дополнительных данных payload равен `null`.
      * @return $this
      */
     public function onCommand(string $name, Closure $handler): static
@@ -113,7 +124,10 @@ final class CommandHandler
     }
 
     /**
-     * @param Closure(MessageCreatedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик команд, которые не обработали именные обработчики.
+     *
+     * @param Closure(MessageCreatedEvent $event, string $command, ?string $payload): (bool|void) $handler
+     *     Обработчик оставшихся команд с именем команды и текстом после разделителя либо `null`.
      * @return $this
      */
     public function onCommands(Closure $handler): static
@@ -124,18 +138,19 @@ final class CommandHandler
     }
 
     /**
-     * @param positive-int $commandMaxLength
+     * @param bool $allowChannels Разрешить обработку команд из каналов.
      * @return $this
      */
-    public function setCommandMaxLength(int $commandMaxLength): self
+    public function setAllowChannels(bool $allowChannels): self
     {
-        $this->commandMaxLength = $commandMaxLength;
+        $this->allowChannels = $allowChannels;
 
         return $this;
     }
 
     /**
-     * @param non-empty-string|null $commandSeparator
+     * @param non-empty-string|null $commandSeparator Разделитель имени команды и дополнительного текста;
+     *     `null` отключает разделение.
      * @return $this
      */
     public function setCommandSeparator(?string $commandSeparator): self
@@ -143,12 +158,5 @@ final class CommandHandler
         $this->commandSeparator = $commandSeparator;
 
         return $this;
-    }
-
-    private function getTextFromDialogEvent(MessageCreatedEvent $event): ?string
-    {
-        return $event->isDialog()
-            ? $event->getMessage()->getBody()->getText()
-            : null;
     }
 }

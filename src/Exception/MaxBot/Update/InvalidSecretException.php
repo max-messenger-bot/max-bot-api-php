@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Exception\MaxBot\Update;
 
 /**
- * Invalid Secret.
+ * Недействительный секретный ключ.
  *
- * Exception thrown when the provided secret is invalid or incorrect.
+ * Возникает, если передан неверный секретный ключ.
  */
 final class InvalidSecretException extends UpdateRequestException
 {

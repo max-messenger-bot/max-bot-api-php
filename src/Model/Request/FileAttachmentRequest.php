@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\Model\Enum\AttachmentRequestType;
+use MaxMessenger\Bot\Model\Enum\AttachmentType;
 
 use function array_key_exists;
 
 /**
  * Запрос на прикрепление файла к сообщению.
  *
- * Должен быть единственным вложением в сообщении.
+ * Нельзя прикреплять несколько файлов или сочетать файл с другими вложениями, кроме клавиатуры.
+ *
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/media
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody
  */
 final class FileAttachmentRequest extends AttachmentRequest
 {
@@ -27,13 +30,12 @@ final class FileAttachmentRequest extends AttachmentRequest
 
     /**
      * @param UploadedInfo|null $payload Информация о загруженном файле.
-     * @api
      */
     public function __construct(?UploadedInfo $payload = null)
     {
         $this->required = ['payload'];
 
-        parent::__construct(AttachmentRequestType::File);
+        parent::__construct(AttachmentType::File);
 
         if ($payload !== null) {
             $this->setPayload($payload);
@@ -52,7 +54,6 @@ final class FileAttachmentRequest extends AttachmentRequest
 
     /**
      * @param UploadedInfo $payload Информация о загруженном файле.
-     * @api
      */
     public static function make(UploadedInfo $payload): self
     {
@@ -61,7 +62,6 @@ final class FileAttachmentRequest extends AttachmentRequest
 
     /**
      * @param UploadedInfo|null $payload Информация о загруженном файле.
-     * @api
      */
     public static function new(?UploadedInfo $payload = null): self
     {

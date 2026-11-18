@@ -11,6 +11,10 @@ use MaxMessenger\Bot\Model\Enum\ButtonType;
  *
  * После нажатия на такую кнопку клиент отправляет новое сообщение с вложением
  * текущего географического положения пользователя.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 final class RequestGeoLocationButton extends Button
 {

@@ -6,6 +6,10 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Команды, поддерживаемые ботом.
+ *
+ * @link https://dev.max.ru/docs-api/objects/BotInfo/
+ * @link https://dev.max.ru/docs-api/methods/GET/me/
+ * @link https://dev.max.ru/docs-api/methods/PATCH/me/commands/
  */
 class BotCommand extends BaseResponseModel
 {

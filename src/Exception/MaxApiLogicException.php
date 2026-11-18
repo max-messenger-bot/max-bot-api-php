@@ -7,8 +7,8 @@ namespace MaxMessenger\Bot\Exception;
 use LogicException;
 
 /**
- * Logic exception.
+ * Логическая ошибка.
  *
- * Base class for logic exceptions in the Max Bot API client.
+ * Базовый класс логических исключений клиента API МАКС.
  */
 abstract class MaxApiLogicException extends LogicException {}

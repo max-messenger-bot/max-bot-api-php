@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Request;
 
-use MaxMessenger\Bot\MaxApiClient;
-
 use function array_key_exists;
 
 /**
- * Данные, которые вы получили в ответ на запрос загрузки медиафайла.
+ * Данные загруженного медиафайла.
  *
- * Их можно передавать после того, как вы загрузили аудио, видео или файл и получили в ответ от сервера `retval`.
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/media
+ * @link https://dev.max.ru/docs-api/methods/POST/uploads/
  */
 final class UploadedInfo extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{
@@ -27,8 +26,7 @@ final class UploadedInfo extends BaseRequestModel
     protected array $data = [];
 
     /**
-     * @param non-empty-string|null $token Токен вложения — уникальный ID загруженного медиа:
-     *     изображения, аудио, видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
+     * @param non-empty-string|null $token Токен загруженного аудио, видео или файла.
      */
     public function __construct(?string $token = null)
     {
@@ -53,8 +51,7 @@ final class UploadedInfo extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $token Токен вложения — уникальный ID загруженного медиа:
-     *     изображения, аудио, видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
+     * @param non-empty-string $token Токен загруженного аудио, видео или файла.
      */
     public static function make(string $token): self
     {
@@ -62,8 +59,7 @@ final class UploadedInfo extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string|null $token Токен вложения — уникальный ID загруженного медиа:
-     *     изображения, аудио, видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
+     * @param non-empty-string|null $token Токен загруженного аудио, видео или файла.
      */
     public static function new(?string $token = null): self
     {
@@ -71,8 +67,7 @@ final class UploadedInfo extends BaseRequestModel
     }
 
     /**
-     * @param non-empty-string $token Токен вложения — уникальный ID загруженного медиа:
-     *     изображения, аудио, видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
+     * @param non-empty-string $token Токен загруженного аудио, видео или файла.
      * @return $this
      */
     public function setToken(string $token): self

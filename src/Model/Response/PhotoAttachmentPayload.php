@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\Model\Response;
 
-use MaxMessenger\Bot\MaxApiClient;
-
 /**
  * Данные, использованные для отправки изображения.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Message
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/media
  */
 class PhotoAttachmentPayload extends BaseResponseModel
 {
@@ -22,7 +23,7 @@ class PhotoAttachmentPayload extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return int Уникальный ID этого изображения.
+     * @return int Уникальный идентификатор этого изображения.
      */
     public function getPhotoId(): int
     {
@@ -30,8 +31,7 @@ class PhotoAttachmentPayload extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string Токен вложения — уникальный ID загруженного медиа: изображения, аудио,
-     *     видео или файла. Возвращается в ответ на вызов {@see MaxApiClient::getUploadUrl()}.
+     * @return non-empty-string Токен загруженного изображения.
      */
     public function getToken(): string
     {

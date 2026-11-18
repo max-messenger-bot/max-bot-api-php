@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Вы получите это событие, как только пользователь нажмёт в сообщении на
- * кнопку с типом `chat` и будет создан новый чат с ботом, связанный с этим
- * сообщением с кнопкой.
+ * Событие нажатия пользователем callback-кнопки в сообщении.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class MessageCallbackUpdate extends Update
 {
@@ -39,8 +40,16 @@ class MessageCallbackUpdate extends Update
     public function getMessage(): Message
     {
         return $this->message === false
-            ? ($this->message = Message::newFromData($this->data['message']))
+            ? $this->message = Message::newFromData($this->data['message'])
             : $this->message;
+    }
+
+    /**
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['callback', 'message'];
     }
 
     /**

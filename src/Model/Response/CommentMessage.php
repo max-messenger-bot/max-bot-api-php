@@ -23,7 +23,7 @@ class CommentMessage extends BaseResponseModel
      *     timestamp: non-negative-int,
      *     link?: array,
      *     body: array,
-     *     url?: non-empty-string
+     *     stat?: array
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
@@ -32,6 +32,7 @@ class CommentMessage extends BaseResponseModel
     private CommentLinkedMessage|false|null $link = false;
     private Recipient|false $recipient = false;
     private User|false|null $sender = false;
+    private MessageStat|false|null $stat = false;
 
     /**
      * @return CommentMessageBody Информация о комментарии.
@@ -75,6 +76,16 @@ class CommentMessage extends BaseResponseModel
     }
 
     /**
+     * @return MessageStat|null Статистика комментария.
+     */
+    public function getStat(): ?MessageStat
+    {
+        return $this->stat === false
+            ? ($this->stat = MessageStat::newFromNullableData($this->data['stat'] ?? null))
+            : $this->stat;
+    }
+
+    /**
      * @return non-empty-string Текст комментария.
      */
     public function getText(): string
@@ -96,13 +107,5 @@ class CommentMessage extends BaseResponseModel
     public function getTimestampRaw(): int
     {
         return $this->data['timestamp'];
-    }
-
-    /**
-     * @return non-empty-string|null Публичная ссылка на комментарий в канале.
-     */
-    public function getUrl(): ?string
-    {
-        return $this->data['url'] ?? null;
     }
 }

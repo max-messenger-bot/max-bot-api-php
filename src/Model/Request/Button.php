@@ -9,12 +9,16 @@ use MaxMessenger\Bot\Model\Enum\ButtonType;
 use function array_key_exists;
 
 /**
- * Базовый класс кнопки.
+ * Базовый класс кнопки встроенной клавиатуры.
+ *
+ * @link https://dev.max.ru/docs-api/objects/NewMessageBody/
+ * @link https://dev.max.ru/docs-api/methods/POST/messages/
+ * @link https://dev.max.ru/docs-api/use-cases/sending-messages/keyboard
  */
 abstract class Button extends BaseRequestModel
 {
-    use ValidateTrait;
     use ValidateRequiredTrait;
+    use ValidateTrait;
 
     /**
      * @var array{
@@ -29,7 +33,7 @@ abstract class Button extends BaseRequestModel
      * @param ButtonType $type Тип кнопки.
      * @param non-empty-string|null $text Видимый текст кнопки (maxLength: 128). Чтобы он отображался
      *     полностью, рекомендуем не превышать заданное количество символов в зависимости от размещения текста:
-     *     `20` символов — при 1 кнопке в ряду, `10` — при 2, `5` — при 3, `3` — при 4.
+     *     `20` символов — при одной кнопке в ряду, `10` — при двух, `5` — при трёх, `3` — при четырёх.
      */
     public function __construct(ButtonType $type, ?string $text = null)
     {
@@ -62,7 +66,7 @@ abstract class Button extends BaseRequestModel
     /**
      * @param non-empty-string $text Видимый текст кнопки (maxLength: 128). Чтобы он отображался полностью,
      *     рекомендуем не превышать заданное количество символов в зависимости от размещения текста:
-     *     `20` символов — при 1 кнопке в ряду, `10` — при 2, `5` — при 3, `3` — при 4.
+     *     `20` символов — при одной кнопке в ряду, `10` — при двух, `5` — при трёх, `3` — при четырёх.
      * @return $this
      */
     public function setText(string $text): static

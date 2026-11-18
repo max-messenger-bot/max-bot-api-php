@@ -14,7 +14,7 @@
 ```php
 use MaxMessenger\Bot\MaxApiClient;
 
-$apiClient = new MaxApiClient('your-access-token');
+$apiClient = new MaxApiClient('your-access-token', useRussianTrustedCaCertificates: true);
 ```
 
 #### Инициализация с конфигурацией
@@ -22,28 +22,56 @@ $apiClient = new MaxApiClient('your-access-token');
 ```php
 use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxApiConfig;
-use MaxMessenger\Bot\CurlHttpClient\CurlHttpClient;
 
 $apiConfig = new MaxApiConfig(
     accessToken: 'your-access-token',
-    httpClient: new CurlHttpClient(),
+    useRussianTrustedCaCertificates: true,
     baseUrl: 'https://platform-api2.max.ru'
+);
+$apiConfig->setConnectTimeout(3000);
+$apiConfig->setTimeout(30000);
+$apiClient = new MaxApiClient($apiConfig);
+```
+
+Запросы по умолчанию выполняет встроенный клиент на curl: `MaxApiConfig` создаёт его сам и применяет
+заданные таймауты и параметры TLS.
+
+#### Свой HTTP-клиент
+
+```php
+use MaxMessenger\Bot\MaxApiClient;
+use MaxMessenger\Bot\MaxApiConfig;
+
+$apiConfig = new MaxApiConfig('your-access-token', useRussianTrustedCaCertificates: true);
+$apiConfig->setHttpClient(
+    $apiConfig->makeCurlHttpClient()->setProxy('127.0.0.1:1080', socks5: true)
 );
 $apiClient = new MaxApiClient($apiConfig);
 ```
 
+> Клиент, созданный как `new CurlHttpClient()`, таймауты и параметры TLS из конфигурации не получает —
+> берите преднастроенный у `makeCurlHttpClient()`. Как подключить клиент PSR-18 (Guzzle, Symfony HttpClient) и как
+> выделить отдельный клиент под опрос событий, описано в разделе [API-клиент](../ApiClient.md#выбор-http-клиента).
+
 #### Настройка TLS: доверенный CA или отключение проверки
 
 Сертификат API Max выпущен удостоверяющим центром Минцифры, которого нет в системном хранилище
-доверенных корней на большинстве систем. Чтобы проверка проходила, включите поставляемый с пакетом
-CA-бандл Минцифры:
+доверенных корней на большинстве систем. По умолчанию используются системные сертификаты. Поставляемый
+с пакетом CA-бандл Минцифры подключается параметром конструктора `MaxApiClient`, `MaxApiConfig` или `MaxBot`:
 
 ```php
+use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxApiConfig;
+use MaxMessenger\Bot\MaxBot;
 
-$apiConfig = new MaxApiConfig('your-access-token');
-$apiConfig->useRussianTrustedCaCertificates();
+$apiClient = new MaxApiClient('your-access-token', useRussianTrustedCaCertificates: true);
+// либо
+$apiConfig = new MaxApiConfig('your-access-token', useRussianTrustedCaCertificates: true);
+// либо
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 ```
+
+Бандл применяется только к запросам к API: серверы загрузки медиафайлов проверяются по системным сертификатам.
 
 Либо укажите свой CA-бандл или каталог с сертификатами:
 
@@ -65,8 +93,8 @@ $apiConfig = new MaxApiConfig('your-access-token');
 $apiConfig->setVerifySslCertificate(false);
 ```
 
-> Настройки TLS применяются только к встроенному HTTP-клиенту. Если вы передаёте собственный
-> `httpClient`, настраивайте TLS непосредственно в нём.
+> Настройки TLS применяются только к встроенному клиенту на curl, который `MaxApiConfig` создаёт сам или отдаёт методом
+> `makeCurlHttpClient()`. Если вы задаёте свой клиент через `setHttpClient()`, настраивайте TLS непосредственно в нём.
 
 #### Добавление логгера исключений
 
@@ -81,7 +109,8 @@ $exceptionLogger = static function (
 ): void {
     echo sprintf("%s [%s] %s\n", date('H:i:s'), $method, $exception->getMessage());
 };
-$apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
+$apiClient = (new MaxApiClient($accessTokenOrConfig))
+    ->setExceptionLogger($exceptionLogger);
 ```
 
 ### Создание бота
@@ -91,7 +120,7 @@ $apiClient = new MaxApiClient($accessTokenOrConfig, $exceptionLogger);
 ```php
 use MaxMessenger\Bot\MaxBot;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 ```
 
 #### Инициализация с конфигурацией
@@ -99,11 +128,10 @@ $bot = new MaxBot('your-access-token', 'your-secret');
 ```php
 use MaxMessenger\Bot\MaxApiConfig;
 use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\CurlHttpClient\CurlHttpClient;
 
 $apiConfig = new MaxApiConfig(
     accessToken: 'your-access-token',
-    httpClient: new CurlHttpClient(),
+    useRussianTrustedCaCertificates: true,
     baseUrl: 'https://platform-api2.max.ru'
 );
 $apiConfig->setRetryAttempts([1000, 2000, 4000, 8000, 15000]);

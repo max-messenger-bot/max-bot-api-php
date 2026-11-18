@@ -21,7 +21,7 @@ use MaxMessenger\Bot\MaxBot;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use Throwable;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
 $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
     // Логирование ошибки
@@ -44,12 +44,33 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 Когда обработчики исключений зарегистрированы:
 
 - **Все** обработчики из списка `Exception Handlers` будут вызваны независимо от статуса события
-- При возврате обработчиком `true` или вызове метода `Event::break()`, после вызова всех обработчиков, 
+- При возврате обработчиком `true` или вызове метода `Event::break()`, после вызова всех обработчиков,
   событие будет отмечено как обработанное
 - Если ни один обработчик не вернул `true` или `false` и не вызвал соответствующие методы `Event`,
   исключение будет выброшено дальше
 - При вызове каждого обработчика `$event->isHandled` будет содержать актуальное значение на момент
   возникновения исключения, любые его изменения будут проигнорированы
+
+## Глобальный обработчик ошибок обновлений
+
+`setUpdateErrorHandler()` задаёт один обработчик ошибок для `MaxBot::handleUpdate()`.
+Он получает исходный `Update` и `Throwable`: ошибки фильтра, создания события и исключения,
+которые не обработали зарегистрированные через `onException()` обработчики.
+
+```php
+use MaxMessenger\Bot\Model\Response\Update;
+
+$bot->setUpdateErrorHandler(static function (Update $update, Throwable $exception): void {
+    error_log($update->getUpdateTypeRaw() . ': ' . $exception->getMessage());
+});
+```
+
+После вызова этого обработчика `handleUpdate()` возвращает `false`, и `handleFromServer()` продолжает
+обрабатывать следующие обновления. Без обработчика исключение пробрасывается дальше.
+Исключение из самого глобального обработчика также пробрасывается. Для отключения передайте `null`.
+`getUpdateErrorHandler()` возвращает текущий обработчик.
+
+Ошибки HTTP-запроса за обновлениями и разбора списка до вызова `handleUpdate()` этим обработчиком не перехватываются.
 
 ## Стратегии обработки ошибок
 
@@ -125,7 +146,7 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
     $context = [
         'time' => date('Y-m-d H:i:s'),
         'eventTime' => $event->getTimestamp()->format('Y-m-d H:i:s'),
-        'handlerList' => $event->currentHandlerListType?->value ?? 'unknown',
+        'handlerList' => $event->currentHandlerListType?->name ?? 'unknown',
         'eventClass' => get_class($event),
         'exception' => $exception::class,
         'message' => $exception->getMessage(),
@@ -144,12 +165,14 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 
 Свойство `$event->currentHandlerListType` указывает, в каком списке произошла ошибка:
 
-- `prepare` — ошибка в предварительных обработчиках
-- `event` — ошибка в обработчиках событий по классу
-- `typed` — ошибка в обработчиках по типу обновления
-- `fallback` — ошибка в fallback обработчиках
-- `final` — ошибка в финальных обработчиках
-- `exception` — ошибка в обработчиках исключений
+- `HandlerListType::Prepare` — ошибка в предварительных обработчиках
+- `HandlerListType::Event` — ошибка в обработчиках событий по классу
+- `HandlerListType::Typed` — ошибка в обработчиках по типу обновления
+- `HandlerListType::Fallback` — ошибка в fallback обработчиках
+- `HandlerListType::Final` — ошибка в финальных обработчиках
+- `HandlerListType::Custom` — ошибка в произвольном списке, переданном в `MaxBot::handleEventUseHandlerList()`
+
+Во время вызова обработчиков исключений свойство сохраняет список, в котором произошла ошибка.
 
 ## Использование EventException для управления потоком
 
@@ -247,19 +270,20 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
 ## Пример полной обработки ошибок
 
 ```php
+use MaxMessenger\Bot\Exception\SimpleQueryError;
+use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\HttpException;
 use MaxMessenger\Bot\MaxBot;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
-use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\MaxHttpException;
 use Throwable;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
 // Логирование всех ошибок
 $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
     $errorInfo = [
         'time' => date('Y-m-d H:i:s'),
         'event' => get_class($event),
-        'handlerList' => $event->currentHandlerListType?->value ?? 'unknown',
+        'handlerList' => $event->currentHandlerListType?->name ?? 'unknown',
         'exception' => get_class($exception),
         'message' => $exception->getMessage(),
         'file' => $exception->getFile(),
@@ -269,14 +293,21 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
     // Логирование
     error_log(json_encode($errorInfo));
 
+    // Ошибка API в ответе с HTTP 200
+    if ($exception instanceof SimpleQueryError && $exception->getErrorCode() === 'not.found') {
+        error_log('Запрашиваемый ресурс не найден');
+
+        return true; // Отмечаем событие как обработанное
+    }
+
     // Специфичная обработка HTTP-ошибок
-    if ($exception instanceof MaxHttpException) {
-        if (str_contains($exception->getMessage(), '401')) {
+    if ($exception instanceof HttpException) {
+        if ($exception->getCode() === 401) {
             // Ошибка авторизации - критично
             return true; // Отмечаем событие как обработанное
         }
         
-        if (str_contains($exception->getMessage(), '429')) {
+        if ($exception->getCode() === 429) {
             // Превышен лимит - можно продолжить
             return false; // Продолжаем обработку другими обработчиками
         }
@@ -286,6 +317,18 @@ $bot->onException(function (Throwable $exception, BaseEvent $event): bool {
     return true;
 });
 ```
+
+У ошибок ответа сервера `getCode()` возвращает код HTTP, а на каждый известный код есть свой класс
+(`UnauthorizedException`, `TooManyRequestsException` и другие), поэтому вместо сравнения кодов можно
+проверять тип исключения. Полный список — в разделе [API-клиент](ApiClient.md#ошибки).
+
+При HTTP 200 сервер также может сообщить об ошибке через `success: false`.
+В этом случае клиент выбрасывает `SimpleQueryError`, а код ошибки API доступен через `getErrorCode()`.
+Сравнивайте его с кодом вроде `not.found`, а не с текстом `getMessage()`.
+Если сервер не передал поле `code`, метод вернёт `null`.
+Метод `getResult()` исключения возвращает исходную модель со всеми данными ответа.
+У `HttpException` код ошибки API доступен через `getError()?->getCode()`; при HTTP 5xx
+структурированного описания ошибки может не быть.
 
 ## Обработка ошибок в production
 

@@ -8,6 +8,7 @@ use MaxMessenger\Bot\Exception\MaxBot\Event\SenderUnknownException;
 use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\ForbiddenException;
 use MaxMessenger\Bot\HttpClient\Exception\HttpResponse\Http\NotFoundException;
 use MaxMessenger\Bot\MaxApiClient;
+use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
 use MaxMessenger\Bot\Model\Enum\ChatType;
 use MaxMessenger\Bot\Model\Enum\MessageLinkType;
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
@@ -19,14 +20,10 @@ use MaxMessenger\Bot\Model\Response\User;
 use function is_string;
 
 /**
- * Методы событий, связанных с сообщениями.
+ * Методы событий, связанных с сообщениями и постами.
  *
- * Предоставляет доступ к сообщению события, его отправителю и чату, а также действия над сообщением:
- * ответ, пересылку и удаление.
- *
- * Событие может относиться к объекту, который не поддерживается MAX API, — тогда сообщения в нём нет
- * и любой метод трейта прерывает обработку события через {@see BaseEvent::continue()}. Проверить наличие
- * сообщения заранее можно методом {@see hasMessage()}.
+ * Предоставляет доступ к сообщению или посту события, его отправителю и чату или каналу,
+ * а также позволяет ответить, переслать и удалить сообщение или пост.
  *
  * @psalm-require-extends BaseEvent
  * @property-read MaxApiClient $apiClient
@@ -37,17 +34,13 @@ trait MessageEventTrait
     use SendMessageToUserTrait;
 
     /**
-     * Удалить сообщение.
+     * Удалить сообщение или пост.
      *
-     * Бот удаляет сообщения, если он администратор и имеет право на удаление: в канале и групповом
-     * чате — любые сообщения, в диалоге — только отправленные самим ботом.
+     * Для удаления чужих сообщений в групповом чате требуется право {@see ChatAdminPermission::Write}.
+     * Для удаления постов в канале требуется право {@see ChatAdminPermission::Delete}.
+     * Нельзя удалять сообщения пользователя, отправленные в диалог.
      *
-     * - Вы получите ошибку {@see ForbiddenException}, если попытаетесь удалить чужое сообщения
-     *   без прав на удаление сообщений.
-     * - Нельзя удалять сообщения пользователя отправленные в диалог.
-     * - Можно удалять не более двух сообщений в секунду в одном диалоге, групповом чате или канале.
-     *   При превышении этого лимита сообщения следует ставить в очередь или делать задержку перед удалением.
-     *
+     * @throws ForbiddenException Если у бота нет прав на удаление сообщения или поста.
      * @see MaxApiClient::deleteMessage()
      */
     public function deleteMessage(): void
@@ -56,13 +49,12 @@ trait MessageEventTrait
     }
 
     /**
-     * Переслать сообщение в чат.
+     * Переслать сообщение или пост в чат.
      *
-     * - Вы можете получить ошибку {@see NotFoundException}, если сообщение на момент пересылки будет удалено.
-     * - Можно отправлять не более двух сообщений в секунду в один диалог, групповой чат или канал.
-     *   При превышении этого лимита сообщения следует ставить в очередь или делать задержку перед отправкой.
+     * Сообщение из диалога или группового чата нельзя переслать в канал.
      *
-     * @param int $chatId ID чата.
+     * @param int $chatId Идентификатор чата.
+     * @throws NotFoundException Если сообщение или пост удалены к моменту пересылки.
      * @see MaxApiClient::sendMessageToChat()
      */
     public function forwardToChat(int $chatId): SendMessageResult
@@ -74,15 +66,12 @@ trait MessageEventTrait
     }
 
     /**
-     * Переслать сообщение в диалог с пользователем.
+     * Переслать сообщение или пост в диалог с пользователем.
      *
-     * - Вы можете получить ошибку {@see NotFoundException}, если сообщение на момент пересылки будет удалено.
-     * - Чтобы бот мог отправить сообщение пользователю, пользователь должен запустить бота.
-     *   Иначе запрос завершится ошибкой.
-     * - Можно отправлять не более двух сообщений в секунду в один диалог. При превышении этого лимита
-     *   сообщения следует ставить в очередь или делать задержку перед отправкой.
+     * Чтобы бот мог отправить сообщение пользователю, пользователь должен запустить бота.
      *
-     * @param int $userId ID пользователя.
+     * @param int $userId Идентификатор пользователя.
+     * @throws NotFoundException Если сообщение или пост удалены к моменту пересылки.
      * @see MaxApiClient::sendMessageToUser()
      */
     public function forwardToUser(int $userId): SendMessageResult
@@ -94,7 +83,7 @@ trait MessageEventTrait
     }
 
     /**
-     * @return int ID диалога, чата или канала, где было отправлено сообщение.
+     * @return int Идентификатор диалога, группового чата или канала с сообщением или постом.
      */
     public function getChatId(): int
     {
@@ -102,18 +91,13 @@ trait MessageEventTrait
     }
 
     /**
-     * Сообщение события.
-     *
-     * Если в событии нет сообщения, обработка события прерывается через {@see BaseEvent::continue()}.
-     * Проверить наличие сообщения заранее можно методом {@see hasMessage()}.
-     *
-     * @return Message Сообщение события.
+     * @return Message Сообщение или пост события.
      */
     abstract public function getMessage(): Message;
 
     /**
-     * @return User|null Пользователь, отправивший сообщение.
-     *     Может быть `null`, если сообщение было опубликовано от имени канала.
+     * @return User|null Пользователь или бот, отправивший сообщение или опубликовавший пост.
+     *     Может быть `null`, если пост опубликован от имени канала.
      */
     public function getUser(): ?User
     {
@@ -121,8 +105,8 @@ trait MessageEventTrait
     }
 
     /**
-     * @return int|null ID пользователя, отправившего сообщение.
-     *     Может быть `null`, если сообщение было опубликовано от имени канала.
+     * @return int|null Идентификатор пользователя или бота, отправившего сообщение или опубликовавшего пост.
+     *     Может быть `null`, если пост опубликован от имени канала.
      */
     public function getUserId(): ?int
     {
@@ -130,14 +114,7 @@ trait MessageEventTrait
     }
 
     /**
-     * Проверяет, что событие содержит сообщение.
-     *
-     * @return bool `true`, если событие содержит сообщение.
-     */
-    abstract public function hasMessage(): bool;
-
-    /**
-     * @return bool `true`, если сообщение было отправлено в канал.
+     * @return bool `true`, если событие относится к посту в канале.
      */
     public function isChannel(): bool
     {
@@ -145,7 +122,7 @@ trait MessageEventTrait
     }
 
     /**
-     * @return bool `true`, если сообщение было отправлено в группу.
+     * @return bool `true`, если событие относится к сообщению в групповом чате.
      */
     public function isChat(): bool
     {
@@ -153,7 +130,7 @@ trait MessageEventTrait
     }
 
     /**
-     * @return bool `true`, если сообщение было отправлено в диалог.
+     * @return bool `true`, если событие относится к сообщению в диалоге.
      */
     public function isDialog(): bool
     {
@@ -161,12 +138,8 @@ trait MessageEventTrait
     }
 
     /**
-     * Проверяет, что тип чата сообщения не поддерживается.
-     *
-     * Возвращает `true`, если тип чата неизвестен, — то есть когда {@see isChannel()}, {@see isChat()}
-     * и {@see isDialog()} возвращают `false`.
-     *
-     * @return bool `true`, если тип чата сообщения не поддерживается.
+     * @return bool `true`, если тип получателя сообщения или поста не поддерживается:
+     *     {@see isChannel()}, {@see isChat()} и {@see isDialog()} возвращают `false`.
      */
     public function isUnsupported(): bool
     {
@@ -174,17 +147,14 @@ trait MessageEventTrait
     }
 
     /**
-     * Ответить на сообщение в чате сообщения.
+     * Отправить сообщение или пост в исходный диалог, групповой чат или канал.
      *
-     * - Вы можете получить ошибку {@see NotFoundException}, если сообщение на момент цитирования будет удалено.
-     * - Можно отправлять не более двух сообщений в секунду в один диалог, групповой чат или канал.
-     *   При превышении этого лимита сообщения следует ставить в очередь или делать задержку перед отправкой.
-     *
-     * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
-     * @param bool $asReply Требуется ли ответить с цитированием сообщения
-     * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
-     *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
-     * @return SendMessageResult Информация о созданном сообщении.
+     * @param NewMessageBody|non-empty-string $message Тело нового сообщения или поста.
+     * @param bool $asReply Требуется ли процитировать исходное сообщение или пост.
+     * @param bool $disableLinkPreview Если `true`, сервер не создаст превью ссылок в тексте сообщения или поста.
+     *     Параметр действует и при последующем редактировании.
+     * @return SendMessageResult Информация о созданном сообщении или посте.
+     * @throws NotFoundException Если цитируемое сообщение или пост удалены к моменту ответа (`$asReply = true`).
      */
     public function reply(
         NewMessageBody|string $message,
@@ -202,20 +172,17 @@ trait MessageEventTrait
     }
 
     /**
-     * Ответить на сообщение лично в диалоге с пользователем.
+     * Ответить на сообщение или пост лично в диалоге с пользователем.
      *
-     * - Вы можете получить ошибку {@see NotFoundException}, если сообщение на момент пересылки будет удалено.
-     * - Вы можете получить ошибку {@see SenderUnknownException}, если отправитель сообщения скрыт.
-     * - Чтобы бот мог отправить сообщение пользователю, пользователь должен запустить бота.
-     *   Иначе запрос завершится ошибкой.
-     * - Можно отправлять не более двух сообщений в секунду в один диалог. При превышении этого лимита
-     *   сообщения следует ставить в очередь или делать задержку перед отправкой.
+     * Чтобы бот мог отправить сообщение пользователю, пользователь должен запустить бота.
      *
      * @param NewMessageBody|non-empty-string $message Тело нового сообщения.
-     * @param bool $forwardOrigMessage Требуется ли переслать оригинальное сообщение
+     * @param bool $forwardOrigMessage Требуется ли переслать исходное сообщение или пост.
      * @param bool $disableLinkPreview Если `true`, сервер не будет генерировать превью для ссылок в тексте сообщения.
      *     Параметр действует для этого сообщения, в том числе при его дальнейшем редактировании.
      * @return SendMessageResult Информация о созданном сообщении.
+     * @throws NotFoundException Если пересылаемое сообщение или пост удалены до запроса (`$forwardOrigMessage = true`).
+     * @throws SenderUnknownException Если отправитель сообщения или поста скрыт.
      */
     public function replyToUser(
         NewMessageBody|string $message,
@@ -232,12 +199,8 @@ trait MessageEventTrait
     }
 
     /**
-     * Пользователь, отправивший сообщение.
-     *
-     * В отличие от {@see getUser()}, вместо `null` выбрасывает исключение.
-     *
-     * @return User Пользователь, отправивший сообщение.
-     * @throws SenderUnknownException Если сообщение опубликовано от имени канала.
+     * @return User Отправитель сообщения или поста.
+     * @throws SenderUnknownException Если пост опубликован от имени канала.
      */
     public function requireUser(): User
     {
@@ -249,12 +212,8 @@ trait MessageEventTrait
     }
 
     /**
-     * ID пользователя, отправившего сообщение.
-     *
-     * В отличие от {@see getUserId()}, вместо `null` выбрасывает исключение.
-     *
-     * @return int ID пользователя, отправившего сообщение.
-     * @throws SenderUnknownException Если сообщение опубликовано от имени канала.
+     * @return int Идентификатор отправителя сообщения или поста.
+     * @throws SenderUnknownException Если пост опубликован от имени канала.
      */
     public function requireUserId(): int
     {

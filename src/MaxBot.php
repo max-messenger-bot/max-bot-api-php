@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot;
 
 use Closure;
-use JsonException;
 use MaxMessenger\Bot\Contract\MaxApiConfigInterface;
 use MaxMessenger\Bot\Exception\MaxBot\Event\EventException;
-use MaxMessenger\Bot\Exception\MaxBot\Update\BadRequestException;
-use MaxMessenger\Bot\Exception\MaxBot\Update\InvalidSecretException;
+use MaxMessenger\Bot\Exception\Validation\MaxLengthException;
+use MaxMessenger\Bot\Exception\Validation\MinLengthException;
+use MaxMessenger\Bot\MaxBot\Attribute\HandlerAttributeInterface;
 use MaxMessenger\Bot\MaxBot\CallbackHandler;
 use MaxMessenger\Bot\MaxBot\CallbackJsonHandler;
 use MaxMessenger\Bot\MaxBot\CommandHandler;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotAddedToChatEvent;
+use MaxMessenger\Bot\MaxBot\Event\BotAdminPermissionsChangedEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotRemovedFromChatEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotStoppedEvent;
@@ -33,203 +34,116 @@ use MaxMessenger\Bot\MaxBot\Event\MessageRemovedEvent;
 use MaxMessenger\Bot\MaxBot\Event\UnknownEvent;
 use MaxMessenger\Bot\MaxBot\Event\UserAddedToChatEvent;
 use MaxMessenger\Bot\MaxBot\Event\UserRemovedFromChatEvent;
-use MaxMessenger\Bot\MaxBot\HandlerListType;
+use MaxMessenger\Bot\MaxBot\MaxBotHelperTrait;
 use MaxMessenger\Bot\Model\Enum\UpdateType;
 use MaxMessenger\Bot\Model\Response\Update;
 use Psr\Http\Message\ServerRequestInterface;
+use ReflectionAttribute;
+use ReflectionObject;
 use SensitiveParameter;
 use SensitiveParameterValue;
 use Throwable;
 
-use function array_key_exists;
 use function array_unshift;
-use function count;
-use function file_get_contents;
-use function hash_equals;
-use function is_array;
 use function is_string;
-use function json_decode;
-use function str_contains;
-use function strlen;
+use function mb_strlen;
 
+/**
+ * Обработчик обновлений бота с регистрацией обработчиков событий, команд и колбэков.
+ */
 final class MaxBot
 {
-    public readonly MaxApiClient $apiClient;
-    private ?CommandHandler $commandHandler = null;
-    /**
-     * @var array<class-string<BaseEvent>, list<Closure>>
-     */
-    private array $eventHandlers = [];
-    /**
-     * @var list<Closure(Throwable $exception, BaseEvent $event): (bool|void)>
-     */
-    private array $exceptionHandlers = [];
-    /**
-     * @var list<Closure(BaseEvent $event): (bool|void)>
-     */
-    private array $fallbackHandlers = [];
-    /**
-     * @var list<Closure(BaseEvent $event): (bool|void)>
-     */
-    private array $finalHandlers = [];
-    /**
-     * @var list<Closure(BaseEvent $event): (bool|void)>
-     */
-    private array $prepareHandlers = [];
-    /**
-     * @var SensitiveParameterValue<non-empty-string>|null
-     */
-    private ?SensitiveParameterValue $secret;
-    /**
-     * @var array<string, list<Closure(BaseEvent $event): (bool|void)>>
-     */
-    private array $typedHandlers = [];
+    use MaxBotHelperTrait;
 
     /**
-     * @param non-empty-string|MaxApiConfigInterface|MaxApiClient $accessTokenOrConfig
-     * @param non-empty-string|null $secret
+     * @var MaxApiClient Клиент API, через который бот выполняет запросы.
+     */
+    public readonly MaxApiClient $apiClient;
+
+    /**
+     * @param non-empty-string|MaxApiConfigInterface|MaxApiClient $accessTokenOrConfig Токен доступа,
+     *     настройки подключения или готовый клиент API.
+     * @param non-empty-string|null $secret Секрет для проверки входящих Webhook-запросов
+     *     (minLength: 5, maxLength: 256) или `null`, чтобы отключить проверку.
+     * @param bool $useRussianTrustedCaCertificates Доверять корневым сертификатам Минцифры, поставляемым с пакетом
+     *     (см. {@see MaxApiConfig::useRussianTrustedCaCertificates()}). Применяется, только если передан токен.
      */
     public function __construct(
         #[SensitiveParameter]
         string|MaxApiConfigInterface|MaxApiClient $accessTokenOrConfig,
         #[SensitiveParameter]
         ?string $secret = null,
+        bool $useRussianTrustedCaCertificates = false,
     ) {
         $this->apiClient = $accessTokenOrConfig instanceof MaxApiClient
             ? $accessTokenOrConfig
-            : new MaxApiClient($accessTokenOrConfig);
+            : new MaxApiClient($accessTokenOrConfig, $useRussianTrustedCaCertificates);
         $this->setSecret($secret);
+        $this->updateFilter = static fn(Update $update): bool => $update->isValid();
     }
 
     /**
-     * @param non-empty-string|null $actionSeparator
-     * @param positive-int $actionMaxLength
+     * @return MaxApiClient Клиент API, используемый ботом.
      */
-    public function addCallbackHandler(?string $actionSeparator = null, int $actionMaxLength = 64): CallbackHandler
-    {
-        $callbackHandler = new CallbackHandler([], $actionSeparator, $actionMaxLength);
-
-        $this->eventHandlers[MessageCallbackEvent::class][] = $callbackHandler->handle(...);
-
-        return $callbackHandler;
-    }
-
-    /**
-     * @param non-empty-string $actionKey
-     */
-    public function addCallbackJsonHandler(string $actionKey): CallbackJsonHandler
-    {
-        $callbackHandler = new CallbackJsonHandler($actionKey);
-
-        $this->eventHandlers[MessageCallbackEvent::class][] = $callbackHandler->handle(...);
-
-        return $callbackHandler;
-    }
-
     public function getApiClient(): MaxApiClient
     {
         return $this->apiClient;
     }
 
     /**
-     * @param non-empty-string|null $commandSeparator
-     * @param positive-int $commandMaxLength
+     * @return CallbackHandler Основной обработчик Callback-кнопок, создаваемый при первом вызове.
      */
-    public function getCommandHandler(?string $commandSeparator = null, int $commandMaxLength = 64): CommandHandler
+    public function getCallbackHandler(): CallbackHandler
     {
-        if ($this->commandHandler !== null) {
-            return $this->commandHandler;
+        if ($this->callbackHandler === null) {
+            $this->callbackHandler = new CallbackHandler();
+            $this->onMessageCallback($this->callbackHandler->handle(...));
         }
 
-        $this->commandHandler = new CommandHandler([], [], $commandSeparator, $commandMaxLength);
+        return $this->callbackHandler;
+    }
 
-        if (array_key_exists(MessageCreatedEvent::class, $this->eventHandlers)) {
-            array_unshift($this->eventHandlers[MessageCreatedEvent::class], $this->commandHandler->handle(...));
-        } else {
-            $this->eventHandlers[MessageCreatedEvent::class] = [$this->commandHandler->handle(...)];
+    /**
+     * @return CallbackJsonHandler Основной обработчик JSON-payload, создаваемый при первом вызове.
+     */
+    public function getCallbackJsonHandler(): CallbackJsonHandler
+    {
+        if ($this->callbackJsonHandler === null) {
+            $this->callbackJsonHandler = new CallbackJsonHandler();
+            $this->onMessageCallback($this->callbackJsonHandler->handle(...));
+        }
+
+        return $this->callbackJsonHandler;
+    }
+
+    /**
+     * @return CommandHandler Основной обработчик команд, создаваемый при первом вызове.
+     */
+    public function getCommandHandler(): CommandHandler
+    {
+        if ($this->commandHandler === null) {
+            $this->commandHandler = new CommandHandler();
+            $this->onMessageCreated($this->commandHandler->handle(...), true);
         }
 
         return $this->commandHandler;
     }
 
     /**
-     * Обрабатывает событие.
-     *
-     * @return bool `true`, если событие считается обработанным.
+     * @return (Closure(Update $update, Throwable $exception): void)|null Глобальный обработчик ошибок обновлений.
      */
-    public function handleEvent(BaseEvent $event): bool
+    public function getUpdateErrorHandler(): ?Closure
     {
-        $event->handledIn = null;
-
-        $list = $this->prepareHandlers;
-        if ($list && self::handleEventUseHandlerList($event, $list, HandlerListType::Prepare)) {
-            self::handleEventUseHandlerList($event, $this->finalHandlers, HandlerListType::Final);
-
-            return true;
-        }
-
-        /** @var list<Closure(BaseEvent $event): void> $list */
-        $list = $this->eventHandlers[$event::class] ?? [];
-        if ($list && self::handleEventUseHandlerList($event, $list, HandlerListType::Event)) {
-            self::handleEventUseHandlerList($event, $this->finalHandlers, HandlerListType::Final);
-
-            return true;
-        }
-
-        $list = $this->typedHandlers[$event->update->getUpdateTypeRaw()] ?? [];
-        if ($list && self::handleEventUseHandlerList($event, $list, HandlerListType::Typed)) {
-            self::handleEventUseHandlerList($event, $this->finalHandlers, HandlerListType::Final);
-
-            return true;
-        }
-
-        $list = $this->fallbackHandlers;
-        if ($list && self::handleEventUseHandlerList($event, $list, HandlerListType::Fallback)) {
-            self::handleEventUseHandlerList($event, $this->finalHandlers, HandlerListType::Final);
-
-            return true;
-        }
-
-        return self::handleEventUseHandlerList($event, $this->finalHandlers, HandlerListType::Final);
+        return $this->updateErrorHandler;
     }
 
     /**
-     * Обрабатывает событие используя переданный список обработчиков.
-     *
-     * Обработка прекращается, когда обработчик вернёт `true` (обработано).
-     *
-     * @param array<Closure(BaseEvent $event): (bool|void)> $handlers
-     * @return bool `true`, если хоть один обработчик вернул `true`.
+     * @return (Closure(Update $update): bool)|null Фильтр допуска обновления к обработке или `null`,
+     *     если фильтрация отключена.
      */
-    public static function handleEventUseHandlerList(
-        BaseEvent $event,
-        array $handlers,
-        HandlerListType $handlerListType = HandlerListType::Custom,
-        ?bool $defaultIsHandled = null,
-    ): bool {
-        if (count($handlers) === 0) {
-            return false;
-        }
-
-        $saveListType = $event->currentHandlerListType;
-
-        foreach ($handlers as $handler) {
-            $event->currentHandlerListType = $handlerListType;
-
-            if ($event->handle($handler, $defaultIsHandled)) {
-                if ($handlerListType !== HandlerListType::Final) {
-                    $event->handledIn = $handlerListType;
-                }
-
-                $event->currentHandlerListType = $saveListType;
-
-                return true;
-            }
-        }
-
-        $event->currentHandlerListType = $saveListType;
-
-        return false;
+    public function getUpdateFilter(): ?Closure
+    {
+        return $this->updateFilter;
     }
 
     /**
@@ -279,43 +193,36 @@ final class MaxBot
     }
 
     /**
-     * Создаёт объект события бота на основе объекта события и запускает процесс обработки этого события.
+     * Проверяет обновление фильтром и при допуске создаёт событие бота и запускает его обработку.
      *
-     * @return bool `true`, если событие считается обработанным.
+     * @param Update $update Полученное обновление API.
+     * @return bool `true`, если событие считается обработанным; `false` при отказе фильтра или перехваченной ошибке.
+     * @throws Throwable Если глобальный обработчик ошибок не задан или сам выбросил исключение.
      */
     public function handleUpdate(Update $update): bool
     {
-        return $this->handleEvent($this->makeEvent($update));
-    }
-
-    /**
-     * Создаёт объект события бота на основе объекта события.
-     */
-    public function makeEvent(Update $update): BaseEvent
-    {
-        return BaseEvent::new($update, $this->apiClient, $this->exceptionHandlers);
-    }
-
-    /**
-     * Создаёт объект события из JSON-стоки.
-     */
-    public static function makeUpdateFromString(string $string): Update
-    {
         try {
-            $data = json_decode($string, true, 16, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
-            throw new BadRequestException('The body does not contain valid JSON.', $e);
-        }
+            if ($this->updateFilter?->__invoke($update) === false) {
+                return false;
+            }
 
-        if (!is_array($data)) {
-            throw new BadRequestException('Data is not array.');
-        }
+            return $this->handleEvent($this->makeEvent($update));
+        } catch (Throwable $exception) {
+            if ($this->updateErrorHandler === null) {
+                throw $exception;
+            }
 
-        return Update::newFromData($data);
+            ($this->updateErrorHandler)($update, $exception);
+
+            return false;
+        }
     }
 
     /**
-     * @param Closure(BaseEvent $event): (bool|void) $handler
+     * Регистрирует обработчик событий указанного типа обновления.
+     *
+     * @param UpdateType|string $updateType Тип обновления.
+     * @param Closure(BaseEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function on(UpdateType|string $updateType, Closure $handler): static
@@ -326,7 +233,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(BotAddedToChatEvent $event): (bool|void) $handler
+     * Регистрирует обработчик добавления бота в чат или канал.
+     *
+     * @param Closure(BotAddedToChatEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onBotAddedToChat(Closure $handler): static
@@ -337,7 +246,22 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(BotRemovedFromChatEvent $event): (bool|void) $handler
+     * Регистрирует обработчик изменения прав бота-администратора в чате или канале.
+     *
+     * @param Closure(BotAdminPermissionsChangedEvent $event): (bool|void) $handler Обработчик события.
+     * @return $this
+     */
+    public function onBotAdminPermissionsChanged(Closure $handler): static
+    {
+        $this->eventHandlers[BotAdminPermissionsChangedEvent::class][] = $handler;
+
+        return $this;
+    }
+
+    /**
+     * Регистрирует обработчик удаления бота из чата или канала.
+     *
+     * @param Closure(BotRemovedFromChatEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onBotRemovedFromChat(Closure $handler): static
@@ -348,7 +272,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(BotStartedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик запуска бота пользователем.
+     *
+     * @param Closure(BotStartedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onBotStarted(Closure $handler): static
@@ -359,7 +285,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(BotStoppedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик остановки бота пользователем.
+     *
+     * @param Closure(BotStoppedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onBotStopped(Closure $handler): static
@@ -370,7 +298,39 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(ChatTitleChangedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик действия Callback-кнопки с текстовым payload.
+     *
+     * @param non-empty-string $name Имя действия.
+     * @param Closure(MessageCallbackEvent $event, string $action, ?string $payload): (bool|void) $handler
+     *     Обработчик действия с его именем и дополнительными данными.
+     * @return $this
+     */
+    public function onCallback(string $name, Closure $handler): static
+    {
+        $this->getCallbackHandler()->onAction($name, $handler);
+
+        return $this;
+    }
+
+    /**
+     * Регистрирует обработчик действия Callback-кнопки с JSON-payload.
+     *
+     * @param non-empty-string $name Имя действия.
+     * @param Closure(MessageCallbackEvent $event, string $action, array $payload): (bool|void) $handler
+     *     Обработчик действия с его именем и декодированным JSON-payload.
+     * @return $this
+     */
+    public function onCallbackJson(string $name, Closure $handler): static
+    {
+        $this->getCallbackJsonHandler()->onAction($name, $handler);
+
+        return $this;
+    }
+
+    /**
+     * Регистрирует обработчик изменения названия чата.
+     *
+     * @param Closure(ChatTitleChangedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onChatTitleChanged(Closure $handler): static
@@ -381,7 +341,38 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(CommentCreatedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик команды с указанным именем.
+     *
+     * @param non-empty-string $name Имя команды.
+     * @param Closure(MessageCreatedEvent $event, string $command, ?string $payload): (bool|void) $handler
+     *     Обработчик команды с её именем и дополнительными данными.
+     * @return $this
+     */
+    public function onCommand(string $name, Closure $handler): static
+    {
+        $this->getCommandHandler()->onCommand($name, $handler);
+
+        return $this;
+    }
+
+    /**
+     * Регистрирует обработчик команд, которые не были обработаны ранее.
+     *
+     * @param Closure(MessageCreatedEvent $event, string $command, ?string $payload): (bool|void) $handler
+     *     Обработчик оставшихся команд с именем команды и дополнительными данными.
+     * @return $this
+     */
+    public function onCommands(Closure $handler): static
+    {
+        $this->getCommandHandler()->onCommands($handler);
+
+        return $this;
+    }
+
+    /**
+     * Регистрирует обработчик создания комментария к посту в канале.
+     *
+     * @param Closure(CommentCreatedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onCommentCreated(Closure $handler): static
@@ -392,7 +383,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(CommentEditedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик редактирования комментария к посту в канале.
+     *
+     * @param Closure(CommentEditedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onCommentEdited(Closure $handler): static
@@ -403,7 +396,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(CommentRemovedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик удаления комментария к посту в канале.
+     *
+     * @param Closure(CommentRemovedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onCommentRemoved(Closure $handler): static
@@ -414,7 +409,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(DialogClearedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик очистки истории диалога с ботом.
+     *
+     * @param Closure(DialogClearedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onDialogCleared(Closure $handler): static
@@ -425,7 +422,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(DialogMutedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик отключения уведомлений в диалоге.
+     *
+     * @param Closure(DialogMutedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onDialogMuted(Closure $handler): static
@@ -436,7 +435,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(DialogRemovedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик удаления диалога с ботом.
+     *
+     * @param Closure(DialogRemovedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onDialogRemoved(Closure $handler): static
@@ -447,7 +448,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(DialogUnmutedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик включения уведомлений в диалоге.
+     *
+     * @param Closure(DialogUnmutedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onDialogUnmuted(Closure $handler): static
@@ -460,7 +463,9 @@ final class MaxBot
     /**
      * Добавляет обработчик исключений выброшенных и не обработанных при обработке событий.
      *
-     * @param Closure(Throwable $exception, BaseEvent $event): (bool|void) $handler
+     * @param Closure(Throwable $exception, BaseEvent $event): (bool|void) $handler Обработчик исключения. При
+     *     возврате `true` событие отмечается как обработанное; остальные обработчики исключения всё равно вызываются.
+     *     Завершение без возвращаемого значения само по себе не меняет статус события.
      * @return $this
      * @see EventException
      */
@@ -472,7 +477,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(BaseEvent $event): (bool|void) $handler
+     * Регистрирует обработчик событий, не обработанных предыдущими списками.
+     *
+     * @param Closure(BaseEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onFallback(Closure $handler): static
@@ -483,7 +490,14 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(BaseEvent $event): (bool|void) $handler
+     * Регистрирует финальный обработчик, вызываемый после остальных списков.
+     *
+     * Вызывается и для событий, уже обработанных в предыдущих списках.
+     * Проверить это можно по `$event->handledIn !== null`; свойство содержит список, в котором событие обработали.
+     *
+     * @param Closure(BaseEvent $event): (bool|void) $handler Обработчик события.
+     *     При возврате `true` событие отмечается как обработанное, следующие финальные обработчики не вызываются.
+     *     При завершении без возвращаемого значения статус по умолчанию остаётся `null`, и обход списка продолжается.
      * @return $this
      */
     public function onFinal(Closure $handler): static
@@ -494,7 +508,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(MessageCallbackEvent $event): (bool|void) $handler
+     * Регистрирует обработчик нажатия callback-кнопки в чате или канале.
+     *
+     * @param Closure(MessageCallbackEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onMessageCallback(Closure $handler): static
@@ -505,18 +521,27 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(MessageCreatedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик создания сообщения.
+     *
+     * @param Closure(MessageCreatedEvent $event): (bool|void) $handler Обработчик события.
+     * @param bool $prepend Добавить обработчик в начало очереди.
      * @return $this
      */
-    public function onMessageCreated(Closure $handler): static
+    public function onMessageCreated(Closure $handler, bool $prepend = false): static
     {
-        $this->eventHandlers[MessageCreatedEvent::class][] = $handler;
+        if ($prepend && isset($this->eventHandlers[MessageCreatedEvent::class])) {
+            array_unshift($this->eventHandlers[MessageCreatedEvent::class], $handler);
+        } else {
+            $this->eventHandlers[MessageCreatedEvent::class][] = $handler;
+        }
 
         return $this;
     }
 
     /**
-     * @param Closure(MessageEditedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик редактирования сообщения.
+     *
+     * @param Closure(MessageEditedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onMessageEdited(Closure $handler): static
@@ -527,7 +552,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(MessageRemovedEvent $event): (bool|void) $handler
+     * Регистрирует обработчик удаления сообщения.
+     *
+     * @param Closure(MessageRemovedEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onMessageRemoved(Closure $handler): static
@@ -538,7 +565,11 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(BaseEvent $event): (bool|void) $handler
+     * Регистрирует предварительный обработчик, вызываемый до остальных списков.
+     *
+     * @param Closure(BaseEvent $event): (bool|void) $handler Обработчик события.
+     *     При возврате `true` событие отмечается как обработанное.
+     *     При завершении без возвращаемого значения статус по умолчанию остаётся `null`, и обход списка продолжается.
      * @return $this
      */
     public function onPrepare(Closure $handler): static
@@ -549,7 +580,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(UnknownEvent $event): (bool|void) $handler
+     * Регистрирует обработчик обновления неизвестного типа.
+     *
+     * @param Closure(UnknownEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onUnknown(Closure $handler): static
@@ -560,7 +593,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(UserAddedToChatEvent $event): (bool|void) $handler
+     * Регистрирует обработчик добавления пользователя в чат или канал.
+     *
+     * @param Closure(UserAddedToChatEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onUserAddedToChat(Closure $handler): static
@@ -571,7 +606,9 @@ final class MaxBot
     }
 
     /**
-     * @param Closure(UserRemovedFromChatEvent $event): (bool|void) $handler
+     * Регистрирует обработчик удаления пользователя из чата или канала.
+     *
+     * @param Closure(UserRemovedFromChatEvent $event): (bool|void) $handler Обработчик события.
      * @return $this
      */
     public function onUserRemovedFromChat(Closure $handler): static
@@ -582,87 +619,69 @@ final class MaxBot
     }
 
     /**
-     * Читает тело PSR-7 запроса.
+     * Регистрирует публичные методы объекта, отмеченные атрибутами обработчиков, включая унаследованные.
      *
-     * Проверяет метод запроса, тип содержимого, наличие и совпадение `Content-Length`, а также секрет
-     * из заголовка `X-Max-Bot-Api-Secret`, если он задан методом {@see setSecret()}.
-     *
-     * @param ServerRequestInterface $request Запрос от Webhook.
-     * @return non-empty-string Тело запроса.
-     * @throws BadRequestException Если запрос не является корректным Webhook-запросом MAX.
-     * @throws InvalidSecretException Если секрет в запросе не совпадает с заданным.
+     * @param object $handlers Объект с методами, отмеченными атрибутами из пространства имён MaxBot\Attribute.
+     * @return $this
      */
-    public function readRequestContent(ServerRequestInterface $request): string
+    public function registerHandlers(object $handlers): static
     {
-        $isPost = $request->getMethod() === 'POST';
-        $isJson = str_contains($request->getHeaderLine('Content-Type'), 'application/json');
-        $contentLength = $request->getHeaderLine('Content-Length');
+        foreach ((new ReflectionObject($handlers))->getMethods() as $method) {
+            if (!$method->isPublic()) {
+                continue;
+            }
 
-        if (!$isPost || !$isJson || $contentLength === '') {
-            throw new BadRequestException('Required: POST, application/json, content-length');
+            $attributes = $method->getAttributes(HandlerAttributeInterface::class, ReflectionAttribute::IS_INSTANCEOF);
+            foreach ($attributes as $attribute) {
+                $attribute->newInstance()->register($this, $method->getClosure($handlers));
+            }
         }
 
-        $secret = $this->secret?->getValue();
-        /** @psalm-suppress RiskyTruthyFalsyComparison */
-        if ($secret && !hash_equals($secret, $request->getHeaderLine('X-Max-Bot-Api-Secret'))) {
-            throw new InvalidSecretException();
-        }
-
-        $body = (string) $request->getBody();
-
-        if ($body === '') {
-            throw new BadRequestException('Body is empty.');
-        }
-
-        if (strlen($body) !== (int) $contentLength) {
-            throw new BadRequestException('The Body size does not match the passed content-length.');
-        }
-
-        return $body;
+        return $this;
     }
 
     /**
-     * Читает тело запроса из глобального контекста.
-     *
-     * @return string Тело запроса
-     */
-    public function readRequestContentFromGlobal(): string
-    {
-        $isPost = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST';
-        $isJson = str_contains(($_SERVER['CONTENT_TYPE'] ?? ''), 'application/json');
-        $isContentLengthExists = ($_SERVER['CONTENT_LENGTH'] ?? null) !== null;
-
-        if (!$isPost || !$isJson || !$isContentLengthExists) {
-            throw new BadRequestException('Required: POST, application/json, content-length');
-        }
-
-        $secret = $this->secret?->getValue();
-        /** @psalm-suppress RiskyTruthyFalsyComparison */
-        if ($secret && !hash_equals($secret, $_SERVER['HTTP_X_MAX_BOT_API_SECRET'] ?? '')) {
-            throw new InvalidSecretException();
-        }
-
-        /** @psalm-suppress RiskyTruthyFalsyComparison */
-        $body = @file_get_contents('php://input') ?: '';
-
-        if (empty($body)) {
-            throw new BadRequestException('Body is empty.');
-        }
-
-        if (strlen($body) !== (int) ($_SERVER['CONTENT_LENGTH'] ?? '')) {
-            throw new BadRequestException('The Body size does not match the passed content-length.');
-        }
-
-        return $body;
-    }
-
-    /**
-     * @param non-empty-string|null $secret
+     * @param non-empty-string|null $secret Секрет для проверки входящих Webhook-запросов
+     *     (minLength: 5, maxLength: 256) или `null`, чтобы отключить проверку.
      * @return $this
      */
     public function setSecret(?string $secret): self
     {
+        if ($secret !== null) {
+            $length = mb_strlen($secret, 'UTF-8');
+            if ($length < 5) {
+                throw new MinLengthException('secret', $length, 5);
+            }
+            if ($length > 256) {
+                throw new MaxLengthException('secret', $length, 256);
+            }
+        }
+
         $this->secret = $secret !== null ? new SensitiveParameterValue($secret) : null;
+
+        return $this;
+    }
+
+    /**
+     * @param (Closure(Update $update, Throwable $exception): void)|null $updateErrorHandler Глобальный обработчик
+     *     ошибок фильтра, создания события и его обработки; `null` отключает перехват исключений.
+     * @return $this
+     */
+    public function setUpdateErrorHandler(?Closure $updateErrorHandler): self
+    {
+        $this->updateErrorHandler = $updateErrorHandler;
+
+        return $this;
+    }
+
+    /**
+     * @param (Closure(Update $update): bool)|null $updateFilter Фильтр, возвращающий `true` для допуска обновления
+     *     к обработке и `false` для его пропуска, или `null` для отключения фильтрации.
+     * @return $this
+     */
+    public function setUpdateFilter(?Closure $updateFilter): self
+    {
+        $this->updateFilter = $updateFilter;
 
         return $this;
     }

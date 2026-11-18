@@ -7,10 +7,12 @@ namespace MaxMessenger\Bot\Model\Response;
 use DateTimeImmutable;
 use MaxMessenger\Bot\MaxApiClient;
 
+use function htmlspecialchars;
 use function sprintf;
+use function strtr;
 
 /**
- * Объект содержит общую информацию о пользователе или боте без аватара.
+ * Информация о пользователе или боте без аватара.
  *
  * Варианты наследования:
  * - {@see UserWithPhoto} — объект с общей информацией о пользователе или боте, дополнительно содержит URL аватара
@@ -29,7 +31,7 @@ class User extends BaseResponseModel
      * @var array{
      *     user_id: int,
      *     first_name: non-empty-string,
-     *     last_name?: non-empty-string,
+     *     last_name?: string,
      *     username?: non-empty-string,
      *     is_bot: bool,
      *     last_activity_time?: non-negative-int
@@ -54,15 +56,26 @@ class User extends BaseResponseModel
         $firstName = $this->getFirstName();
         $lastName = $this->getLastName();
 
-        /** @psalm-suppress RedundantCondition */
         return $lastName !== null && $lastName !== ''
             ? sprintf('%s %s', $firstName, $lastName)
             : $firstName;
     }
 
     /**
-     * @return DateTimeImmutable|null Время последней активности пользователя или бота в MAX. Если пользователь отключил
-     *     в настройках профиля мессенджера MAX возможность видеть, что он в сети онлайн, поле может не возвращаться.
+     * @return non-empty-string HTML-ссылка на пользователя с полным именем из профиля.
+     */
+    public function getHtmlLink(): string
+    {
+        return sprintf(
+            '<a href="max://user/%d">%s</a>',
+            $this->getUserId(),
+            htmlspecialchars($this->getFullName(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+        );
+    }
+
+    /**
+     * @return DateTimeImmutable|null Время последней активности пользователя или бота в МАКС.
+     *     Если пользователь скрыл статус присутствия в настройках, время может быть неактуальным.
      */
     public function getLastActivityTime(): ?DateTimeImmutable
     {
@@ -70,9 +83,8 @@ class User extends BaseResponseModel
     }
 
     /**
-     * @return non-negative-int|null Время последней активности пользователя или бота в MAX
-     *     (Unix-время в миллисекундах). Если пользователь отключил в настройках профиля мессенджера MAX
-     *     возможность видеть, что он в сети онлайн, поле может не возвращаться.
+     * @return non-negative-int|null Время последней активности пользователя или бота в МАКС (Unix-время в
+     *     миллисекундах). Если пользователь скрыл статус присутствия в настройках, время может быть неактуальным.
      */
     public function getLastActivityTimeRaw(): ?int
     {
@@ -80,11 +92,33 @@ class User extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null Отображаемая фамилия пользователя. Для ботов это поле не возвращается.
+     * @return string|null Отображаемая фамилия пользователя. Для ботов это поле не возвращается.
      */
     public function getLastName(): ?string
     {
         return $this->data['last_name'] ?? null;
+    }
+
+    /**
+     * @return non-empty-string Markdown-ссылка на пользователя с полным именем из профиля.
+     */
+    public function getMarkdownLink(): string
+    {
+        $name = strtr($this->getFullName(), [
+            '\\' => '\\\\',
+            '[' => '\\[',
+            ']' => '\\]',
+            '*' => '\\*',
+            '_' => '\\_',
+            '`' => '\\`',
+            '~' => '\\~',
+            '+' => '\\+',
+            '^' => '\\^',
+            '<' => '\\<',
+            '>' => '\\>',
+        ]);
+
+        return sprintf('[%s](max://user/%d)', $name, $this->getUserId());
     }
 
     /**

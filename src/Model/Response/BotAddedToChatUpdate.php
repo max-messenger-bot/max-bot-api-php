@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Model\Response;
 
 /**
- * Вы получите это событие, как только бот будет добавлен в чат или канал.
+ * Событие добавления бота в чат или канал.
+ *
+ * @link https://dev.max.ru/docs-api/objects/Update/
+ * @link https://dev.max.ru/docs-api/methods/GET/updates/
  */
 class BotAddedToChatUpdate extends Update
 {
@@ -21,7 +24,7 @@ class BotAddedToChatUpdate extends Update
     private User|false $user = false;
 
     /**
-     * @return int ID чата или канала, куда был добавлен бот.
+     * @return int Идентификатор чата или канала, куда был добавлен бот.
      */
     public function getChatId(): int
     {
@@ -29,7 +32,15 @@ class BotAddedToChatUpdate extends Update
     }
 
     /**
-     * @return User Пользователь, добавивший бота в чат.
+     * @return list<non-empty-string> Имена обязательных свойств обновления.
+     */
+    public function getRequiredProperties(): array
+    {
+        return ['chat_id', 'user', 'is_channel'];
+    }
+
+    /**
+     * @return User Пользователь, добавивший бота в чат или канал.
      */
     public function getUser(): User
     {

@@ -39,7 +39,7 @@ class UserWithPhoto extends User
     }
 
     /**
-     * @return non-empty-string|null URL аватара пользователя или бота в полном размере.
+     * @return non-empty-string|null URL аватара пользователя или бота в увеличенном размере.
      */
     public function getFullAvatarUrl(): ?string
     {

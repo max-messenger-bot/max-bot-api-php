@@ -2,346 +2,205 @@
 
 ## Введение
 
-В этом документе представлены примеры обработки callback-событий (нажатий кнопок) с использованием CallbackHandler и
-CallbackJsonHandler.
+В этом документе представлены примеры обработки нажатий кнопок с использованием `CallbackHandler`
+и `CallbackJsonHandler`.
+Обработчики можно зарегистрировать через методы `MaxBot::onCallback()` и `MaxBot::onCallbackJson()`.
+Для настройки основных обработчиков используются `MaxBot::getCallbackHandler()` и `MaxBot::getCallbackJsonHandler()`.
 
-**Связанная документация:**
+Связанная документация:
 
 - [Обработка нажатий кнопок](../ProcessingCallbacks.md)
-- [Обработка событий](../ProcessingEvents.md)
+- [Обработка событий бота](../ProcessingEvents.md)
 - [Обработка команд](../ProcessingCommands.md)
-- [Примеры обработки событий](ProcessingEvents.md)
+- [Примеры обработки событий бота](ProcessingEvents.md)
 - [Примеры обработки команд](ProcessingCommands.md)
 
 ## Базовые примеры
 
-### Простая обработка нажатия кнопки
+### Обработка действия `help`
 
-Сначала отправим сообщение с кнопкой:
+Пример отправки сообщения с callback-кнопками:
 
 ```php
 use MaxMessenger\Bot\MaxBot;
 use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$bot = new MaxBot('your-access-token', 'your-secret', useRussianTrustedCaCertificates: true);
 
-// Отправка сообщения с inline-кнопкой
-$bot->onBotStarted(function (BotStartedEvent $event): bool {
+// Отправка сообщения с inline-клавиатурой
+$bot->onBotStarted(static function (BotStartedEvent $event): void {
     $message = new NewMessageBody('Выберите действие:');
-    $message->addInlineKeyboard()
+    $message
+        ->addInlineKeyboard()
         ->addCallbackButton('❓ Помощь', 'help')
         ->newRow()
         ->addCallbackButton('⚙️ Настройки', 'settings');
-    
+
     $event->sendMessageToUser($message);
-
-    return true; // Отмечаем событие как обработанное
 });
 ```
 
-Теперь обработаем нажатие кнопки с помощью CallbackHandler:
+Пример регистрации обработчика действия `help`:
 
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
+use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
-$callbackHandler = $bot->addCallbackHandler();
+$bot->onCallback('help', static function (MessageCallbackEvent $event, string $action, ?string $payload): void {
+    $message = new NewMessageBody('Раздел помощи. Выберите команду из меню:');
+    $message
+        ->addInlineKeyboard()
+        ->addCallbackButton('📖 Список команд', 'commands')
+        ->newRow()
+        ->addCallbackButton('✉️ Связаться с поддержкой', 'support');
 
-$callbackHandler->onAction('help', function (MessageCallbackEvent $event): bool {
-    $event->answer('Раздел помощи. Выберите команду из меню.');
-
-    return true; // Отмечаем событие как обработанное
-});
-```
-
-### Обработка с аргументами
-
-Использование разделителя для получения аргументов:
-
-```php
-use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
-
-$callbackHandler = $bot->addCallbackHandler(actionSeparator: ':');
-
-// Payload вида "buy:product_123"
-$callbackHandler->onAction('buy', function (MessageCallbackEvent $event): bool {
-    $action = $event->userData['__action'];   // 'buy'
-    $productId = $event->userData['__payload']; // 'product_123'
-
-    // Обработка покупки товара
-    $event->reply("Товар $productId добавлен в корзину!", true);
-
-    return true; // Отмечаем событие как обработанное
+    $event->answer($message);
 });
 ```
 
 ### Обработка нескольких действий
 
-Регистрация обработчиков для разных действий:
+```php
+use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
+
+// Действие help
+$bot->onCallback('help', static function (MessageCallbackEvent $event, string $action, ?string $payload): void {
+    $event->answer('Выберите интересующий вас раздел.');
+});
+
+// Действие settings
+$bot->onCallback('settings', static function (MessageCallbackEvent $event, string $action, ?string $payload): void {
+    $event->answer("Настройки бота:\n- Уведомления: Вкл\n- Язык: Русский");
+});
+
+// Действие profile
+$bot->onCallback('profile', static function (MessageCallbackEvent $event, string $action, ?string $payload): void {
+    $user = $event->getUser();
+
+    $profile = "Профиль пользователя:\n"
+        . "Имя: {$user->getFirstName()}\n"
+        . "ID: {$user->getUserId()}";
+
+    $event->answer($profile);
+});
+```
+
+## Работа с аргументами
+
+### Использование разделителя
+
+В примере двоеточие используется как разделитель имени действия и payload:
 
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
-$callbackHandler = $bot->addCallbackHandler();
+$bot->getCallbackHandler()->setActionSeparator(':');
 
-// Действие /help
-$callbackHandler->onAction('help', function (MessageCallbackEvent $event): bool {
-    $event->answer('Выберите интересующий вас раздел.');
+// Payload вида "buy:product_123"
+$bot->onCallback('buy', static function (MessageCallbackEvent $event, string $action, ?string $payload): void {
+    $productId = $payload; // 'product_123'
 
-    return true; // Отмечаем событие как обработанное
-});
-
-// Действие /settings
-$callbackHandler->onAction('settings', function (MessageCallbackEvent $event): bool {
-    $event->answer('Настройки бота:\n- Уведомления: Вкл\n- Язык: Русский');
-
-    return true; // Отмечаем событие как обработанное
-});
-
-// Действие /profile
-$callbackHandler->onAction('profile', function (MessageCallbackEvent $event): bool {
-    $user = $event->getUser();
-    
-    $profile = "Профиль пользователя:\n"
-             . "Имя: {$user->getFirstName()}\n"
-             . "ID: {$user->getUserId()}";
-    
-    $event->answer($profile);
-
-    return true; // Отмечаем событие как обработанное
+    // Обработка покупки товара
+    $event->reply("Товар $productId добавлен в корзину!", true);
 });
 ```
 
-## Работа с CallbackJsonHandler
+## Работа с JSON-payload
 
-### Простая обработка JSON-payload
+### Обработка действия с JSON-payload
 
-Использование CallbackJsonHandler для сложных данных:
+Пример создания кнопки с JSON-payload:
 
 ```php
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
 
 $message = new NewMessageBody('Карточка товара');
-$message->addInlineKeyboard()
+$message
+    ->addInlineKeyboard()
     ->addCallbackButton('Добавить в корзину', ['action' => 'buy', 'productId' => 123, 'quantity' => 2]);
 ```
+
+Пример регистрации обработчика действия `buy`:
 
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
-$callbackHandler = $bot->addCallbackJsonHandler(actionKey: 'action');
-
 // Ожидается payload вида: {"action": "buy", "productId": 123, "quantity": 2}
-$callbackHandler->onAction('buy', function (MessageCallbackEvent $event): bool {
-    $action = $event->userData['__action'];  // 'buy'
-    $payload = $event->userData['__payload']; // ['action' => 'buy', 'productId' => 123, 'quantity' => 2]
-    
+$bot->onCallbackJson('buy', static function (MessageCallbackEvent $event, string $action, array $payload): void {
     $productId = $payload['productId'] ?? null;
     $quantity = $payload['quantity'] ?? 1;
 
     if ($productId === null) {
         $event->answer('❌ Ошибка: не указан товар');
-        
-        return true; // Отмечаем событие как обработанное
+
+        return;
     }
 
     // Обработка покупки
     $event->reply("✅ Товар $productId (кол-во: $quantity) добавлен в корзину!", true);
-
-    return true; // Отмечаем событие как обработанное
 });
 ```
 
-### Обработка нескольких действий с JSON
+### Обработка нескольких действий
+
+В примере имя действия хранится в JSON-поле `cmd`:
 
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
-$callbackHandler = $bot->addCallbackJsonHandler(actionKey: 'cmd');
+$bot->getCallbackJsonHandler()->setActionKey('cmd');
 
-// Действие: {"cmd": "navigate", "page": "settings"}
-$callbackHandler->onAction('navigate', function (MessageCallbackEvent $event): bool {
-    $payload = $event->userData['__payload'];
+// Действие {"cmd": "navigate", "page": "settings"}
+$bot->onCallbackJson('navigate', static function (MessageCallbackEvent $event, string $action, array $payload): void {
     $page = $payload['page'] ?? 'home';
-    
-    $event->answer("Переход на страницу: $page");
 
-    return true; // Отмечаем событие как обработанное
+    $event->answer("Переход на страницу: $page");
 });
 
-// Действие: {"cmd": "select", "item": "option_1"}
-$callbackHandler->onAction('select', function (MessageCallbackEvent $event): bool {
-    $payload = $event->userData['__payload'];
+// Действие {"cmd": "select", "item": "option_1"}
+$bot->onCallbackJson('select', static function (MessageCallbackEvent $event, string $action, array $payload): void {
     $item = $payload['item'] ?? null;
-    
+
     if ($item !== null) {
         $event->answer("Выбрано: $item");
     } else {
         $event->answer('❌ Ничего не выбрано');
     }
-
-    return true; // Отмечаем событие как обработанное
 });
 ```
 
-## Работа с ответами на Callback
+## Удаление сообщения
 
-### Обновление сообщения
-
-Использование метода `answer()` для изменения сообщения:
-
-```php
-use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
-use MaxMessenger\Bot\Model\Enum\TextFormat;
-use MaxMessenger\Bot\Model\Request\NewMessageBody;
-
-$callbackHandler = $bot->addCallbackHandler(actionSeparator: ':');
-
-$callbackHandler->onAction('vote', function (MessageCallbackEvent $event): bool {
-    $option = $event->userData['__payload'];
-    
-    $responseMessage = new NewMessageBody(
-        text: "✅ Вы проголосовали за: **$option**",
-        format: TextFormat::Markdown
-    );
-    
-    $event->answer($responseMessage);
-
-    return true; // Отмечаем событие как обработанное
-});
-```
-
-### Удаление сообщения после нажатия
+Пример удаления сообщения через `MessageCallbackEvent::deleteMessage()`:
 
 ```php
 use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
 
-$callbackHandler = $bot->addCallbackHandler();
-
-$callbackHandler->onAction('dismiss', function (MessageCallbackEvent $event): bool {
+$bot->onCallback('dismiss', static function (MessageCallbackEvent $event, string $action, ?string $payload): void {
     // Удаляем сообщение с кнопкой
     $event->deleteMessage();
-
-    return true; // Отмечаем событие как обработанное
 });
 ```
 
-## Полный пример бота с callback-кнопками
+## Отдельный обработчик
+
+В примере отдельный `CallbackHandler` зарегистрирован через `onMessageCallback()`:
 
 ```php
-<?php
-
-require_once __DIR__ . '/vendor/autoload.php';
-
-use MaxMessenger\Bot\MaxBot;
-use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
-use MaxMessenger\Bot\MaxBot\Event\BotStartedEvent;
+use MaxMessenger\Bot\MaxBot\CallbackHandler;
 use MaxMessenger\Bot\MaxBot\Event\MessageCallbackEvent;
-use MaxMessenger\Bot\Model\Enum\TextFormat;
-use MaxMessenger\Bot\Model\Request\NewMessageBody;
-use Throwable;
 
-$bot = new MaxBot('your-access-token', 'your-secret');
+$callbackHandler = new CallbackHandler(actionSeparator: ':');
+$bot->onMessageCallback($callbackHandler->handle(...));
 
-// Обработка /start
-$bot->onBotStarted(function (BotStartedEvent $event): bool {
-    $message = new NewMessageBody('Привет! Я бот с интерактивными кнопками.\n\nВыберите действие:');
-    $message->addInlineKeyboard()
-        ->addCallbackButton('📊 Статистика', 'stats')
-        ->addCallbackButton('⚙️ Настройки', 'settings')
-        ->newRow()
-        ->addCallbackButton('❓ Помощь', 'help');
-    
-    $event->sendMessageToUser($message);
-
-    return true; // Отмечаем событие как обработанное
+$callbackHandler->onAction('buy', static function (
+    MessageCallbackEvent $event,
+    string $action,
+    ?string $payload,
+): void {
+    $event->answer('Товар добавлен в корзину!');
 });
-
-// CallbackHandler для обработки нажатий кнопок
-$callbackHandler = $bot->addCallbackHandler(actionSeparator: ':');
-
-// Действие: stats
-$callbackHandler->onAction('stats', function (MessageCallbackEvent $event): bool {
-    $statsMessage = new NewMessageBody(
-        text: "📊 **Статистика бота:**\n\n"
-            . "• Пользователей: 1,234\n"
-            . "• Сообщений сегодня: 567\n"
-            . "• Аптайм: 99.9%",
-        format: TextFormat::Markdown
-    );
-    $statsMessage->addInlineKeyboard()
-        ->addCallbackButton('🔄 Обновить', 'stats')
-        ->addCallbackButton('🏠 Назад', 'home');
-    
-    $event->answer($statsMessage);
-
-    return true; // Отмечаем событие как обработанное
-});
-
-// Действие: settings
-$callbackHandler->onAction('settings', function (MessageCallbackEvent $event): bool {
-    $settingsMessage = new NewMessageBody(
-        text: "⚙️ **Настройки:**\n\n"
-            . "• Уведомления: ✅ Вкл\n"
-            . "• Язык: 🇷🇺 Русский\n"
-            . "• Тема: 🌙 Тёмная",
-        format: TextFormat::Markdown
-    );
-    $settingsMessage->addInlineKeyboard()
-        ->addCallbackButton('🔔 Уведомления', 'toggle_notifications')
-        ->addCallbackButton('🏠 Назад', 'home');
-    
-    $event->answer($settingsMessage);
-
-    return true; // Отмечаем событие как обработанное
-});
-
-// Действие: help
-$callbackHandler->onAction('help', function (MessageCallbackEvent $event): bool {
-    $helpMessage = new NewMessageBody(
-        text: "❓ **Помощь:**\n\n"
-            . "Используйте кнопки ниже для навигации:\n\n"
-            . "• **Статистика** — просмотр статистики бота\n"
-            . "• **Настройки** — изменение параметров\n"
-            . "• **Помощь** — это сообщение",
-        format: TextFormat::Markdown
-    );
-    
-    $event->answer($helpMessage);
-
-    return true; // Отмечаем событие как обработанное
-});
-
-// Действие: home (возврат в главное меню)
-$callbackHandler->onAction('home', function (MessageCallbackEvent $event): bool {
-    $homeMessage = new NewMessageBody('🏠 **Главное меню:**\n\nВыберите действие:', format: TextFormat::Markdown);
-    $homeMessage->addInlineKeyboard()
-        ->addCallbackButton('📊 Статистика', 'stats')
-        ->addCallbackButton('⚙️ Настройки', 'settings')
-        ->newRow()
-        ->addCallbackButton('❓ Помощь', 'help');
-    
-    $event->answer($homeMessage);
-
-    return true; // Отмечаем событие как обработанное
-});
-
-// Действие: toggle_notifications
-$callbackHandler->onAction('toggle_notifications', function (MessageCallbackEvent $event): bool {
-    // Переключаем уведомления (здесь можно добавить реальную логику)
-    
-    $event->answer('🔔 Уведомления переключены');
-
-    return true; // Отмечаем событие как обработанное
-});
-
-// Обработка ошибок
-$bot->onException(function (Throwable $exception, BaseEvent $event): bool {
-    error_log("Ошибка при обработке callback: " . $exception->getMessage());
-
-    return true; // Отмечаем событие как обработанное, чтобы не прерывать работу
-});
-
-// Запуск обработки обновлений
-$bot->handleFromGlobal();
 ```
+
+Отдельный обработчик JSON-действий `CallbackJsonHandler` регистрируется таким же способом.

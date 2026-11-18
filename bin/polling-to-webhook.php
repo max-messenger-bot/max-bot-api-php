@@ -6,4 +6,8 @@ require_once __DIR__ . '/bootstrap.php';
 
 use MaxMessenger\Bot\Dev\PollingToWebhook;
 
+if (PHP_SAPI !== 'cli') {
+    exit(1);
+}
+
 PollingToWebhook::main();

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace MaxMessenger\Bot\MaxBot\Event;
 
+use MaxMessenger\Bot\Model\Enum\ChatAdminPermission;
 use MaxMessenger\Bot\Model\Response\MessageRemovedUpdate;
 
 /**
  * Событие удаления сообщения.
  *
- * На свои действия бот события не получает.
+ * В групповом чате бот получает событие, только если он администратор с правом
+ * {@see ChatAdminPermission::ReadAllMessages}.
  *
  * @property-read MessageRemovedUpdate $update
  */
@@ -19,7 +21,7 @@ final class MessageRemovedEvent extends BaseEvent
     use SendMessageToUserTrait;
 
     /**
-     * @return int ID чата, где сообщение было удалено.
+     * @return int Идентификатор чата, где сообщение было удалено.
      */
     public function getChatId(): int
     {
@@ -27,24 +29,26 @@ final class MessageRemovedEvent extends BaseEvent
     }
 
     /**
-     * @return non-empty-string ID удалённого сообщения.
+     * @return non-empty-string Идентификатор удалённого сообщения.
      */
     public function getMessageId(): string
     {
         return $this->update->getMessageId();
     }
 
+    /**
+     * @return null У события нет пользователя.
+     */
     public function getUser(): null
     {
         return null;
     }
 
     /**
-     * @return int ID пользователя, удалившего сообщение.
+     * @return int Идентификатор пользователя, удалившего сообщение.
      */
     public function getUserId(): int
     {
         return $this->update->getUserId();
     }
-
 }

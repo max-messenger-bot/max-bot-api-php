@@ -6,6 +6,8 @@ namespace MaxMessenger\Bot\Model\Response;
 
 /**
  * Подробное объяснение, почему пользователь не был добавлен в групповой чат.
+ *
+ * @link https://dev.max.ru/docs-api/methods/POST/chats/-chatId-/members/
  */
 class FailedUserDetails extends BaseResponseModel
 {
@@ -19,7 +21,9 @@ class FailedUserDetails extends BaseResponseModel
     protected readonly array $data;
 
     /**
-     * @return string Код ошибки.
+     * @return string Код ошибки:
+     *     - `add.participant.privacy` — Добавление пользователей запрещено настройками конфиденциальности.
+     *     - `add.participant.not.found` — Пользователи не найдены.
      */
     public function getErrorCode(): string
     {
@@ -27,7 +31,7 @@ class FailedUserDetails extends BaseResponseModel
     }
 
     /**
-     * @return list<int> ID пользователей с данной ошибкой.
+     * @return list<int> Идентификаторы пользователей с данной ошибкой.
      */
     public function getUserIds(): array
     {
