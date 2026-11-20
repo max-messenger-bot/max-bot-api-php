@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit\Model\Request;
 
 use Codeception\Test\Unit;
+use MaxMessenger\Bot\Exception\RequiredArgumentException;
 use MaxMessenger\Bot\Model\Request\NewMessageBody;
 use MaxMessenger\Bot\Model\Request\NewMessageLink;
 use MaxMessenger\Bot\Model\Request\RawModel;
@@ -149,6 +150,21 @@ final class RawModelTest extends Unit
 
         self::assertSame('Новый текст', $model['text']);
         self::assertTrue($model['disable_notification']);
+    }
+
+    public function testOffsetSetRejectsAppend(): void
+    {
+        $data = ['' => 'existing'];
+        $model = new RawModel($data);
+
+        $this->expectException(RequiredArgumentException::class);
+        $this->expectExceptionMessage('The $offset argument cannot be null.');
+
+        try {
+            $model[] = 'new';
+        } finally {
+            self::assertSame($data, $model->getRawData());
+        }
     }
 
     public function testOffsetUnset(): void

@@ -9,7 +9,6 @@ use MaxMessenger\Bot\Exception\Validation\KeyboardException;
 use MaxMessenger\Bot\Exception\Validation\MaxItemsException;
 use MaxMessenger\Bot\Exception\Validation\MinItemsException;
 use MaxMessenger\Bot\Exception\Validation\RequiredFieldException;
-use MaxMessenger\Bot\Model\Request\Button;
 use MaxMessenger\Bot\Model\Request\CallbackButton;
 use MaxMessenger\Bot\Model\Request\InlineKeyboardAttachmentRequestPayload;
 use MaxMessenger\Bot\Model\Request\MessageButton;
@@ -233,7 +232,6 @@ final class InlineKeyboardAttachmentRequestPayloadTest extends Unit
     public function testSetButtonsRejectsTooManyButtonsInRow(): void
     {
         $payload = new InlineKeyboardAttachmentRequestPayload();
-        /** @var non-empty-list<Button> $row */
         $row = array_fill(0, InlineKeyboardAttachmentRequestPayload::MAX_BUTTONS_IN_ROW + 1, MessageButton::make('1'));
 
         $this->expectException(MaxItemsException::class);
@@ -247,7 +245,6 @@ final class InlineKeyboardAttachmentRequestPayloadTest extends Unit
     public function testSetButtonsRejectsTooManyRows(): void
     {
         $payload = new InlineKeyboardAttachmentRequestPayload();
-        /** @var non-empty-list<non-empty-list<Button>> $buttons */
         $buttons = array_fill(0, InlineKeyboardAttachmentRequestPayload::MAX_ROWS + 1, [MessageButton::make('1')]);
 
         $this->expectException(MaxItemsException::class);

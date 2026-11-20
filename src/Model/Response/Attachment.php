@@ -45,11 +45,9 @@ class Attachment extends BaseResponseModel
     public static function newFromData(array $data): static
     {
         if (static::class !== self::class) {
-            /** @psalm-var static Psalm bug */
             return parent::newFromData($data);
         }
 
-        /** @var array<string, class-string<self>> $classList */
         $classList = [
             'audio' => AudioAttachment::class,
             'contact' => ContactAttachment::class,
@@ -64,7 +62,6 @@ class Attachment extends BaseResponseModel
         /** @var array{type: string} $data */
         $className = $classList[$data['type']] ?? null;
 
-        /** @psalm-var static Psalm bug */
         return $className !== null
             ? $className::newFromData($data)
             : parent::newFromData($data);

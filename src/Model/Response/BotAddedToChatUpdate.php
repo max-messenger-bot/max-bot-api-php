@@ -15,13 +15,13 @@ class BotAddedToChatUpdate extends Update
     /**
      * @var array{
      *     chat_id: int,
-     *     user: array,
+     *     user?: array,
      *     is_channel: bool
      * }
      * @psalm-suppress PropertyNotSetInConstructor, NonInvariantDocblockPropertyType
      */
     protected readonly array $data;
-    private User|false $user = false;
+    private User|false|null $user = false;
 
     /**
      * @return int Идентификатор чата или канала, куда был добавлен бот.
@@ -36,16 +36,16 @@ class BotAddedToChatUpdate extends Update
      */
     public function getRequiredProperties(): array
     {
-        return ['chat_id', 'user', 'is_channel'];
+        return ['chat_id', 'is_channel'];
     }
 
     /**
-     * @return User Пользователь, добавивший бота в чат или канал.
+     * @return User|null Пользователь, добавивший бота в чат или канал, если он передан в обновлении.
      */
-    public function getUser(): User
+    public function getUser(): ?User
     {
         return $this->user === false
-            ? $this->user = User::newFromData($this->data['user'])
+            ? $this->user = User::newFromNullableData($this->data['user'] ?? null)
             : $this->user;
     }
 

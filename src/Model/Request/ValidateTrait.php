@@ -41,7 +41,7 @@ trait ValidateTrait
             return;
         }
 
-        if (!preg_match('/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/', $value ?? '')) {
+        if (!preg_match('/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/D', $value ?? '')) {
             throw new MatchException($argumentName);
         }
     }
@@ -159,7 +159,7 @@ trait ValidateTrait
             return;
         }
 
-        if (!preg_match('/^mid\.[a-zA-Z0-9_-]+$/', $value ?? '')) {
+        if (!preg_match('/^mid\.[a-zA-Z0-9_-]+$/D', $value ?? '')) {
             throw new MatchException($argumentName);
         }
     }
@@ -238,7 +238,7 @@ trait ValidateTrait
             return;
         }
 
-        if (!preg_match('/^vid\.[\x21-\x7E]+$/', $value ?? '')) {
+        if (!preg_match('/^vid\.[\x21-\x7E]+$/D', $value ?? '')) {
             throw new MatchException($argumentName);
         }
     }

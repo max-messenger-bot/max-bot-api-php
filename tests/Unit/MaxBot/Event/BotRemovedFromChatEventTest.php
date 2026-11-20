@@ -41,15 +41,26 @@ final class BotRemovedFromChatEventTest extends Unit
         self::assertTrue($this->createEvent(isChannel: true)->isChannel());
     }
 
-    private function createEvent(bool $isChannel = false): BotRemovedFromChatEvent
+    public function testWithoutUser(): void
+    {
+        $event = $this->createEvent(withUser: false);
+
+        self::assertTrue($event->update->isValid());
+        self::assertNull($event->getUser());
+        self::assertNull($event->getUserId());
+    }
+
+    private function createEvent(bool $isChannel = false, bool $withUser = true): BotRemovedFromChatEvent
     {
         $data = [
             'update_type' => 'bot_removed',
             'timestamp' => 1_700_000_000_000,
             'chat_id' => 100,
-            'user' => ['user_id' => 200, 'first_name' => 'Иван', 'is_bot' => false],
             'is_channel' => $isChannel,
         ];
+        if ($withUser) {
+            $data['user'] = ['user_id' => 200, 'first_name' => 'Иван', 'is_bot' => false];
+        }
 
         $event = BaseEvent::new(Update::newFromData($data), new MaxApiClient('test-token'), []);
         self::assertInstanceOf(BotRemovedFromChatEvent::class, $event);

@@ -29,11 +29,6 @@
                 <directory name="src/Model/Response" />
             </errorLevel>
         </ClassMustBeFinal>
-        <PropertyNotSetInConstructor>
-            <errorLevel type="suppress">
-                <directory name="tests/Unit" />
-            </errorLevel>
-        </PropertyNotSetInConstructor>
         <RedundantCondition>
             <errorLevel type="suppress">
                 <directory name="tests/Unit" />

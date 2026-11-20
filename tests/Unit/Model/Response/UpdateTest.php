@@ -27,11 +27,30 @@ use MaxMessenger\Bot\Model\Response\MessageRemovedUpdate;
 use MaxMessenger\Bot\Model\Response\Update;
 use MaxMessenger\Bot\Model\Response\UserAddedToChatUpdate;
 use MaxMessenger\Bot\Model\Response\UserRemovedFromChatUpdate;
+use Throwable;
+use TypeError;
 
 final class UpdateTest extends Unit
 {
     /**
-     * @return iterable<string, array{array<string, mixed>, string}>
+     * @return iterable<string, array{array, class-string<Throwable>}>
+     */
+    public static function invalidFields(): iterable
+    {
+        foreach ([null, false, 1, 1.5, []] as $index => $value) {
+            yield 'update_type ' . $index => [['update_type' => $value, 'timestamp' => 0], TypeError::class];
+        }
+
+        foreach ([null, false, '123', 1.5, []] as $index => $value) {
+            yield 'timestamp ' . $index => [
+                ['update_type' => 'future_update', 'timestamp' => $value],
+                TypeError::class,
+            ];
+        }
+    }
+
+    /**
+     * @return iterable<string, array{array, string}>
      */
     public static function missingFields(): iterable
     {
@@ -89,7 +108,17 @@ final class UpdateTest extends Unit
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param class-string<Throwable> $exception
+     * @dataProvider invalidFields
+     */
+    public function testNewFromDataRejectsInvalidFields(array $data, string $exception): void
+    {
+        $this->expectException($exception);
+
+        Update::newFromData($data);
+    }
+
+    /**
      * @dataProvider missingFields
      */
     public function testNewFromDataRequiresFields(array $data, string $field): void
@@ -122,6 +151,13 @@ final class UpdateTest extends Unit
         self::assertSame(UpdateType::BotStopped, $update->getUpdateType());
     }
 
+    public function testSubclassNewFromDataRejectsInvalidFields(): void
+    {
+        $this->expectException(TypeError::class);
+
+        BotStartedUpdate::newFromData(['update_type' => 'bot_started', 'timestamp' => '123']);
+    }
+
     public function testSubclassNewFromDataRequiresFields(): void
     {
         $this->expectException(RequiredFieldException::class);
@@ -146,6 +182,38 @@ final class UpdateTest extends Unit
         self::assertNull($update->getUpdateType());
         self::assertSame('future_update', $update->getUpdateTypeRaw());
         self::assertSame(1_700_000_000_000, $update->getTimestampRaw());
+    }
+
+    public function testValidateDataAcceptsUnknownTypeAndZeroTimestamp(): void
+    {
+        $data = ['update_type' => 'future_update', 'timestamp' => 0, 'extra' => true];
+
+        Update::validateData($data);
+
+        self::assertSame(0, Update::newFromData($data)->getTimestampRaw());
+        self::assertTrue(Update::newFromData($data)->getRawData()['extra']);
+    }
+
+    /**
+     * @param class-string<Throwable> $exception
+     * @dataProvider invalidFields
+     */
+    public function testValidateDataRejectsInvalidFields(array $data, string $exception): void
+    {
+        $this->expectException($exception);
+
+        Update::validateData($data);
+    }
+
+    /**
+     * @dataProvider missingFields
+     */
+    public function testValidateDataRequiresFields(array $data, string $field): void
+    {
+        $this->expectException(RequiredFieldException::class);
+        $this->expectExceptionMessage('The "' . $field . '" field cannot be null.');
+
+        Update::validateData($data);
     }
 
     /**

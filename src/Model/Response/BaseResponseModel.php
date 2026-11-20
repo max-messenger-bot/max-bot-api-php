@@ -6,12 +6,19 @@ namespace MaxMessenger\Bot\Model\Response;
 
 use ArrayIterator;
 use DateTimeImmutable;
+use JsonException;
 use MaxMessenger\Bot\Contract\ModelInterface;
 use MaxMessenger\Bot\Exception\ActionProhibited;
 use Traversable;
+use TypeError;
 
+use function array_key_exists;
 use function intdiv;
+use function is_array;
+use function json_decode;
 use function sprintf;
+
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Базовая модель ответа API с доступом к исходным данным.
@@ -21,6 +28,25 @@ abstract class BaseResponseModel implements ModelInterface
     final private function __construct(
         protected readonly array $data,
     ) {}
+
+    /**
+     * Возвращает только исходные данные ответа для сериализации.
+     */
+    final public function __serialize(): array
+    {
+        return $this->data;
+    }
+
+    /**
+     * Восстанавливает исходные данные ответа при десериализации.
+     *
+     * @param array $data Исходные данные ответа.
+     */
+    final public function __unserialize(array $data): void
+    {
+        /** @psalm-suppress MixedAssignment */
+        $this->data = array_key_exists("\0*\0data", $data) ? $data["\0*\0data"] : $data;
+    }
 
     /**
      * @return Traversable<array-key, mixed> Итератор по исходным данным ответа.
@@ -56,6 +82,24 @@ abstract class BaseResponseModel implements ModelInterface
     public static function newFromData(array $data): static
     {
         return new static($data);
+    }
+
+    /**
+     * Создаёт модель из JSON-строки ответа API.
+     *
+     * @param string $json JSON-строка с данными ответа API.
+     * @throws JsonException Если JSON некорректен.
+     * @throws TypeError Если результат разбора JSON не является массивом.
+     */
+    public static function newFromJson(string $json): static
+    {
+        $data = json_decode($json, true, 16, JSON_THROW_ON_ERROR);
+
+        if (!is_array($data)) {
+            throw new TypeError('Data is not array.');
+        }
+
+        return static::newFromData($data);
     }
 
     /**
@@ -130,31 +174,29 @@ abstract class BaseResponseModel implements ModelInterface
     /**
      * Проверяет наличие поля в исходных данных ответа.
      *
-     * @param mixed $offset Имя или индекс поля.
+     * @param array-key $offset Имя или индекс поля.
      * @return bool Есть ли поле в исходных данных.
      */
     public function offsetExists(mixed $offset): bool
     {
-        /** @var array-key|null $offset */
-        return isset($this->data[$offset ?? '']);
+        return isset($this->data[$offset]);
     }
 
     /**
      * Возвращает поле из исходных данных ответа.
      *
-     * @param mixed $offset Имя или индекс поля.
+     * @param array-key $offset Имя или индекс поля.
      * @return mixed Значение поля или `null`, если его нет.
      */
     public function offsetGet(mixed $offset): mixed
     {
-        /** @var array-key|null $offset */
-        return $this->data[$offset ?? ''] ?? null;
+        return $this->data[$offset] ?? null;
     }
 
     /**
      * Отклоняет попытку изменить исходные данные ответа.
      *
-     * @param mixed $offset Имя или индекс поля.
+     * @param array-key|null $offset Имя или индекс поля.
      * @param mixed $value Новое значение поля.
      * @internal
      */
@@ -166,7 +208,7 @@ abstract class BaseResponseModel implements ModelInterface
     /**
      * Отклоняет попытку удалить поле из исходных данных ответа.
      *
-     * @param mixed $offset Имя или индекс поля.
+     * @param array-key $offset Имя или индекс поля.
      * @internal
      */
     final public function offsetUnset(mixed $offset): void

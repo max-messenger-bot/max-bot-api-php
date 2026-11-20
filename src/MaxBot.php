@@ -138,7 +138,7 @@ final class MaxBot
     }
 
     /**
-     * @return (Closure(Update $update): bool)|null Фильтр допуска обновления к обработке или `null`,
+     * @return (Closure(Update $update): (bool|Update))|null Фильтр допуска или замены обновления либо `null`,
      *     если фильтрация отключена.
      */
     public function getUpdateFilter(): ?Closure
@@ -202,8 +202,13 @@ final class MaxBot
     public function handleUpdate(Update $update): bool
     {
         try {
-            if ($this->updateFilter?->__invoke($update) === false) {
-                return false;
+            if ($this->updateFilter !== null) {
+                $filterResult = ($this->updateFilter)($update);
+                if ($filterResult instanceof Update) {
+                    $update = $filterResult;
+                } elseif ($filterResult !== true) {
+                    return false;
+                }
             }
 
             return $this->handleEvent($this->makeEvent($update));
@@ -675,8 +680,9 @@ final class MaxBot
     }
 
     /**
-     * @param (Closure(Update $update): bool)|null $updateFilter Фильтр, возвращающий `true` для допуска обновления
-     *     к обработке и `false` для его пропуска, или `null` для отключения фильтрации.
+     * @param (Closure(Update $update): (bool|Update))|null $updateFilter Фильтр, возвращающий `true` для допуска
+     *     исходного обновления, `Update` для замены перед обработкой или `false` для отклонения обновления.
+     *     Значение `null` отключает фильтрацию.
      * @return $this
      */
     public function setUpdateFilter(?Closure $updateFilter): self

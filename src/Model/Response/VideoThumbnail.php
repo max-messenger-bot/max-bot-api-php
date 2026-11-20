@@ -34,7 +34,6 @@ class VideoThumbnail extends BaseResponseModel
      */
     public static function newFromUrl(string $url): static
     {
-        /** @psalm-var static Bug? */
         return static::newFromData(['url' => $url]);
     }
 }

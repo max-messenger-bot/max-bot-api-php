@@ -26,19 +26,19 @@ final class BotAddedToChatEvent extends BaseEvent
     }
 
     /**
-     * @return User Пользователь, добавивший бота в чат или канал.
+     * @return User|null Пользователь, добавивший бота в чат или канал, если он передан в обновлении.
      */
-    public function getUser(): User
+    public function getUser(): ?User
     {
         return $this->update->getUser();
     }
 
     /**
-     * @return int Идентификатор пользователя, добавившего бота в чат или канал.
+     * @return int|null Идентификатор пользователя, добавившего бота, если он передан в обновлении.
      */
-    public function getUserId(): int
+    public function getUserId(): ?int
     {
-        return $this->getUser()->getUserId();
+        return $this->getUser()?->getUserId();
     }
 
     /**

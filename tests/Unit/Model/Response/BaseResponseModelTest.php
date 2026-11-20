@@ -5,14 +5,23 @@ declare(strict_types=1);
 namespace MaxMessenger\Bot\Tests\Unit\Model\Response;
 
 use Codeception\Test\Unit;
+use JsonException;
 use MaxMessenger\Bot\Exception\ActionProhibited;
 use MaxMessenger\Bot\Model\Response\BaseResponseModel;
+use MaxMessenger\Bot\Model\Response\BotAddedToChatUpdate;
+use MaxMessenger\Bot\Model\Response\Button;
+use MaxMessenger\Bot\Model\Response\CallbackButton;
 use MaxMessenger\Bot\Model\Response\FailedUserDetails;
 use MaxMessenger\Bot\Model\Response\UploadEndpoint;
 use MaxMessenger\Bot\Model\Response\User;
+use TypeError;
 
 use function iterator_to_array;
 use function json_encode;
+use function serialize;
+use function sprintf;
+use function strlen;
+use function unserialize;
 
 use const JSON_UNESCAPED_SLASHES;
 
@@ -26,7 +35,6 @@ final class BaseResponseModelTest extends Unit
         $endpoint = UploadEndpoint::newFromData([
             'url' => 'https://upload.example.test',
             'token' => null,
-            '' => 'пусто',
         ]);
 
         self::assertTrue(isset($endpoint['url']));
@@ -35,8 +43,6 @@ final class BaseResponseModelTest extends Unit
         self::assertNull($endpoint['token']);
         self::assertFalse(isset($endpoint['missing']));
         self::assertNull($endpoint['missing']);
-        self::assertTrue($endpoint->offsetExists(null));
-        self::assertSame('пусто', $endpoint->offsetGet(null));
     }
 
     public function testGetIteratorAndRawData(): void
@@ -74,6 +80,44 @@ final class BaseResponseModelTest extends Unit
 
         self::assertSame('2023-11-14 22:13:20.123 +00:00', $user->getLastActivityTime()?->format('Y-m-d H:i:s.v P'));
         self::assertNull($userWithoutActivity->getLastActivityTime());
+    }
+
+    public function testNewFromJson(): void
+    {
+        $endpoint = UploadEndpoint::newFromJson('{"url":"https://upload.example.test","token":"video-token"}');
+
+        self::assertSame('https://upload.example.test', $endpoint->getUrl());
+        self::assertSame('video-token', $endpoint->getRawData()['token']);
+        self::assertSame([], UploadEndpoint::newFromJson('{}')->getRawData());
+    }
+
+    public function testNewFromJsonRejectsInvalidJson(): void
+    {
+        $this->expectException(JsonException::class);
+
+        UploadEndpoint::newFromJson('{');
+    }
+
+    public function testNewFromJsonRejectsNull(): void
+    {
+        $this->expectException(TypeError::class);
+
+        UploadEndpoint::newFromJson('null');
+    }
+
+    public function testNewFromJsonRejectsScalar(): void
+    {
+        $this->expectException(TypeError::class);
+
+        UploadEndpoint::newFromJson('42');
+    }
+
+    public function testNewFromJsonSelectsChildClass(): void
+    {
+        $button = Button::newFromJson('{"type":"callback","text":"Кнопка","payload":"test"}');
+
+        self::assertInstanceOf(CallbackButton::class, $button);
+        self::assertSame('test', $button->getPayload());
     }
 
     public function testNewFromNullableData(): void
@@ -140,5 +184,55 @@ final class BaseResponseModelTest extends Unit
         $this->expectExceptionMessage('Action prohibited.');
 
         unset($endpoint['url']);
+    }
+
+    public function testSerializationRoundTrip(): void
+    {
+        $data = [
+            'update_type' => 'bot_added',
+            'timestamp' => 1_700_000_000_000,
+            'chat_id' => 100,
+            'is_channel' => false,
+            'user' => ['user_id' => 200, 'first_name' => 'Иван', 'is_bot' => false],
+        ];
+        $update = BotAddedToChatUpdate::newFromData($data);
+        $update->getUser();
+
+        self::assertSame($data, $update->__serialize());
+
+        $restored = unserialize(serialize($update));
+
+        self::assertInstanceOf(BotAddedToChatUpdate::class, $restored);
+        self::assertSame($data, $restored->getRawData());
+        self::assertTrue($restored->isValid());
+        self::assertSame('bot_added', $restored->getUpdateTypeRaw());
+        self::assertSame(200, $restored->getUser()?->getUserId());
+    }
+
+    public function testUnserializeLegacyProperties(): void
+    {
+        $data = [
+            'update_type' => 'bot_added',
+            'timestamp' => 1_700_000_000_000,
+            'chat_id' => 100,
+            'is_channel' => false,
+        ];
+        $class = BotAddedToChatUpdate::class;
+        $serialized = sprintf(
+            'O:%d:"%s":2:{%s%s%sb:0;}',
+            strlen($class),
+            $class,
+            serialize("\0*\0data"),
+            serialize($data),
+            serialize("\0" . $class . "\0user"),
+        );
+        $restored = unserialize($serialized);
+
+        self::assertInstanceOf(BotAddedToChatUpdate::class, $restored);
+        self::assertSame($data, $restored->getRawData());
+        self::assertTrue($restored->isValid());
+        self::assertSame('bot_added', $restored->getUpdateTypeRaw());
+        self::assertSame(100, $restored->getChatId());
+        self::assertNull($restored->getUser());
     }
 }

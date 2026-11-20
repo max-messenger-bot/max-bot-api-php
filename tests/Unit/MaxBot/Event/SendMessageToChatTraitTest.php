@@ -49,7 +49,6 @@ final class SendMessageToChatTraitTest extends Unit
             [
                 'update_type' => 'bot_added',
                 'chat_id' => 100,
-                'user' => $user,
                 'is_channel' => false,
             ],
         ];

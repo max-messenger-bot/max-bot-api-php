@@ -844,10 +844,6 @@ final class Max
         Console::json($update->getRawData());
     }
 
-    /**
-     * @param array<array-key, mixed> $data
-     * @return array<array-key, mixed>
-     */
     private static function sortedRawData(array $data): array
     {
         foreach (array_keys($data) as $key) {

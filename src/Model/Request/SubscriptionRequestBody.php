@@ -161,7 +161,7 @@ final class SubscriptionRequestBody extends BaseRequestModel
      */
     public function setSecret(string $secret): self
     {
-        self::validateString('secret', $secret, minLength: 5, maxLength: 256, pattern: '/^[\w-]+$/');
+        self::validateString('secret', $secret, minLength: 5, maxLength: 256, pattern: '/^[\w-]+$/D');
 
         $this->data['secret'] = $secret;
 

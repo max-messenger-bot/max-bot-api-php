@@ -60,7 +60,7 @@ final class MaxBotHandlersTest extends Unit
 
         yield 'onBotAddedToChat' => [
             static fn(MaxBot $bot, Closure $handler): MaxBot => $bot->onBotAddedToChat($handler),
-            ['update_type' => 'bot_added', 'chat_id' => 100, 'user' => $user, 'is_channel' => false],
+            ['update_type' => 'bot_added', 'chat_id' => 100, 'is_channel' => false],
             BotAddedToChatEvent::class,
         ];
         yield 'onBotAdminPermissionsChanged' => [

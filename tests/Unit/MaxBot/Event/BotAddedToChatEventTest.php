@@ -9,7 +9,6 @@ use MaxMessenger\Bot\MaxApiClient;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\MaxBot\Event\BotAddedToChatEvent;
 use MaxMessenger\Bot\Model\Response\Update;
-use MaxMessenger\Bot\Model\Response\User;
 
 final class BotAddedToChatEventTest extends Unit
 {
@@ -20,15 +19,12 @@ final class BotAddedToChatEventTest extends Unit
 
     public function testGetUser(): void
     {
-        $user = $this->createEvent()->getUser();
-
-        self::assertInstanceOf(User::class, $user);
-        self::assertSame(200, $user->getUserId());
+        self::assertNull($this->createEvent()->getUser());
     }
 
     public function testGetUserId(): void
     {
-        self::assertSame(200, $this->createEvent()->getUserId());
+        self::assertNull($this->createEvent()->getUserId());
     }
 
     public function testIsChannelFalse(): void
@@ -41,15 +37,27 @@ final class BotAddedToChatEventTest extends Unit
         self::assertTrue($this->createEvent(isChannel: true)->isChannel());
     }
 
-    private function createEvent(bool $isChannel = false): BotAddedToChatEvent
+    public function testUserWhenPresent(): void
+    {
+        $event = $this->createEvent(withUser: true);
+        $user = $event->getUser();
+
+        self::assertNotNull($user);
+        self::assertSame(200, $user->getUserId());
+        self::assertSame(200, $event->getUserId());
+    }
+
+    private function createEvent(bool $isChannel = false, bool $withUser = false): BotAddedToChatEvent
     {
         $data = [
             'update_type' => 'bot_added',
             'timestamp' => 1_700_000_000_000,
             'chat_id' => 100,
-            'user' => ['user_id' => 200, 'first_name' => 'Иван', 'is_bot' => false],
             'is_channel' => $isChannel,
         ];
+        if ($withUser) {
+            $data['user'] = ['user_id' => 200, 'first_name' => 'Иван', 'is_bot' => false];
+        }
 
         $event = BaseEvent::new(Update::newFromData($data), new MaxApiClient('test-token'), []);
         self::assertInstanceOf(BotAddedToChatEvent::class, $event);

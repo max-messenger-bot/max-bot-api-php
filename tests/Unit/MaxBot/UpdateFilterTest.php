@@ -7,7 +7,11 @@ namespace MaxMessenger\Bot\Tests\Unit\MaxBot;
 use Codeception\Test\Unit;
 use MaxMessenger\Bot\MaxBot;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
+use MaxMessenger\Bot\MaxBot\Event\BotAddedToChatEvent;
+use MaxMessenger\Bot\Model\Response\BotAddedToChatUpdate;
 use MaxMessenger\Bot\Model\Response\Update;
+use RuntimeException;
+use Throwable;
 
 final class UpdateFilterTest extends Unit
 {
@@ -52,6 +56,34 @@ final class UpdateFilterTest extends Unit
         self::assertTrue($update->isValid());
         self::assertFalse($bot->handleUpdate($update));
         self::assertSame([], $handledUpdates);
+    }
+
+    public function testCustomFilterCanReplaceUpdate(): void
+    {
+        $bot = new MaxBot('test-token');
+        $original = Update::newFromData(['update_type' => 'future_update', 'timestamp' => 1]);
+        $replacement = BotAddedToChatUpdate::newFromData([
+            'update_type' => 'bot_added',
+            'timestamp' => 2,
+            'chat_id' => 100,
+            'is_channel' => false,
+        ]);
+        $receivedUpdates = [];
+        $handledUpdates = [];
+        $bot->setUpdateFilter(static function (Update $update) use ($replacement, &$receivedUpdates): Update {
+            $receivedUpdates[] = $update;
+
+            return $replacement;
+        });
+        $bot->onBotAddedToChat(static function (BotAddedToChatEvent $event) use (&$handledUpdates): bool {
+            $handledUpdates[] = $event->update;
+
+            return true;
+        });
+
+        self::assertTrue($bot->handleUpdate($original));
+        self::assertSame([$original], $receivedUpdates);
+        self::assertSame([$replacement], $handledUpdates);
     }
 
     public function testDefaultFilterChecksUpdateValidity(): void
@@ -106,6 +138,25 @@ final class UpdateFilterTest extends Unit
         }
 
         self::assertCount(3, $handledUpdates);
+    }
+
+    public function testErrorHandlerReceivesReplacementUpdate(): void
+    {
+        $bot = new MaxBot('test-token');
+        $original = Update::newFromData(['update_type' => 'future_update', 'timestamp' => 1]);
+        $replacement = Update::newFromData(['update_type' => 'replacement_update', 'timestamp' => 2]);
+        $exception = new RuntimeException('Failed to handle replacement');
+        $receivedErrors = [];
+        $bot->setUpdateFilter(static fn(): Update => $replacement);
+        $bot->onPrepare(static function () use ($exception): never {
+            throw $exception;
+        });
+        $bot->setUpdateErrorHandler(static function (Update $update, Throwable $error) use (&$receivedErrors): void {
+            $receivedErrors[] = [$update, $error];
+        });
+
+        self::assertFalse($bot->handleUpdate($original));
+        self::assertSame([[$replacement, $exception]], $receivedErrors);
     }
 
     public function testNullFilterDisablesValidation(): void

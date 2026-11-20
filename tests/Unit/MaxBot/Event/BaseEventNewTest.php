@@ -99,7 +99,7 @@ final class BaseEventNewTest extends Unit
         return [
             'BotAddedToChatUpdate' => [
                 Update::newFromData(
-                    ['update_type' => 'bot_added', 'timestamp' => $timestamp, 'chat_id' => 123, 'user' => $userData],
+                    ['update_type' => 'bot_added', 'timestamp' => $timestamp, 'chat_id' => 123, 'is_channel' => false],
                 ),
                 BotAddedToChatEvent::class,
             ],

@@ -98,6 +98,7 @@ if (in_array('--help', $argv, true)) {
 
 ManualEnvironment::initializeExceptionHandler();
 $client = Max::apiClient();
+Max::startDialogTest();
 
 // Проверка события добавления бота в чат.
 $chatTitle = 'SDK ' . ManualEnvironment::getTestRunId();
@@ -112,7 +113,6 @@ $validator = static function (BotAddedToChatEvent $event) use ($client, $chatTit
     return !$event->isChannel() && $client->getChat($event->getChatId())->getTitle() === $chatTitle;
 };
 $added = Max::waitForEvent([UpdateType::BotAdded], $validator, userId: null);
-Max::setTestUser($added->getUser());
 Max::setTestChatId($added->getChatId());
 Console::text('Создан чат «%s» (ID %d).', $chatTitle, $added->getChatId());
 Console::success('Событие добавления бота в чат получено.');
@@ -179,7 +179,7 @@ $addValidator = static function (BotAddedToChatEvent $event) use ($chatId): bool
     return !$event->isChannel()
         && $event->getChatId() === $chatId;
 };
-Max::waitForEvent([UpdateType::BotAdded], $addValidator);
+Max::waitForEvent([UpdateType::BotAdded], $addValidator, userId: null);
 $messageText = 'Сообщение после повторного добавления бота SDK ' . ManualEnvironment::getTestRunId();
 Max::sendMessageToTestChat(new NewMessageBody($messageText));
 if (Max::isSentMessageValid()) {

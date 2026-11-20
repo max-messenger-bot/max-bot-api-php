@@ -76,6 +76,41 @@ final class SecretValidationTest extends Unit
         }
     }
 
+    public function testValidateRequestHeadersAcceptsMatchingSecret(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $bot = new MaxBot('test-token', 'valid-secret');
+
+        $bot->validateRequestHeaders('POST', 'application/json', '2', 'valid-secret');
+    }
+
+    public function testValidateRequestHeadersRejectsMismatchingSecret(): void
+    {
+        $bot = new MaxBot('test-token', 'valid-secret');
+
+        $this->expectException(InvalidSecretException::class);
+
+        $bot->validateRequestHeaders('POST', 'application/json', '2', 'other-secret');
+    }
+
+    public function testValidateRequestHeadersRejectsMissingSecret(): void
+    {
+        $bot = new MaxBot('test-token', 'valid-secret');
+
+        $this->expectException(InvalidSecretException::class);
+
+        $bot->validateRequestHeaders('POST', 'application/json', '2', '');
+    }
+
+    public function testValidateRequestHeadersSkipsSecretVerificationWhenDisabled(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $bot = new MaxBot('test-token');
+
+        $bot->validateRequestHeaders('POST', 'application/json', '2', '');
+        $bot->validateRequestHeaders('POST', 'application/json', '2', 'any-secret');
+    }
+
     private static function request(?string $secret = null): ServerRequest
     {
         $headers = ['Content-Type' => 'application/json', 'Content-Length' => (string) strlen('{}')];

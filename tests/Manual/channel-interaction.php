@@ -186,7 +186,7 @@ do {
             Max::instruction('Добавьте бота в канал, из которого переслан пост, без прав администратора.');
             $addedValidator = static fn(BotAddedToChatEvent $event): bool
                 => $event->getChatId() === $channelId && $event->isChannel();
-            Max::waitForEvent([UpdateType::BotAdded], $addedValidator);
+            Max::waitForEvent([UpdateType::BotAdded], $addedValidator, userId: null);
         }
     } while ($channel === null);
     if ($channel->getType() !== ChatType::Channel) {

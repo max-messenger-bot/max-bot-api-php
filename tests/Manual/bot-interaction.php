@@ -202,7 +202,6 @@ if ($markdownPassed && Max::isSentMessageValid()) {
 Console::announceDialogInstructions();
 
 // Проверка регистрации, изменения и очистки команд бота.
-/** @var Closure(list<BotCommand>, non-empty-string): void $updateAndCheckCommands */
 $updateAndCheckCommands = static function (array $expectedCommands, string $checkName) use ($client): void {
     /**
      * @var list<BotCommand> $expectedCommands
@@ -608,7 +607,6 @@ $mediaChecks = [
     [AttachmentType::Video, 'Отправьте боту одно видео без подписи.'],
     [AttachmentType::File, 'Отправьте боту один файл без подписи.'],
 ];
-/** @var array<string, PhotoAttachment|VideoAttachment|FileAttachment> $receivedMedia */
 $receivedMedia = [];
 foreach ($mediaChecks as [$type, $instruction]) {
     Max::sendMessageToTestUser(new NewMessageBody($instruction));

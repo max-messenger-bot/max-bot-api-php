@@ -67,31 +67,29 @@ abstract class BaseRequestModel implements ModelInterface
     /**
      * Проверяет наличие поля в исходных данных запроса.
      *
-     * @param mixed $offset Имя или индекс поля.
+     * @param array-key $offset Имя или индекс поля.
      * @return bool Есть ли поле в исходных данных.
      */
     public function offsetExists(mixed $offset): bool
     {
-        /** @var array-key|null $offset */
-        return isset($this->data[$offset ?? '']);
+        return isset($this->data[$offset]);
     }
 
     /**
      * Возвращает поле из исходных данных запроса.
      *
-     * @param mixed $offset Имя или индекс поля.
+     * @param array-key $offset Имя или индекс поля.
      * @return mixed Значение поля или `null`, если его нет.
      */
     public function offsetGet(mixed $offset): mixed
     {
-        /** @var array-key|null $offset */
-        return $this->data[$offset ?? ''] ?? null;
+        return $this->data[$offset] ?? null;
     }
 
     /**
      * Отклоняет попытку изменить исходные данные запроса через доступ по индексу.
      *
-     * @param mixed $offset Имя или индекс поля.
+     * @param array-key|null $offset Имя или индекс поля.
      * @param mixed $value Новое значение поля.
      */
     public function offsetSet(mixed $offset, mixed $value): void
@@ -102,7 +100,7 @@ abstract class BaseRequestModel implements ModelInterface
     /**
      * Отклоняет попытку удалить поле исходных данных запроса через доступ по индексу.
      *
-     * @param mixed $offset Имя или индекс поля.
+     * @param array-key $offset Имя или индекс поля.
      */
     public function offsetUnset(mixed $offset): void
     {

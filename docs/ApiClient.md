@@ -399,8 +399,6 @@ try {
 |-----------|-------|----------|
 | `$chatId` | `int` | ID чата. |
 
-**Документация API:** [DELETE /chats/-chatId-](https://dev.max.ru/docs-api/methods/DELETE/chats/-chatId-)
-
 ---
 
 ### deleteComment

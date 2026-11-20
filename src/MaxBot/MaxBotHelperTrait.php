@@ -12,15 +12,14 @@ use MaxMessenger\Bot\MaxBot;
 use MaxMessenger\Bot\MaxBot\Event\BaseEvent;
 use MaxMessenger\Bot\Model\Response\Update;
 use Psr\Http\Message\ServerRequestInterface;
+use SensitiveParameter;
 use SensitiveParameterValue;
 use Throwable;
+use TypeError;
 
 use function count;
 use function file_get_contents;
 use function hash_equals;
-use function is_array;
-use function json_decode;
-use function preg_match;
 use function str_contains;
 use function strlen;
 
@@ -31,6 +30,14 @@ use function strlen;
  */
 trait MaxBotHelperTrait
 {
+    public const CONTENT_LENGTH_HEADER = 'Content-Length';
+    public const CONTENT_LENGTH_SERVER_KEY = 'CONTENT_LENGTH';
+    public const CONTENT_TYPE_HEADER = 'Content-Type';
+    public const CONTENT_TYPE_SERVER_KEY = 'CONTENT_TYPE';
+    public const REQUEST_METHOD_SERVER_KEY = 'REQUEST_METHOD';
+    public const SECRET_HEADER = 'X-Max-Bot-Api-Secret';
+    public const SECRET_SERVER_KEY = 'HTTP_X_MAX_BOT_API_SECRET';
+
     private ?CallbackHandler $callbackHandler = null;
     private ?CallbackJsonHandler $callbackJsonHandler = null;
     private ?CommandHandler $commandHandler = null;
@@ -67,7 +74,7 @@ trait MaxBotHelperTrait
      */
     private ?Closure $updateErrorHandler = null;
     /**
-     * @var (Closure(Update $update): bool)|null
+     * @var (Closure(Update $update): (bool|Update))|null
      */
     private ?Closure $updateFilter;
 
@@ -170,16 +177,12 @@ trait MaxBotHelperTrait
     public static function makeUpdateFromString(string $string): Update
     {
         try {
-            $data = json_decode($string, true, 16, JSON_THROW_ON_ERROR);
+            return Update::newFromJson($string);
         } catch (JsonException $e) {
             throw new BadRequestException('The body does not contain valid JSON.', $e);
+        } catch (TypeError $e) {
+            throw new BadRequestException($e->getMessage(), $e);
         }
-
-        if (!is_array($data)) {
-            throw new BadRequestException('Data is not array.');
-        }
-
-        return Update::newFromData($data);
     }
 
     /**
@@ -192,16 +195,15 @@ trait MaxBotHelperTrait
      */
     public function readRequestContent(ServerRequestInterface $request): string
     {
-        $contentLength = $request->getHeaderLine('Content-Length');
+        $contentLength = $request->getHeaderLine(self::CONTENT_LENGTH_HEADER);
         $this->validateRequestHeaders(
             $request->getMethod(),
-            $request->getHeaderLine('Content-Type'),
+            $request->getHeaderLine(self::CONTENT_TYPE_HEADER),
             $contentLength,
-            $request->getHeaderLine('X-Max-Bot-Api-Secret'),
+            $request->getHeaderLine(self::SECRET_HEADER),
         );
 
         $body = (string) $request->getBody();
-
         self::validateRequestBody($body, $contentLength);
 
         return $body;
@@ -214,16 +216,18 @@ trait MaxBotHelperTrait
      */
     public function readRequestContentFromGlobal(): string
     {
-        $contentLength = $_SERVER['CONTENT_LENGTH'] ?? '';
+        $contentLength = $_SERVER[self::CONTENT_LENGTH_SERVER_KEY] ?? '';
         $this->validateRequestHeaders(
-            $_SERVER['REQUEST_METHOD'] ?? '',
-            $_SERVER['CONTENT_TYPE'] ?? '',
+            $_SERVER[self::REQUEST_METHOD_SERVER_KEY] ?? '',
+            $_SERVER[self::CONTENT_TYPE_SERVER_KEY] ?? '',
             $contentLength,
-            $_SERVER['HTTP_X_MAX_BOT_API_SECRET'] ?? '',
+            $_SERVER[self::SECRET_SERVER_KEY] ?? '',
         );
 
-        /** @psalm-suppress RiskyTruthyFalsyComparison */
-        $body = @file_get_contents('php://input') ?: '';
+        $body = @file_get_contents('php://input');
+        if ($body === false) {
+            throw new BadRequestException('Failed to read request body.');
+        }
 
         self::validateRequestBody($body, $contentLength);
 
@@ -231,9 +235,14 @@ trait MaxBotHelperTrait
     }
 
     /**
+     * Проверяет тело входящего Webhook-запроса и совпадение его размера с Content-Length.
+     *
+     * @param string $body Тело запроса.
+     * @param int|string $contentLength Длина тела в байтах, проверенная через validateRequestHeaders().
+     * @throws BadRequestException Если тело пустое или его размер не совпадает с Content-Length.
      * @psalm-assert non-empty-string $body
      */
-    private static function validateRequestBody(string $body, string $contentLength): void
+    public static function validateRequestBody(string $body, int|string $contentLength): void
     {
         if ($body === '') {
             throw new BadRequestException('Body is empty.');
@@ -244,20 +253,32 @@ trait MaxBotHelperTrait
         }
     }
 
-    private function validateRequestHeaders(
+    /**
+     * Проверяет метод и заголовки входящего Webhook-запроса.
+     *
+     * @param string $method HTTP-метод запроса.
+     * @param string $contentType Значение заголовка Content-Type или пустая строка, если он отсутствует.
+     * @param int|string $contentLength Длина тела в байтах или пустая строка, если заголовок отсутствует.
+     * @param string $requestSecret Секрет из запроса или пустая строка, если он отсутствует.
+     * @throws BadRequestException Если метод, тип содержимого или длина содержимого некорректны.
+     * @throws InvalidSecretException Если секрет в запросе не совпадает с заданным.
+     */
+    public function validateRequestHeaders(
         string $method,
         string $contentType,
-        string $contentLength,
+        int|string $contentLength,
+        #[SensitiveParameter]
         string $requestSecret,
     ): void {
-        if ($method !== 'POST' || !str_contains($contentType, 'application/json') || $contentLength === '') {
-            throw new BadRequestException('Required: POST, application/json, content-length');
+        if ($method !== 'POST' || $contentLength === '') {
+            throw new BadRequestException('Request method must be POST and Content-Length header is required.');
         }
-
-        if (preg_match('/\A[0-9]+\z/', $contentLength) !== 1) {
-            throw new BadRequestException('Content-Length must be a non-negative integer.');
+        if (!str_contains($contentType, 'application/json')) {
+            throw new BadRequestException('Content-Type must contain application/json.');
         }
-
+        if ((int) $contentLength <= 0) {
+            throw new BadRequestException('Content-Length must be greater than zero.');
+        }
         $secret = $this->secret?->getValue();
         if ($secret !== null && !hash_equals($secret, $requestSecret)) {
             throw new InvalidSecretException();

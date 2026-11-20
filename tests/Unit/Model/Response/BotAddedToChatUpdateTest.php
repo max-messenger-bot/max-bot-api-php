@@ -16,14 +16,32 @@ final class BotAddedToChatUpdateTest extends Unit
 
         self::assertSame(100, $update->getChatId());
         self::assertFalse($update->isChannel());
-        self::assertSame(200, $update->getUser()->getUserId());
-        self::assertSame('Иван', $update->getUser()->getFirstName());
-        self::assertSame($update->getUser(), $update->getUser());
+        self::assertTrue($update->isValid());
+        self::assertSame(['chat_id', 'is_channel'], $update->getRequiredProperties());
+        self::assertNull($update->getUser());
+        self::assertNull($update->getUser());
     }
 
     public function testIsChannel(): void
     {
         self::assertTrue($this->createUpdate(isChannel: true)->isChannel());
+    }
+
+    public function testUserWhenPresent(): void
+    {
+        $update = BotAddedToChatUpdate::newFromData([
+            'update_type' => 'bot_added',
+            'timestamp' => 1_700_000_000_000,
+            'chat_id' => 100,
+            'user' => ['user_id' => 200, 'first_name' => 'Иван', 'is_bot' => false],
+            'is_channel' => false,
+        ]);
+        $user = $update->getUser();
+
+        self::assertTrue($update->isValid());
+        self::assertNotNull($user);
+        self::assertSame(200, $user->getUserId());
+        self::assertSame($user, $update->getUser());
     }
 
     private function createUpdate(bool $isChannel): BotAddedToChatUpdate
@@ -32,7 +50,6 @@ final class BotAddedToChatUpdateTest extends Unit
             'update_type' => 'bot_added',
             'timestamp' => 1_700_000_000_000,
             'chat_id' => 100,
-            'user' => ['user_id' => 200, 'first_name' => 'Иван', 'is_bot' => false],
             'is_channel' => $isChannel,
         ]);
         self::assertInstanceOf(BotAddedToChatUpdate::class, $update);

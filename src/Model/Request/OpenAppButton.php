@@ -141,7 +141,7 @@ final class OpenAppButton extends Button
      */
     public function setPayload(string $payload): self
     {
-        self::validateString('payload', $payload, minLength: 1, maxLength: 512, pattern: '/^[\w-]*$/');
+        self::validateString('payload', $payload, minLength: 1, maxLength: 512, pattern: '/^[\w-]*$/D');
 
         $this->data['payload'] = $payload;
 

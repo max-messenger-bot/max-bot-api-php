@@ -36,7 +36,6 @@ final class UserTest extends Unit
             'user_id' => 200,
             'first_name' => 'Иван',
             'last_name' => 'Петров',
-            'username' => 'ivan',
             'is_bot' => false,
             'last_activity_time' => 1_700_000_000_000,
         ]);
@@ -44,7 +43,7 @@ final class UserTest extends Unit
         self::assertSame(200, $user->getUserId());
         self::assertSame('Иван', $user->getFirstName());
         self::assertSame('Петров', $user->getLastName());
-        self::assertSame('ivan', $user->getUsername());
+        self::assertNull($user->getUsername());
         self::assertFalse($user->isBot());
         self::assertSame(1_700_000_000_000, $user->getLastActivityTimeRaw());
         self::assertSame('2023-11-14 22:13:20', $user->getLastActivityTime()?->format('Y-m-d H:i:s'));
@@ -80,5 +79,17 @@ final class UserTest extends Unit
         self::assertSame('Бот', $user->getFullName());
         self::assertSame('<a href="max://user/300">Бот</a>', $user->getHtmlLink());
         self::assertSame('[Бот](max://user/300)', $user->getMarkdownLink());
+    }
+
+    public function testUsernameForBot(): void
+    {
+        $user = User::newFromData([
+            'user_id' => 300,
+            'first_name' => 'Бот',
+            'username' => 'test_bot',
+            'is_bot' => true,
+        ]);
+
+        self::assertSame('test_bot', $user->getUsername());
     }
 }

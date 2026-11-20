@@ -25,19 +25,19 @@ final class BotRemovedFromChatEvent extends BaseEvent
     }
 
     /**
-     * @return User Пользователь, удаливший бота из чата или канала.
+     * @return User|null Пользователь, удаливший бота из чата или канала, если он передан в обновлении.
      */
-    public function getUser(): User
+    public function getUser(): ?User
     {
         return $this->update->getUser();
     }
 
     /**
-     * @return int Идентификатор пользователя, удалившего бота из чата или канала.
+     * @return int|null Идентификатор пользователя, удалившего бота, если он передан в обновлении.
      */
-    public function getUserId(): int
+    public function getUserId(): ?int
     {
-        return $this->getUser()->getUserId();
+        return $this->getUser()?->getUserId();
     }
 
     /**

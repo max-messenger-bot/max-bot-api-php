@@ -6,6 +6,7 @@ namespace MaxMessenger\Bot\Dev;
 
 use Illuminate\Http\Request as IlluminateRequest;
 use MaxMessenger\Bot\Exception\SimpleQueryError;
+use MaxMessenger\Bot\MaxBot;
 use MaxMessenger\Bot\Model\Response\Update;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Throwable;
@@ -201,7 +202,7 @@ final class PollingToWebhook
             'HTTP_HOST' => $host,
             'HTTP_ACCEPT' => 'application/json',
             'HTTP_CONNECTION' => 'close',
-            'HTTP_X_MAX_BOT_API_SECRET' => $secret,
+            MaxBot::SECRET_SERVER_KEY => $secret,
             'HTTP_USER_AGENT' => 'OneMe/0.1.10 Bot API',
         ];
 

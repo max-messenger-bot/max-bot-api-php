@@ -210,7 +210,6 @@ abstract class BaseEvent
             UserRemovedFromChatUpdate::class => UserRemovedFromChatEvent::class,
         ];
 
-        /** @psalm-var array<class-string<self>> $classMap Psalm bug */
         $className = $classMap[$update::class] ?? UnknownEvent::class;
 
         return new $className($update, $maxApiClient, $exceptionHandlers, $userData);

@@ -16,13 +16,30 @@ final class BotRemovedFromChatUpdateTest extends Unit
 
         self::assertSame(100, $update->getChatId());
         self::assertFalse($update->isChannel());
-        self::assertSame(200, $update->getUser()->getUserId());
+        $user = $update->getUser();
+        self::assertNotNull($user);
+        self::assertSame(200, $user->getUserId());
         self::assertSame($update->getUser(), $update->getUser());
     }
 
     public function testIsChannel(): void
     {
         self::assertTrue($this->createUpdate(isChannel: true)->isChannel());
+    }
+
+    public function testWithoutUser(): void
+    {
+        $update = BotRemovedFromChatUpdate::newFromData([
+            'update_type' => 'bot_removed',
+            'timestamp' => 1_700_000_000_000,
+            'chat_id' => 100,
+            'is_channel' => false,
+        ]);
+
+        self::assertTrue($update->isValid());
+        self::assertSame(['chat_id', 'is_channel'], $update->getRequiredProperties());
+        self::assertNull($update->getUser());
+        self::assertNull($update->getUser());
     }
 
     private function createUpdate(bool $isChannel): BotRemovedFromChatUpdate

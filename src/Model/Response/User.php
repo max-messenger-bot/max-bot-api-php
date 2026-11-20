@@ -130,8 +130,7 @@ class User extends BaseResponseModel
     }
 
     /**
-     * @return non-empty-string|null Никнейм бота или уникальное публичное имя пользователя.
-     *     В случае с пользователем может быть `null`, если тот недоступен или имя не задано.
+     * @return non-empty-string|null Никнейм бота. Для пользователей это поле не возвращается.
      */
     public function getUsername(): ?string
     {

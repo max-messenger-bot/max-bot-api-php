@@ -55,8 +55,8 @@ final class Console
     /**
      * Сравнивает массивы и выводит diff при несовпадении.
      *
-     * @param array<array-key, mixed> $expected Ожидаемые значения.
-     * @param array<array-key, mixed> $actual Полученные значения.
+     * @param array $expected Ожидаемые значения.
+     * @param array $actual Полученные значения.
      * @param bool $sort Отсортировать значения перед сравнением.
      * @return bool Совпадают ли массивы.
      */
@@ -86,8 +86,8 @@ final class Console
     /**
      * Выводит цветной diff ожидаемых и полученных данных.
      *
-     * @param array<array-key, mixed>|string $expected Ожидаемые данные.
-     * @param array<array-key, mixed>|string $actual Полученные данные.
+     * @param array|string $expected Ожидаемые данные.
+     * @param array|string $actual Полученные данные.
      */
     public static function diff(array|string $expected, array|string $actual): void
     {

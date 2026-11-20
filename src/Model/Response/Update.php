@@ -7,10 +7,13 @@ namespace MaxMessenger\Bot\Model\Response;
 use DateTimeImmutable;
 use MaxMessenger\Bot\Exception\Validation\RequiredFieldException;
 use MaxMessenger\Bot\Model\Enum\UpdateType;
+use TypeError;
 
 use function array_diff;
 use function array_key_exists;
 use function array_keys;
+use function is_int;
+use function is_string;
 
 /**
  * Объект, представляющий различные события в диалоге, групповом чате или канале.
@@ -88,16 +91,12 @@ class Update extends BaseResponseModel
      */
     public static function newFromData(array $data): static
     {
-        if (!array_key_exists('update_type', $data) || !array_key_exists('timestamp', $data)) {
-            throw new RequiredFieldException(array_key_exists('update_type', $data) ? 'timestamp' : 'update_type');
-        }
+        self::validateData($data);
 
         if (static::class !== self::class) {
-            /** @psalm-var static Psalm bug */
             return parent::newFromData($data);
         }
 
-        /** @var array<string, class-string<self>> $classList */
         $classList = [
             'bot_added' => BotAddedToChatUpdate::class,
             'bot_admin_permissions_changed' => BotAdminPermissionsChangedUpdate::class,
@@ -119,12 +118,33 @@ class Update extends BaseResponseModel
             'user_added' => UserAddedToChatUpdate::class,
             'user_removed' => UserRemovedFromChatUpdate::class,
         ];
-        /** @psalm-suppress MixedArrayOffset Psalm bug */
         $className = $classList[$data['update_type']] ?? null;
 
-        /** @psalm-var static Psalm bug */
         return $className !== null
             ? $className::newFromData($data)
             : parent::newFromData($data);
+    }
+
+    /**
+     * Проверяет наличие и типы базовых полей обновления.
+     *
+     * @param array $data Данные обновления из ответа API.
+     * @throws RequiredFieldException Если обязательное поле отсутствует.
+     * @throws TypeError Если тип обязательного поля некорректен.
+     * @psalm-assert array{update_type: string, timestamp: int, ...} $data
+     */
+    public static function validateData(array $data): void
+    {
+        if (!array_key_exists('update_type', $data) || !array_key_exists('timestamp', $data)) {
+            throw new RequiredFieldException(array_key_exists('update_type', $data) ? 'timestamp' : 'update_type');
+        }
+
+        if (!is_string($data['update_type'])) {
+            throw new TypeError('The "update_type" field must be a string.');
+        }
+
+        if (!is_int($data['timestamp'])) {
+            throw new TypeError('The "timestamp" field must be an integer.');
+        }
     }
 }

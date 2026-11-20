@@ -28,7 +28,6 @@ return (new Config())
         ],
         'class_attributes_separation' => [
             'elements' => [
-                'const' => 'none',
                 'method' => 'one',
                 'trait_import' => 'none',
             ],

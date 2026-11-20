@@ -79,7 +79,7 @@ final class MaxBotRequestTest extends Unit
         $bot = $this->createBot();
 
         $this->expectException(BadRequestException::class);
-        $this->expectExceptionMessage('Body is empty.');
+        $this->expectExceptionMessage('Content-Length must be greater than zero.');
 
         $this->withGlobalRequest(
             '',
@@ -119,11 +119,11 @@ final class MaxBotRequestTest extends Unit
         $bot = $this->createBot();
 
         $this->expectException(BadRequestException::class);
-        $this->expectExceptionMessage('Content-Length must be a non-negative integer.');
+        $this->expectExceptionMessage('Content-Length must be greater than zero.');
 
         $this->withGlobalRequest(
             '{}',
-            ['CONTENT_LENGTH' => '2x'],
+            ['CONTENT_LENGTH' => 'invalid'],
             static fn(): string => $bot->readRequestContentFromGlobal(),
         );
     }
@@ -151,6 +151,16 @@ final class MaxBotRequestTest extends Unit
             $this->updateJson(),
             ['CONTENT_LENGTH' => '1'],
             static fn(): string => $bot->readRequestContentFromGlobal(),
+        );
+    }
+
+    public function testReadRequestContentFromGlobalWithZeroBody(): void
+    {
+        $bot = $this->createBot();
+
+        self::assertSame(
+            '0',
+            $this->withGlobalRequest('0', [], static fn(): string => $bot->readRequestContentFromGlobal()),
         );
     }
 
@@ -215,11 +225,11 @@ final class MaxBotRequestTest extends Unit
     {
         $request = new FakeServerRequest('POST', '{}', [
             'Content-Type' => 'application/json',
-            'Content-Length' => '2x',
+            'Content-Length' => 'invalid',
         ]);
 
         $this->expectException(BadRequestException::class);
-        $this->expectExceptionMessage('Content-Length must be a non-negative integer.');
+        $this->expectExceptionMessage('Content-Length must be greater than zero.');
 
         $this->createBot()->readRequestContent($request);
     }
@@ -267,6 +277,28 @@ final class MaxBotRequestTest extends Unit
         $this->expectException(BadRequestException::class);
 
         $this->createBot()->readRequestContent($request);
+    }
+
+    public function testValidateRequestBodyAcceptsIntegerContentLength(): void
+    {
+        $this->expectNotToPerformAssertions();
+
+        MaxBot::validateRequestBody('тело', 8);
+    }
+
+    public function testValidateRequestHeadersAcceptsIntegerContentLength(): void
+    {
+        $this->expectNotToPerformAssertions();
+
+        $this->createBot()->validateRequestHeaders('POST', 'application/json', 2, '');
+    }
+
+    public function testValidateRequestHeadersRejectsNonNumericContentLength(): void
+    {
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage('Content-Length must be greater than zero.');
+
+        $this->createBot()->validateRequestHeaders('POST', 'application/json', 'invalid', '');
     }
 
     private function createBot(): MaxBot

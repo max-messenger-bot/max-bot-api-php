@@ -321,7 +321,6 @@ final class CurlHttpClient implements HttpClientInterface
      */
     private function execute(array $options, HttpRequestInterface $request): HttpResponseInterface
     {
-        /** @var array<string, list<string>> $responseHeaders */
         $responseHeaders = [];
 
         $headerFunction = static function (CurlHandle $curlHandle, string $header) use (&$responseHeaders): int {
