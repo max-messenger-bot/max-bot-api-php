@@ -36,6 +36,7 @@
     },
     "require": {
         "php": "^8.2",
+        "ext-filter": "*",
         "ext-mbstring": "*"
     },
     "require-dev": {

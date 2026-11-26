@@ -35,7 +35,7 @@ trait ValidateRequiredTrait
 
         while (!empty($this->requiredOnce)) {
             foreach ($this->requiredOnce as $field) {
-                /** @psalm-suppress DocblockTypeContradiction, RedundantConditionGivenDocblockType */
+                /** @psalm-suppress RedundantConditionGivenDocblockType */
                 if (isset($this->data[$field]) && $this->data[$field] !== '') {
                     break 2;
                 }

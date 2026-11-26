@@ -21,7 +21,7 @@
 
 ## Быстрый старт
 
-Для работы нужны PHP 8.2+ и `ext-mbstring`. Встроенный HTTP-клиент использует `ext-curl`;
+Для работы нужны PHP 8.2+, `ext-filter` и `ext-mbstring`. Встроенный HTTP-клиент использует `ext-curl`;
 вместо него можно подключить клиент PSR-18. Подробнее — в разделе [Требования и зависимости](#требования-и-зависимости).
 
 ```bash
@@ -158,6 +158,7 @@ Russian-speaking audience, and Russian is the primary language of developers who
 ### Требования
 
 - PHP 8.2+
+- Расширение `ext-filter`
 - Расширение `ext-mbstring` (если оно отсутствует, подключите пакет
   [symfony/polyfill-mbstring](https://github.com/symfony/polyfill-mbstring))
 

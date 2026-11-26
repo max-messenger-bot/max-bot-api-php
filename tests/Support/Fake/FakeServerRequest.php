@@ -36,7 +36,7 @@ final class FakeServerRequest implements ServerRequestInterface
         }
     }
 
-    public function getAttribute(string $name, $default = null): mixed
+    public function getAttribute(string $name, mixed $default = null): mixed
     {
         return $default;
     }
